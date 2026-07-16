@@ -16,3 +16,53 @@
 .date-filter-container .rdrDayToday .rdrDayNumber span::after {
   background: #2563eb;
 }
+
+.date-filter-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+  display: flex;
+  overflow: hidden;
+  min-width: auto;
+}
+
+.date-filter-dropdown.is-custom {
+  min-width: 420px;
+}
+
+/* Tablet and mobile responsiveness */
+@media (max-width: 1200px) {
+  .date-filter-dropdown {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90vw;
+    max-width: 350px;
+    right: auto;
+    bottom: auto;
+    z-index: 999999;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .date-filter-dropdown.is-custom {
+    flex-direction: column;
+    min-width: auto;
+  }
+
+  .date-filter-dropdown .custom-range-inputs {
+    border-left: none !important;
+    border-top: 1px solid #e2e8f0;
+    min-width: 100% !important;
+  }
+  
+  .date-filter-dropdown > div:first-child {
+    width: 100% !important;
+    max-height: none !important;
+  }
+}

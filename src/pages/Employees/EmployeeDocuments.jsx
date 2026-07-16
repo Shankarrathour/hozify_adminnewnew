@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import {
-  Search, ListFilter, FileText, CheckCircle2, AlertCircle, Clock, Download, Eye, X, ShieldCheck, MoreVertical
+  Search, ListFilter, FileText, CheckCircle2, AlertCircle, Clock, Download, Eye, X, ShieldCheck, MoreVertical, Calendar as CalendarIcon
 } from 'lucide-react';
 import { useToast } from '../../components/common/ToastNotification';
+import { Calendar as DateRangeCalendar } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
 
 const MOCK_DOCUMENTS = [
   { id: 'DOC-901', employee: 'John Doe', type: 'Employment Contract', uploadDate: 'Sep 10, 2025', expiryDate: 'N/A', status: 'VERIFIED' },
@@ -31,17 +34,35 @@ export default function EmployeeDocuments() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)', paddingBottom: '40px' }}>
       
       {/* Table Section */}
-      <div className="panel" style={{ background: '#fff', border: '1.5px solid #25108f', borderRadius: '12px', padding: 'var(--spacing-section)' }}>
+      <div className="panel" style={{ background: '#fff', border: '1.5px solid #25108f', borderRadius: '12px', padding: 'var(--spacing-section)', overflow: 'visible' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--text)', margin: 0 }}>Document Repository</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1.5px solid #25108f', padding: '6px 12px', borderRadius: '6px', background: '#fff', cursor: 'pointer' }}>
-            <Calendar size={16} />
-            <input 
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              style={{ border: 'none', background: 'transparent', outline: 'none', fontWeight: '700', fontSize: '13px', color: 'var(--text)', cursor: 'pointer',  }}
-            />
+          <div style={{ position: 'relative', zIndex: 99 }}>
+            {activeDropdown === 'calendar' && (
+              <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setActiveDropdown(null)} />
+            )}
+            <div 
+              onClick={() => setActiveDropdown(activeDropdown === 'calendar' ? null : 'calendar')}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1.5px solid #25108f', padding: '6px 12px', borderRadius: '6px', background: '#fff', cursor: 'pointer', position: 'relative', zIndex: 41 }}
+            >
+              <CalendarIcon size={16} />
+              <span style={{ fontWeight: '700', fontSize: '13px', color: 'var(--text)' }}>
+                {date ? new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : 'Select Date'}
+              </span>
+            </div>
+            {activeDropdown === 'calendar' && (
+              <div className="calendar-dropdown">
+                <DateRangeCalendar 
+                  date={date ? new Date(date) : new Date()}
+                  onChange={(item) => {
+                    const localDate = new Date(item.getTime() - (item.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                    setDate(localDate);
+                    setActiveDropdown(null);
+                  }}
+                  color="#25108f"
+                />
+              </div>
+            )}
           </div>
         </div>
 

@@ -280,7 +280,7 @@ export default function ServiceDashboard() {
                 { label: 'Q1 2024', h: 60 },
                 { label: 'Q2 2024', h: 80 }
               ].map((c, idx) => (
-                <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '12%', gap: '8px' }}>
+                <div key={idx} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', width: '12%', height: '100%', gap: '8px' }}>
                   <div style={{ width: '100%', height: `${c.h}%`, background: c.highlight ? '#25108f' : '#eff6ff', borderRadius: '4px 4px 0 0' }} />
                   <span style={{ fontSize: '9px', fontWeight: '800', color: 'var(--muted)' }}>{c.label}</span>
                 </div>

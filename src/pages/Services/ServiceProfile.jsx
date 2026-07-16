@@ -14,6 +14,7 @@ import {
   Mail,
   Zap
 } from 'lucide-react';
+import { useToast } from '../../components/common/ToastNotification';
 
 const recentWorkOrders = [
   { id: '#WO-89218', client: 'AeroDynamics HQ', date: 'Oct 24, 2023', status: 'COMPLETED' },
@@ -28,6 +29,7 @@ const assignedTechs = [
 ];
 
 export default function ServiceProfile({ onClose }) {
+  const { addToast } = useToast();
   const [activeSubTab, setActiveSubTab] = useState('Overview');
 
   return (
@@ -66,7 +68,7 @@ export default function ServiceProfile({ onClose }) {
       {/* Main Profile Summary Panel */}
       <div className="panel" style={{ background: '#ffffff', border: '1.5px solid #25108f', borderRadius: '12px', padding: 'var(--spacing-section)', display: 'flex', gap: 'var(--spacing-section)', alignItems: 'center', flexWrap: 'wrap' }}>
         <img
-          src="https://images.unsplash.com/photo-1581094288338-2314dddb7eed?auto=format&fit=crop&w=140&h=140&q=80"
+          src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=140&h=140&q=80"
           alt="Industrial HVAC Maintenance"
           style={{ width: '120px', height: '120px', borderRadius: '12px', objectFit: 'cover', border: '1.5px solid #25108f' }}
         />
@@ -115,7 +117,7 @@ export default function ServiceProfile({ onClose }) {
               gap: '6px'
             }}
             type="button"
-           onClick={(e) => { e.preventDefault(); e.stopPropagation(); toast.success("Action performed successfully!"); }}>
+           onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToast("Opening edit form...", "info"); }}>
             <Edit3 size={16} />
             <span>Edit Service</span>
           </button>
@@ -133,7 +135,7 @@ export default function ServiceProfile({ onClose }) {
               cursor: 'pointer'
             }}
             type="button"
-           onClick={(e) => { e.preventDefault(); e.stopPropagation(); toast.success("Action performed successfully!"); }}>
+           onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToast("Promotion campaign started!", "success"); }}>
             Promote Service
           </button>
         </div>
@@ -309,7 +311,7 @@ export default function ServiceProfile({ onClose }) {
                         </span>
                       </td>
                       <td style={{ padding: '14px 8px', textAlign: 'center' }}>
-                        <button style={{ border: 'none', background: 'transparent', color: 'var(--muted)', cursor: 'pointer' }} type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); toast.success("Action performed successfully!"); }}>
+                        <button style={{ border: 'none', background: 'transparent', color: 'var(--muted)', cursor: 'pointer' }} type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToast("Loading recent work orders...", "info"); }}>
                           <MoreVertical size={16} />
                         </button>
                       </td>
@@ -368,7 +370,7 @@ export default function ServiceProfile({ onClose }) {
                 marginTop: '4px'
               }}
               type="button"
-             onClick={(e) => { e.preventDefault(); e.stopPropagation(); toast.success("Action performed successfully!"); }}>
+             onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToast("Generating report, this may take a moment...", "info"); }}>
               Generate Full Report
             </button>
           </div>
@@ -407,7 +409,7 @@ export default function ServiceProfile({ onClose }) {
                     }}
                     type="button"
                     title="Send Email"
-                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); toast.success("Action performed successfully!"); }}>
+                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToast(`Opening email draft to ${tech.name}...`, "info"); }}>
                     <Mail size={14} />
                   </button>
                 </div>
@@ -441,7 +443,7 @@ export default function ServiceProfile({ onClose }) {
                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
               }}
               type="button"
-             onClick={(e) => { e.preventDefault(); e.stopPropagation(); toast.success("Action performed successfully!"); }}>
+             onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToast("Connecting you with your Enterprise Concierge...", "success"); }}>
               Contact Account Manager
             </button>
           </div>

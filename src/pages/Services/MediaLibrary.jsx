@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   FileText,
   Image as ImageIcon,
@@ -14,8 +14,21 @@ import {
 } from 'lucide-react';
 
 import Select from "../../components/ui/Select";
+import { useToast } from "../../components/common/ToastNotification";
 
 export default function MediaLibrary() {
+  const { addToast } = useToast();
+  const fileInputRef = useRef(null);
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      addToast(`Selected file: ${file.name}`, 'success');
+      // Reset input so the same file can be selected again
+      e.target.value = '';
+    }
+  };
+
   const [activeCategory, setActiveCategory] = useState('All Assets');
   const [selectedTypes, setSelectedTypes] = useState({
     images: true,
@@ -73,6 +86,7 @@ export default function MediaLibrary() {
       type: 'PDF',
       size: '12.4 MB',
       date: 'Added 1 week ago',
+      thumbnail: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=150&h=100&q=80',
       isDocument: true
     },
     {
@@ -111,6 +125,18 @@ export default function MediaLibrary() {
   const toggleType = (key) => {
     setSelectedTypes(prev => ({ ...prev, [key]: !prev[key] }));
   };
+
+  const filteredAssets = assets.filter(asset => {
+    const isImage = asset.isVector || asset.type === 'JPG' || asset.type === 'PNG' || asset.type === 'SVG';
+    const isVideo = asset.isVideo || asset.type === 'MP4';
+    const isDocument = asset.isDocument || asset.type === 'PDF';
+    
+    if (selectedTypes.images && isImage) return true;
+    if (selectedTypes.videos && isVideo) return true;
+    if (selectedTypes.documents && isDocument) return true;
+    
+    return false;
+  });
 
   return (
     <div style={{ display: 'flex', gap: 'var(--spacing-section)', fontFamily: 'Inter, sans-serif' }}>
@@ -236,11 +262,18 @@ export default function MediaLibrary() {
               width: '100%',
               textAlign: 'center'
             }}
-            onClick={() => alert('Opening file dialog')}
+            onClick={() => fileInputRef.current?.click()}
             type="button"
           >
             Browse
           </button>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileSelect} 
+            style={{ display: 'none' }} 
+            accept="image/*,video/*,application/pdf"
+          />
         </div>
 
       </div>
@@ -311,7 +344,7 @@ export default function MediaLibrary() {
               borderRadius: '20px'
             }}>
               All Assets
-              <X size={12} style={{ cursor: 'pointer' }} onClick={() => alert('Cleared All Assets filter')} />
+              <X size={12} style={{ cursor: 'pointer' }} onClick={() => addToast('Cleared All Assets filter', 'success')} />
             </span>
             <span style={{
               display: 'flex',
@@ -325,10 +358,10 @@ export default function MediaLibrary() {
               borderRadius: '20px'
             }}>
               Videos
-              <X size={12} style={{ cursor: 'pointer' }} onClick={() => alert('Cleared Videos filter')} />
+              <X size={12} style={{ cursor: 'pointer' }} onClick={() => addToast('Cleared Videos filter', 'success')} />
             </span>
             <button
-              onClick={() => alert('Filters cleared')}
+              onClick={() => addToast('Filters cleared', 'success')}
               style={{ border: 'none', background: 'transparent', color: 'var(--primary)', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}
               type="button"
             >
@@ -407,7 +440,7 @@ export default function MediaLibrary() {
           gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))',
           gap: '16px'
         }}>
-          {assets.map((asset) => {
+          {filteredAssets.map((asset) => {
             const isDoc = asset.isDocument;
             return (
               <div
@@ -426,7 +459,7 @@ export default function MediaLibrary() {
               >
                 {/* Thumbnail Header */}
                 <div style={{ height: '110px', position: 'relative', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {isDoc ? (
+                  {isDoc && !asset.thumbnail ? (
                     <div style={{
                       width: '40px',
                       height: '40px',
@@ -530,7 +563,7 @@ export default function MediaLibrary() {
             cursor: 'pointer',
             marginTop: '20px'
           }}
-          onClick={() => alert('Loading more assets...')}
+          onClick={() => addToast('Loading more assets...', 'info')}
           type="button"
         >
           <span>Load more assets</span>

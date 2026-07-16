@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import {
   Download, FileText, Calendar, Search, ListFilter, Activity, Star, Award, MapPin, MoreVertical, TrendingUp
 } from 'lucide-react';
+import { Calendar as DateRangeCalendar } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
 import { useToast } from '../../components/common/ToastNotification';
 
 import Select from "../../components/ui/Select";
@@ -31,6 +34,7 @@ export default function EmployeeAnalytics() {
   const [branchFilter, setBranchFilter] = useState('All Branches');
   const [deptFilter, setDeptFilter] = useState('All Departments');
   const [dateRange, setDateRange] = useState('');
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
   const filteredEmployees = MOCK_EMPLOYEES.filter(emp => {
     const matchSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -101,15 +105,32 @@ export default function EmployeeAnalytics() {
               label: "Administration",
               value: "Administration"
             }]} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1.5px solid #25108f', padding: '6px 12px', borderRadius: '6px', background: '#fff', cursor: 'pointer' }}>
-            <Calendar size={14} />
-            <span style={{ fontWeight: '600', fontSize: '13px' }}>{dateRange ? '' : 'Oct 1 - Oct 31, 2026'}</span>
-            <input 
-              type="date"
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              style={{ border: 'none', background: 'transparent', outline: 'none', fontWeight: '600', fontSize: '13px', color: 'var(--text)', cursor: 'pointer',  width: dateRange ? 'auto' : '20px' }}
-            />
+          <div style={{ position: 'relative', zIndex: 99 }}>
+            {activeDropdown === 'calendar' && (
+              <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setActiveDropdown(null)} />
+            )}
+            <div 
+              onClick={() => setActiveDropdown(activeDropdown === 'calendar' ? null : 'calendar')}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1.5px solid #25108f', padding: '6px 12px', borderRadius: '6px', background: '#fff', cursor: 'pointer', position: 'relative', zIndex: 41 }}
+            >
+              <Calendar size={14} />
+              <span style={{ fontWeight: '600', fontSize: '13px', color: 'var(--text)' }}>
+                {dateRange ? new Date(dateRange).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : 'Oct 1 - Oct 31, 2026'}
+              </span>
+            </div>
+            {activeDropdown === 'calendar' && (
+              <div className="calendar-dropdown">
+                <DateRangeCalendar 
+                  date={dateRange ? new Date(dateRange) : new Date()}
+                  onChange={(item) => {
+                    const localDate = new Date(item.getTime() - (item.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                    setDateRange(localDate);
+                    setActiveDropdown(null);
+                  }}
+                  color="#25108f"
+                />
+              </div>
+            )}
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
@@ -374,7 +395,7 @@ export default function EmployeeAnalytics() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)', flex: '1' }}>
           
           {/* Top Performers Leaders Panel */}
-          <div className="panel" style={{ background: '#fff', border: '1.5px solid #25108f', borderRadius: '12px', padding: 'var(--spacing-section)', marginBottom: 0 }}>
+          <div className="panel" style={{ background: '#fff', border: '1.5px solid #25108f', borderRadius: '12px', padding: 'var(--spacing-section)', marginBottom: 0, overflow: 'visible' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
               <Award size={18} style={{ color: '#10b981' }} />
               <h3 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text)', margin: 0 }}>Revenue Leaders</h3>

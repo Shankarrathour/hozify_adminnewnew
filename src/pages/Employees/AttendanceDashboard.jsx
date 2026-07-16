@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Calendar, Download, UserCheck, UserMinus, Clock, Hourglass, SlidersHorizontal, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
 import { useToast } from '../../components/common/ToastNotification';
+import { Calendar as DateRangeCalendar } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
 
 const attendanceDetails = [
   { name: 'Marcus Holloway', id: 'EMP-9283', dept: 'Engineering', shift: '09:00 - 18:00', checkIn: '08:54 AM', status: 'ON TIME', statusClass: 'on-time', initials: 'MH', bg: '#ecfdf5', color: '#059669' },
@@ -26,14 +29,29 @@ export default function AttendanceDashboard() {
           <p className="page-subtitle">Monitoring real-time presence across all branches.</p>
         </div>
         <div className="partners-header-buttons">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1.5px solid #25108f', padding: '6px 12px', borderRadius: '6px', background: '#fff', cursor: 'pointer' }}>
-            <Calendar size={16} />
-            <input 
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              style={{ border: 'none', background: 'transparent', outline: 'none', fontWeight: '700', fontSize: '13px', color: 'var(--text)', cursor: 'pointer',  }}
-            />
+          <div style={{ position: 'relative', zIndex: 99 }}>
+            <div 
+              onClick={() => setActiveDropdown(activeDropdown === 'calendar' ? null : 'calendar')} 
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1.5px solid #25108f', padding: '6px 12px', borderRadius: '6px', background: '#fff', cursor: 'pointer' }}
+            >
+              <Calendar size={16} />
+              <span style={{ fontWeight: '700', fontSize: '13px', color: 'var(--text)' }}>
+                {new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+              </span>
+            </div>
+            {activeDropdown === 'calendar' && (
+              <div className="calendar-dropdown">
+                <DateRangeCalendar 
+                  date={new Date(date)}
+                  onChange={(item) => {
+                    const localDate = new Date(item.getTime() - (item.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                    setDate(localDate);
+                    setActiveDropdown(null);
+                  }}
+                  color="#25108f"
+                />
+              </div>
+            )}
           </div>
 
           <button 

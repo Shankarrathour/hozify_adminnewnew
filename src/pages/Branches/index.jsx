@@ -62,7 +62,14 @@ export default function Branches({ defaultTab }) {
   return (
     <AdminShell
       activeTab="Branches"
-      headerTitle="Branch Manager"
+      headerTitle={
+        activeTab === 'Directory' ? 'Branch Directory' :
+        activeTab === 'Performance' ? 'Branch Performance' :
+        activeTab === 'ApprovalQueue' ? 'Approval Queue' :
+        activeTab === 'Analytics' ? 'Revenue Analytics' :
+        activeTab === 'Compliance' ? 'Branch Compliance' :
+        'Branch Manager'
+      }
       searchPlaceholder="Search in branch suite..."
     >
       {/* Sub-tab selection bar */}

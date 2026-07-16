@@ -558,7 +558,16 @@ function DashboardScreen({ bookings, handlers }) {
             ))}
           </article>
           <article className="booking-panel">
-            <div className="booking-panel-head"><h3>Escalated Cases</h3><MoreVertical size={16} /></div>
+            <div className="booking-panel-head">
+              <h3>Escalated Cases</h3>
+              <button 
+                type="button" 
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); toast.success("Escalated cases options opened."); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--text)', display: 'flex', alignItems: 'center' }}
+              >
+                <MoreVertical size={16} />
+              </button>
+            </div>
             {bookings.filter((item) => item.status === 'Escalated' || item.status === 'Disputed').map((item) => (
               <div className="booking-feed-row" key={item.id}>
                 <span className="booking-avatar">{item.customer[0]}</span>
@@ -1245,7 +1254,7 @@ export default function BookingManagement() {
   return (
     <AdminShell
       activeTab="Booking Management"
-      headerTitle="Booking Management"
+      headerTitle={selectedBooking ? 'Booking Details' : meta.title}
       searchPlaceholder="Search bookings, clients, or IDs..."
     >
       {feedback && <div className="booking-feedback"><CheckCircle2 size={16} /> {feedback}</div>}

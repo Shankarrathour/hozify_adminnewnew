@@ -135,7 +135,7 @@ export default function FeaturedManagement() {
                 }}
                 type="button"
                 aria-label="Filter Registry"
-               onClick={(e) => { e.preventDefault(); e.stopPropagation(); toast.success("Action performed successfully!"); }}>
+               onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToast("Filter options opened.", "info"); }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
               </button>
             </div>
@@ -370,7 +370,11 @@ export default function FeaturedManagement() {
               </div>
 
               {/* Slot 3: DROP TO ADD */}
-              <div style={{
+              <div 
+                onClick={() => addToast('Opening Service Selection Dialog...', 'success')}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDrop={(e) => { e.preventDefault(); addToast('Service added to featured slot!', 'success'); }}
+                style={{
                 border: '2px dashed #cbd5e1',
                 borderRadius: '8px',
                 background: '#f1f5f9',
@@ -495,7 +499,7 @@ export default function FeaturedManagement() {
               }}>
                 <div style={{ height: '90px', position: 'relative', background: '#e2e8f0' }}>
                   <img
-                    src="https://images.unsplash.com/photo-1621905252507-b354bc25edac?auto=format&fit=crop&w=300&h=120&q=80"
+                    src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=300&h=120&q=80"
                     alt="Leak Shield Pro"
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
@@ -526,7 +530,9 @@ export default function FeaturedManagement() {
               </div>
 
               {/* Card 3: Override Algorithmic Selection */}
-              <div style={{
+              <div 
+                onClick={() => addToast('Opening override configuration...', 'info')}
+                style={{
                 border: '2px dashed #e2e8f0',
                 borderRadius: '8px',
                 background: '#f8fafc',

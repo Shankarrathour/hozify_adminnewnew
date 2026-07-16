@@ -18,7 +18,10 @@ import { useApp } from '../../hooks/useApp';
 import { ROUTES } from '../../config/routes';
 
 import Select from "../../components/ui/Select";
-
+import { Calendar as DateRangeCalendar } from 'react-date-range';
+import { format } from 'date-fns';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
 export default function Restocking() {
   const { navigate } = useApp();
   
@@ -26,7 +29,8 @@ export default function Restocking() {
   const [material, setMaterial] = useState('Industrial Grade Steel - S400');
   const [supplier, setSupplier] = useState('Apex Metalworks');
   const [quantity, setQuantity] = useState('150');
-  const [deliveryDate, setDeliveryDate] = useState('');
+  const [deliveryDate, setDeliveryDate] = useState(new Date());
+  const [showCalendar, setShowCalendar] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -161,7 +165,7 @@ export default function Restocking() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', lgGridTemplateColumns: '1.2fr 1fr', gap: 'var(--spacing-section)' }}>
           
           {/* Create Restock Request Form */}
-          <div className="panel" style={{ background: '#ffffff', border: '1.5px solid #25108f', borderRadius: '12px', padding: 'var(--spacing-section)' }}>
+          <div className="panel" style={{ background: '#ffffff', border: '1.5px solid #25108f', borderRadius: '12px', padding: 'var(--spacing-section)', overflow: 'visible', position: 'relative', zIndex: 9999 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
               <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#f5f3ff', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Send size={16} />
@@ -285,11 +289,9 @@ export default function Restocking() {
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#7a7688', textTransform: 'uppercase', marginBottom: '6px' }}>
                   Expected Delivery Date
                 </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="date"
-                    value={deliveryDate}
-                    onChange={(e) => setDeliveryDate(e.target.value)}
+                <div style={{ position: 'relative', zIndex: 9999 }}>
+                  <div
+                    onClick={() => setShowCalendar(!showCalendar)}
                     style={{
                       width: '100%',
                       height: '38px',
@@ -300,10 +302,28 @@ export default function Restocking() {
                       fontSize: '13px',
                       color: '#1c2536',
                       fontWeight: '600',
-                      outline: 'none'
+                      outline: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      cursor: 'pointer'
                     }}
-                    aria-label="Select delivery date"
-                  />
+                  >
+                    <span>{deliveryDate ? format(deliveryDate, 'MMM dd, yyyy') : 'Select Date'}</span>
+                    <CalendarIcon size={14} color="#64748B" />
+                  </div>
+                  {showCalendar && (
+                    <div className="calendar-dropdown" style={{ zIndex: 100 }}>
+                      <DateRangeCalendar
+                        date={deliveryDate}
+                        onChange={(item) => {
+                          setDeliveryDate(item);
+                          setShowCalendar(false);
+                        }}
+                        color="var(--primary)"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 

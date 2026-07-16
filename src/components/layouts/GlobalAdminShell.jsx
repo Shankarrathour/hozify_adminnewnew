@@ -424,7 +424,7 @@ export default function GlobalAdminShell({ children }) {
           }}
         >
           {/* Left Combo */}
-          <div className="header-left-combo" style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '0 0 auto', minWidth: 0 }}>
+          <div className="header-left-combo" style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '0 1 auto', minWidth: 0 }}>
             <button
               className="mobile-menu-btn"
               onClick={() => setSidebarOpen(true)}

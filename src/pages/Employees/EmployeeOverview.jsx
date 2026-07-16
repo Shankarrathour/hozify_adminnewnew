@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { Calendar as DateRangeCalendar } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
 import {
   Users,
   CheckCircle,
@@ -82,6 +85,7 @@ const kycAlerts = [
 export default function EmployeeOverview({ onNavigateToWorkforce }) {
   const { addToast } = useToast();
   const [dateRange, setDateRange] = useState('');
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
   return (
     <div className="employee-overview-flow">
@@ -92,15 +96,32 @@ export default function EmployeeOverview({ onNavigateToWorkforce }) {
           <p className="page-subtitle">Real-time status of your global workforce at Hozify.</p>
         </div>
         <div className="partners-header-buttons">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1.5px solid #25108f', padding: '6px 12px', borderRadius: '6px', background: '#fff', cursor: 'pointer' }}>
-            <Calendar size={16} />
-            <span style={{ fontWeight: '700', fontSize: '13px' }}>{dateRange ? '' : 'Last 30 Days'}</span>
-            <input 
-              type="date"
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              style={{ border: 'none', background: 'transparent', outline: 'none', fontWeight: '700', fontSize: '13px', color: 'var(--text)', cursor: 'pointer',  width: dateRange ? 'auto' : '20px' }}
-            />
+          <div style={{ position: 'relative', zIndex: 99 }}>
+            {activeDropdown === 'calendar' && (
+              <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setActiveDropdown(null)} />
+            )}
+            <div 
+              onClick={() => setActiveDropdown(activeDropdown === 'calendar' ? null : 'calendar')}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1.5px solid #25108f', padding: '6px 12px', borderRadius: '6px', background: '#fff', cursor: 'pointer', position: 'relative', zIndex: 41 }}
+            >
+              <Calendar size={16} />
+              <span style={{ fontWeight: '700', fontSize: '13px', color: 'var(--text)' }}>
+                {dateRange ? new Date(dateRange).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : 'Last 30 Days'}
+              </span>
+            </div>
+            {activeDropdown === 'calendar' && (
+              <div className="calendar-dropdown">
+                <DateRangeCalendar 
+                  date={dateRange ? new Date(dateRange) : new Date()}
+                  onChange={(item) => {
+                    const localDate = new Date(item.getTime() - (item.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                    setDateRange(localDate);
+                    setActiveDropdown(null);
+                  }}
+                  color="#25108f"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

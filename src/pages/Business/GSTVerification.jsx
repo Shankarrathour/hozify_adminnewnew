@@ -539,18 +539,17 @@ export default function GSTVerification() {
         {/* Bottom Verification Actions bar */}
         {currentStatus.state === 'approved' ? (
           <div style={{ 
-            position: 'fixed',
-            bottom: 0,
-            left: '260px',
-            right: 0,
+            marginTop: '20px',
             background: '#ecfdf5',
-            borderTop: '1px solid #a7f3d0',
-            padding: '16px 32px',
+            border: '1px solid #a7f3d0',
+            borderRadius: '12px',
+            padding: '16px 24px',
             display: 'flex',
+            flexWrap: 'wrap',
+            gap: '16px',
             justifyContent: 'space-between',
             alignItems: 'center',
-            zIndex: 900,
-            boxShadow: '0 -4px 6px -1px rgba(0, 0, 0, 0.05)'
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '700', color: '#065f46' }}>
               <CheckCircle size={16} />
@@ -566,18 +565,17 @@ export default function GSTVerification() {
           </div>
         ) : currentStatus.state === 'rejected' ? (
           <div style={{ 
-            position: 'fixed',
-            bottom: 0,
-            left: '260px',
-            right: 0,
+            marginTop: '20px',
             background: '#fff5f5',
-            borderTop: '1px solid #fecaca',
-            padding: '16px 32px',
+            border: '1px solid #fecaca',
+            borderRadius: '12px',
+            padding: '16px 24px',
             display: 'flex',
+            flexWrap: 'wrap',
+            gap: '16px',
             justifyContent: 'space-between',
             alignItems: 'center',
-            zIndex: 900,
-            boxShadow: '0 -4px 6px -1px rgba(0, 0, 0, 0.05)'
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '700', color: '#991b1b' }}>
               <AlertTriangle size={16} />
@@ -593,19 +591,17 @@ export default function GSTVerification() {
           </div>
         ) : (
           <div style={{ 
-            position: 'fixed',
-            bottom: 0,
-            left: '260px', // Matches sidebar width
-            right: 0,
-            background: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(8px)',
-            borderTop: '1px solid #e2e8f0',
-            padding: '16px 32px',
+            marginTop: '20px',
+            background: '#fff',
+            border: '1px solid #e2e8f0',
+            borderRadius: '12px',
+            padding: '16px 24px',
             display: 'flex',
+            flexWrap: 'wrap',
+            gap: '16px',
             justifyContent: 'space-between',
             alignItems: 'center',
-            zIndex: 900,
-            boxShadow: '0 -4px 6px -1px rgba(0, 0, 0, 0.05)'
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', color: '#64748b' }}>
               <AlertTriangle size={15} className="text-amber-500" />

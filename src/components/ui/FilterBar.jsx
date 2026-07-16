@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Search } from 'lucide-react';
 import Button from './Button';
-
 import Select from './Select';
 
 export default function FilterBar({ 
@@ -12,6 +11,25 @@ export default function FilterBar({
   onReset,
   onApply
 }) {
+  const [localSearch, setLocalSearch] = useState('');
+  const [localFilters, setLocalFilters] = useState({});
+
+  const handleSearchChange = (val) => {
+    setLocalSearch(val);
+    if (onSearch) onSearch(val);
+  };
+
+  const handleFilterSelect = (key, val) => {
+    setLocalFilters(prev => ({ ...prev, [key]: val }));
+    if (onFilterChange) onFilterChange(key, val);
+  };
+
+  const handleResetClick = () => {
+    setLocalSearch('');
+    setLocalFilters({});
+    if (onReset) onReset();
+  };
+
   return (
     <div style={{
       display: 'flex',
@@ -29,8 +47,9 @@ export default function FilterBar({
         <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
         <input 
           type="text"
+          value={localSearch}
           placeholder={searchPlaceholder}
-          onChange={(e) => onSearch && onSearch(e.target.value)}
+          onChange={(e) => handleSearchChange(e.target.value)}
           style={{
             width: '100%',
             height: '40px',
@@ -48,7 +67,8 @@ export default function FilterBar({
       {filters.map((filter, index) => (
         <Select
           key={index}
-          onChange={(e) => onFilterChange && onFilterChange(filter.key, e.target.value)}
+          value={localFilters[filter.key] || ''}
+          onChange={(e) => handleFilterSelect(filter.key, e.target.value)}
           options={[
             { value: "", label: filter.label },
             ...(filter.options || [])
@@ -58,7 +78,7 @@ export default function FilterBar({
       ))}
 
       <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
-        {onReset && <Button variant="ghost" onClick={onReset}>Reset</Button>}
+        {onReset && <Button variant="ghost" onClick={handleResetClick}>Reset</Button>}
         {onApply && <Button variant="primary" onClick={onApply}>Apply Filters</Button>}
       </div>
     </div>

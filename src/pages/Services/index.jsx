@@ -78,10 +78,33 @@ export default function Services({ defaultTab }) {
     setActiveTab('approval-details');
   };
 
+  const getHeaderTitle = (tab) => {
+    switch (tab) {
+      case 'wizard': return 'New Service Wizard';
+      case 'profile': return 'Service Profile';
+      case 'approvals': return 'Service Approvals';
+      case 'approval-details': return 'Approval Details';
+      case 'creation': return 'Service Creation';
+      case 'activation': return 'Service Activation';
+      case 'categories': return 'Service Categories';
+      case 'subcategories': return 'Sub Categories';
+      case 'zones': return 'GIS Zone Analysis';
+      case 'dashboard': return 'Service Dashboard';
+      case 'pricing': return 'Pricing Strategy';
+      case 'commission': return 'Commission Rules';
+      case 'featured': return 'Featured Clusters';
+      case 'comparison': return 'Comparison Hub';
+      case 'media': return 'Media Library';
+      case 'audit-logs': return 'Audit Logs';
+      case 'services':
+      default: return 'Services Catalog';
+    }
+  };
+
   // 1. Wizard View (renders full-screen inside AdminShell)
   if (activeTab === 'wizard') {
     return (
-      <AdminShell activeTab="Services" headerTitle="Service Catalog" searchPlaceholder="Search catalog...">
+      <AdminShell activeTab="Services" headerTitle={getHeaderTitle(activeTab)} searchPlaceholder="Search catalog...">
         <NewServiceWizard onClose={closeWizard} />
       </AdminShell>
     );
@@ -90,7 +113,7 @@ export default function Services({ defaultTab }) {
   // 2. Service Profile sub-view
   if (activeTab === 'profile') {
     return (
-      <AdminShell activeTab="Services" headerTitle="Service Catalog" searchPlaceholder="Search profile details...">
+      <AdminShell activeTab="Services" headerTitle={getHeaderTitle(activeTab)} searchPlaceholder="Search profile details...">
         <ServiceProfile onClose={showCatalog} />
       </AdminShell>
     );
@@ -99,7 +122,7 @@ export default function Services({ defaultTab }) {
   // 3. Approvals Queue sub-view
   if (activeTab === 'approvals') {
     return (
-      <AdminShell activeTab="Services" headerTitle="Service Catalog" searchPlaceholder="Search approval requests...">
+      <AdminShell activeTab="Services" headerTitle={getHeaderTitle(activeTab)} searchPlaceholder="Search approval requests...">
         <ApprovalsList onViewDetails={showApprovalDetails} onClose={showCatalog} />
       </AdminShell>
     );
@@ -108,7 +131,7 @@ export default function Services({ defaultTab }) {
   // 4. Approval Details sub-view
   if (activeTab === 'approval-details') {
     return (
-      <AdminShell activeTab="Services" headerTitle="Service Catalog" searchPlaceholder="Search specs, risk score...">
+      <AdminShell activeTab="Services" headerTitle={getHeaderTitle(activeTab)} searchPlaceholder="Search specs, risk score...">
         <ApprovalDetails requestId={selectedApprovalId} onBack={showApprovalsList} />
       </AdminShell>
     );
@@ -162,7 +185,7 @@ export default function Services({ defaultTab }) {
   return (
     <AdminShell
       activeTab="Services"
-      headerTitle="Service Catalog"
+      headerTitle={getHeaderTitle(activeTab)}
       searchPlaceholder={
         activeTab === 'categories'
           ? 'Search categories...'

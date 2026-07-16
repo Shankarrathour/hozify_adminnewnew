@@ -102,9 +102,8 @@ export default function AvailabilityBoard() {
             {filterCards(columnsData.Available).map((card, idx) => (
               <div 
                 key={idx} 
-                className="panel" 
                 onClick={() => addToast(`Viewing availability details for ${card.name}`, "success")}
-                style={{ padding: '14px', background: '#fff', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer', marginBottom: 0 }}
+                style={{ padding: '14px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer', marginBottom: 0 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -162,9 +161,8 @@ export default function AvailabilityBoard() {
             {filterCards(columnsData.Busy).map((card, idx) => (
               <div 
                 key={idx} 
-                className="panel" 
                 onClick={() => addToast(`Viewing availability details for ${card.name}`, "success")}
-                style={{ padding: '14px', background: '#fff', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer', marginBottom: 0 }}
+                style={{ padding: '14px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer', marginBottom: 0 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -213,9 +211,8 @@ export default function AvailabilityBoard() {
             {filterCards(columnsData.OnJob).map((card, idx) => (
               <div 
                 key={idx} 
-                className="panel" 
                 onClick={() => addToast(`Viewing availability details for ${card.name}`, "success")}
-                style={{ padding: '14px', background: '#fff', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer', marginBottom: 0 }}
+                style={{ padding: '14px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer', marginBottom: 0 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -264,9 +261,8 @@ export default function AvailabilityBoard() {
             {filterCards(columnsData.OnLeave).map((card, idx) => (
               <div 
                 key={idx} 
-                className="panel" 
                 onClick={() => addToast(`Viewing availability details for ${card.name}`, "success")}
-                style={{ padding: '14px', background: '#fff', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer', marginBottom: 0 }}
+                style={{ padding: '14px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer', marginBottom: 0 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>

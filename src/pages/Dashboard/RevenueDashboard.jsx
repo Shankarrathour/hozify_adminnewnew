@@ -6,6 +6,7 @@ import {
   TrendingDown, 
   MapPin, 
   SlidersHorizontal, 
+  RotateCcw,
   X,
   DollarSign
 } from 'lucide-react';
@@ -143,22 +144,26 @@ export default function RevenueDashboard({ activeTab = 'Revenue Management' }) {
             {/* CLICKABLE INTERACTIVE FILTER ICON */}
             <button 
               type="button"
-              onClick={() => setFilterAttentionOnly(!filterAttentionOnly)}
+              onClick={() => {
+                setSelectedRange('Last 30 Days');
+                setSelectedCity('All Cities');
+                setFilterAttentionOnly(false);
+              }}
               style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                border: filterAttentionOnly ? '1px solid #d32929' : '1.5px solid #25108f', 
-                background: filterAttentionOnly ? '#fee2e2' : '#fff', 
+                border: (selectedCity !== 'All Cities' || selectedRange !== 'Last 30 Days' || filterAttentionOnly) ? '1px solid #d32929' : '1.5px solid #25108f', 
+                background: (selectedCity !== 'All Cities' || selectedRange !== 'Last 30 Days' || filterAttentionOnly) ? '#fee2e2' : '#fff', 
                 padding: '8px 12px', 
                 borderRadius: '6px', 
-                color: filterAttentionOnly ? '#d32929' : 'var(--text)',
+                color: (selectedCity !== 'All Cities' || selectedRange !== 'Last 30 Days' || filterAttentionOnly) ? '#d32929' : 'var(--text)',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease'
               }}
-              title={filterAttentionOnly ? "Showing Issues Only - Click to reset" : "Click to filter Pending/Refunded status"}
+              title="Reset all filters"
             >
-              <SlidersHorizontal size={14} />
+              <RotateCcw size={14} />
             </button>
           </div>
         </div>

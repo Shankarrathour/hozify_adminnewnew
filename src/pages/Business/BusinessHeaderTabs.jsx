@@ -13,7 +13,7 @@ export default function BusinessHeaderTabs({ activeTab }) {
   ];
 
   return (
-    <div style={{ display: 'flex', gap: '8px', background: 'rgba(255, 255, 255, 0.15)', padding: '4px', borderRadius: '8px', fontSize: '13px', fontWeight: '600' }}>
+    <div style={{ display: 'flex', gap: '8px', background: 'rgba(255, 255, 255, 0.15)', padding: '4px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', overflowX: 'auto', maxWidth: '100%' }}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.label;
         return (
@@ -30,7 +30,9 @@ export default function BusinessHeaderTabs({ activeTab }) {
               cursor: tab.route !== '#' ? 'pointer' : 'default',
               outline: 'none',
               transition: 'all 0.2s ease',
-              fontWeight: isActive ? '700' : '500'
+              fontWeight: isActive ? '700' : '500',
+              flexShrink: 0,
+              whiteSpace: 'nowrap'
             }}
             type="button"
           >

@@ -190,8 +190,8 @@ export default function ComparisonHub() {
                       <Sparkles size={16} />
                     </div>
                     <div>
-                      <strong style={{ display: 'block', fontSize: '13px', color: 'var(--text)' }}>Deep Cleaning</strong>
-                      <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 'normal' }}>Commercial Tier</span>
+                      <strong style={{ display: 'block', fontSize: '13px', color: '#4ade80', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Deep Cleaning</strong>
+                      <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Commercial Tier</span>
                     </div>
                   </div>
                 </div>
@@ -213,8 +213,8 @@ export default function ComparisonHub() {
                     <Wrench size={16} />
                   </div>
                   <div>
-                    <strong style={{ display: 'block', fontSize: '13px', color: 'var(--text)' }}>HVAC Repair</strong>
-                    <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 'normal' }}>On-Demand Tier</span>
+                    <strong style={{ display: 'block', fontSize: '13px', color: '#4ade80', textTransform: 'uppercase', letterSpacing: '0.5px' }}>HVAC Repair</strong>
+                    <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>On-Demand Tier</span>
                   </div>
                 </div>
               </th>
@@ -235,8 +235,8 @@ export default function ComparisonHub() {
                     <Truck size={16} />
                   </div>
                   <div>
-                    <strong style={{ display: 'block', fontSize: '13px', color: 'var(--text)' }}>Supply Delivery</strong>
-                    <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 'normal' }}>Logistics Tier</span>
+                    <strong style={{ display: 'block', fontSize: '13px', color: '#4ade80', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Supply Delivery</strong>
+                    <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Logistics Tier</span>
                   </div>
                 </div>
               </th>

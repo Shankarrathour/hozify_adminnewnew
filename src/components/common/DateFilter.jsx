@@ -2,6 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, ChevronDown, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { useDateFilter } from '../../contexts/DateFilterContext';
+import { DateRange } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
+import './DateFilter.css';
 
 const PRESETS = [
   { label: 'Today', id: 'Today' },
@@ -30,13 +34,13 @@ export default function DateFilter() {
   const { preset, dateRange, setDateFilter } = useDateFilter();
   const [isOpen, setIsOpen] = useState(false);
   const [localPreset, setLocalPreset] = useState(preset);
-  const [localRange, setLocalRange] = useState([dateRange]);
+  const [localRange, setLocalRange] = useState([{ ...dateRange, key: 'selection' }]);
   const popoverRef = useRef(null);
 
   // Sync local state when context changes outside
   useEffect(() => {
     setLocalPreset(preset);
-    setLocalRange([dateRange]);
+    setLocalRange([{ ...dateRange, key: 'selection' }]);
   }, [preset, dateRange]);
 
   // Handle outside click to close
@@ -105,18 +109,7 @@ export default function DateFilter() {
 
       {isOpen && (
         <div
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 8px)',
-            right: 0,
-            background: '#ffffff',
-            border: '1px solid #e2e8f0',
-            borderRadius: '12px',
-            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
-            display: 'flex',
-            overflow: 'hidden',
-            minWidth: localPreset === 'Custom' ? '420px' : 'auto'
-          }}
+          className={`date-filter-dropdown ${localPreset === 'Custom' ? 'is-custom' : ''}`}
         >
           {/* Sidebar Presets */}
           <div style={{ width: '180px', background: '#ffffff', padding: '12px', maxHeight: '420px', overflowY: 'auto' }}>
@@ -156,32 +149,14 @@ export default function DateFilter() {
 
           {/* Calendar or Actions (ONLY SHOW FOR CUSTOM) */}
           {localPreset === 'Custom' && (
-            <div style={{ display: 'flex', flexDirection: 'column', background: '#ffffff', borderLeft: '1px solid #e2e8f0', minWidth: '240px' }}>
-              <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '11px', fontWeight: '700', color: '#64748b' }}>Start Date</label>
-                  <input
-                    type="date"
-                    value={toInputDate(localRange[0]?.startDate)}
-                    onChange={(e) => {
-                       const date = e.target.value ? new Date(e.target.value) : new Date();
-                       setLocalRange([{...localRange[0], startDate: date}]);
-                    }}
-                    style={{ padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', outline: 'none' }}
-                  />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '11px', fontWeight: '700', color: '#64748b' }}>End Date</label>
-                  <input
-                    type="date"
-                    value={toInputDate(localRange[0]?.endDate)}
-                    onChange={(e) => {
-                       const date = e.target.value ? new Date(e.target.value) : new Date();
-                       setLocalRange([{...localRange[0], endDate: date}]);
-                    }}
-                    style={{ padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', outline: 'none' }}
-                  />
-                </div>
+            <div className="custom-range-inputs" style={{ display: 'flex', flexDirection: 'column', background: '#ffffff', borderLeft: '1px solid #e2e8f0', minWidth: '320px' }}>
+              <div style={{ padding: '16px', display: 'flex', justifyContent: 'center' }}>
+                <DateRange
+                  ranges={localRange}
+                  onChange={(item) => setLocalRange([item.selection])}
+                  rangeColors={['#2563eb']}
+                  showDateDisplay={false}
+                />
               </div>
               
               {/* Footer actions */}

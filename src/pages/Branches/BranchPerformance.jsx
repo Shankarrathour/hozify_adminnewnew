@@ -18,10 +18,39 @@ const auditBranches = [
   { name: 'Bayside Operations', manager: 'Sarah Jenkins', revenue: '$19,420.00', status: 'VERIFIED', trend: '+8.5%', id: 'BR-405' }
 ];
 
+const performanceData = {
+  "Last 30 Days": {
+    score: "94.2",
+    trend: "↗ +12.4% vs last month",
+    trendColor: "#10b981",
+    status: "Excellent",
+    path: "M 0 90 C 100 80, 150 95, 200 65 C 250 35, 300 70, 350 45 C 400 20, 450 35, 500 15",
+    pointY: 15
+  },
+  "Last 90 Days": {
+    score: "88.7",
+    trend: "↗ +4.1% vs previous 90 days",
+    trendColor: "#10b981",
+    status: "Good",
+    path: "M 0 70 C 100 85, 150 60, 200 75 C 250 50, 300 80, 350 65 C 400 40, 450 55, 500 35",
+    pointY: 35
+  },
+  "Year to Date": {
+    score: "91.5",
+    trend: "↗ +8.2% vs last year",
+    trendColor: "#10b981",
+    status: "Excellent",
+    path: "M 0 100 C 100 70, 150 90, 200 50 C 250 80, 300 40, 350 60 C 400 30, 450 40, 500 25",
+    pointY: 25
+  }
+};
+
+
 export default function BranchPerformance() {
   const { addToast } = useToast();
   const { navigate, setCurrentBranchId } = useApp();
   const [timeframe, setTimeframe] = useState('Last 30 Days');
+  const currentData = performanceData[timeframe] || performanceData["Last 30 Days"];
 
   const handleRowClick = (branch) => {
     setCurrentBranchId(branch.id);
@@ -92,6 +121,27 @@ export default function BranchPerformance() {
           border: 1px solid currentColor;
           display: inline-block;
         }
+        .perf-kpi-grid {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+        .fraud-top-grid {
+          display: flex;
+          gap: 20px;
+          margin-bottom: 24px;
+        }
+        @media (max-width: 1200px) {
+          .perf-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) {
+          .perf-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+          .fraud-top-grid { flex-direction: column; }
+        }
+        @media (max-width: 480px) {
+          .perf-kpi-grid { grid-template-columns: 1fr; }
+        }
       `}</style>
       {/* Page Header */}
       <div className="partners-page-header">
@@ -131,7 +181,7 @@ export default function BranchPerformance() {
         </div>
       </div>
       {/* Top Section Layout (Performance Score & Top Performers) */}
-      <div className="fraud-top-grid" style={{ marginBottom: '24px', gap: '20px' }}>
+      <div className="fraud-top-grid">
         
         {/* Overall Performance Score Card */}
         <div className="panel" style={{ flex: 1.8, padding: 'var(--spacing-section)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -139,10 +189,10 @@ export default function BranchPerformance() {
             <div>
               <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Overall Performance Score</span>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginTop: '6px' }}>
-                <strong style={{ fontSize: '36px', color: 'var(--text)', fontWeight: '800' }}>94.2</strong>
-                <span style={{ fontSize: '10px', fontWeight: '800', color: '#059669', background: '#ecfdf5', padding: '3px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>Excellent</span>
+                <strong style={{ fontSize: '36px', color: 'var(--text)', fontWeight: '800' }}>{currentData.score}</strong>
+                <span style={{ fontSize: '10px', fontWeight: '800', color: '#059669', background: '#ecfdf5', padding: '3px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>{currentData.status}</span>
               </div>
-              <span style={{ display: 'block', fontSize: '12px', color: '#10b981', fontWeight: '700', marginTop: '4px' }}>↗ +12.4% vs last month</span>
+              <span style={{ display: 'block', fontSize: '12px', color: currentData.trendColor, fontWeight: '700', marginTop: '4px' }}>{currentData.trend}</span>
             </div>
           </div>
 
@@ -155,9 +205,9 @@ export default function BranchPerformance() {
                   <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
-              <path d="M 0 90 C 100 80, 150 95, 200 65 C 250 35, 300 70, 350 45 C 400 20, 450 35, 500 15 L 500 120 L 0 120 Z" fill="url(#score-grad)" />
-              <path d="M 0 90 C 100 80, 150 95, 200 65 C 250 35, 300 70, 350 45 C 400 20, 450 35, 500 15" fill="none" stroke="#4f46e5" strokeWidth="2.5" />
-              <circle cx="500" cy="15" r="4" fill="#4f46e5" stroke="#fff" strokeWidth="2" />
+              <path d={`${currentData.path} L 500 120 L 0 120 Z`} fill="url(#score-grad)" />
+              <path d={currentData.path} fill="none" stroke="#4f46e5" strokeWidth="2.5" />
+              <circle cx="500" cy={currentData.pointY} r="4" fill="#4f46e5" stroke="#fff" strokeWidth="2" />
             </svg>
           </div>
         </div>
@@ -202,7 +252,7 @@ export default function BranchPerformance() {
 
       </div>
       {/* Middle Row (KPI Mini-Cards Grid) */}
-      <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', marginBottom: '24px', gap: '16px' }}>
+      <div className="perf-kpi-grid">
         
         {/* Best Services */}
         <div className="kpi-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '16px', minHeight: '120px', background: '#fff', border: '1.5px solid #25108f' }}>
@@ -283,8 +333,8 @@ export default function BranchPerformance() {
 
       </div>
       {/* Bottom Table Section (Operational Audit) */}
-      <section className="panel partner-directory-panel" style={{ padding: 'var(--spacing-section)', background: '#fff', border: '1px solid #d1d5db', borderRadius: '8px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+      <section className="panel partner-directory-panel" style={{ padding: 'var(--spacing-section)', background: '#fff', border: '1px solid #d1d5db', borderRadius: '8px', overflowX: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', minWidth: '600px' }}>
           <h2 style={{ fontSize: '15px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text)', margin: '0' }}>
             Operational Audit — Regional Branches
           </h2>

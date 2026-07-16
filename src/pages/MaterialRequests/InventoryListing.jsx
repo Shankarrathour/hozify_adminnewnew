@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import {
   SlidersHorizontal,
   Download,
@@ -275,6 +276,7 @@ export default function InventoryListing() {
                     gap: '6px'
                   }}
                   type="button"
+                  onClick={() => toast.success('CSV Export started.')}
                 >
                   <Download size={14} />
                   <span>Export CSV</span>
@@ -382,7 +384,7 @@ export default function InventoryListing() {
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }}>
                           {row.hasAlert && (
                             <button
-                              onClick={() => {}}
+                              onClick={() => toast.success('Reorder schedule opened.')}
                               style={{ background: '#e0e7ff', border: 'none', color: 'var(--primary)', borderRadius: '4px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                               title="Reorder Details"
                               type="button"
@@ -391,7 +393,7 @@ export default function InventoryListing() {
                             </button>
                           )}
                           <button
-                            onClick={() => {}}
+                            onClick={() => toast.success('Edit item modal opened.')}
                             style={{ background: 'transparent', border: 'none', color: '#7a7688', cursor: 'pointer', padding: '4px' }}
                             title="Edit"
                             type="button"

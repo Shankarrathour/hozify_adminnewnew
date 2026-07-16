@@ -21,10 +21,30 @@ export default function LeaveManagement() {
 
   const [isApplyModalOpen, setApplyModalOpen] = useState(false);
 
-  const executeStatusTrigger = (employeeId, name, nextStatus) => {
+  const executeStatusTrigger = (employeeId, name, action) => {
+    if (action === 'DELETE') {
+      setRequests(requests.filter(r => r.id !== employeeId));
+      addToast(`Success: Leave request for ${name} deleted.`, "success");
+      return;
+    }
+
+    let nextStatus = '';
+    let nextStatusClass = '';
+
+    if (action === 'APPROVE') {
+      nextStatus = 'Approved';
+      nextStatusClass = 'active';
+    } else if (action === 'REJECT') {
+      nextStatus = 'Rejected';
+      nextStatusClass = 'suspended';
+    } else if (action === 'PENDING') {
+      nextStatus = 'Pending';
+      nextStatusClass = 'pending';
+    }
+
     setRequests(requests.map(r => 
       r.id === employeeId 
-        ? { ...r, status: nextStatus, statusClass: nextStatus === 'ACTIVE' ? 'active' : 'suspended' } 
+        ? { ...r, status: nextStatus, statusClass: nextStatusClass } 
         : r
     ));
 
@@ -260,31 +280,31 @@ export default function LeaveManagement() {
                     }}>
                       {/* Action Buttons Panel */}
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                        {/* ACTIVATE */}
+                        {/* APPROVE */}
                         <button 
                           type="button"
-                          onClick={() => executeStatusTrigger(row.id, row.name, 'ACTIVE')}
-                          title="Set Active"
+                          onClick={() => executeStatusTrigger(row.id, row.name, 'APPROVE')}
+                          title="Approve Leave"
                           style={{ border: '1px solid #bbf7d0', background: '#f0fdf4', cursor: 'pointer', color: '#16a34a', padding: '6px', borderRadius: '6px', display: 'flex' }}
                         >
                           <CheckCircle2 size={15} strokeWidth={2.5} />
                         </button>
 
-                        {/* SUSPEND */}
+                        {/* PENDING */}
                         <button 
                           type="button"
-                          onClick={() => executeStatusTrigger(row.id, row.name, 'SUSPEND')}
-                          title="Suspend Session"
+                          onClick={() => executeStatusTrigger(row.id, row.name, 'PENDING')}
+                          title="Mark as Pending"
                           style={{ border: '1px solid #fed7aa', background: '#fff7ed', cursor: 'pointer', color: '#ea580c', padding: '6px', borderRadius: '6px', display: 'flex' }}
                         >
                           <ShieldAlert size={15} strokeWidth={2.5} />
                         </button>
 
-                        {/* BLOCK */}
+                        {/* REJECT */}
                         <button 
                           type="button"
-                          onClick={() => executeStatusTrigger(row.id, row.name, 'BLOCK')}
-                          title="Block Security Access"
+                          onClick={() => executeStatusTrigger(row.id, row.name, 'REJECT')}
+                          title="Reject Leave"
                           style={{ border: '1px solid #fecaca', background: '#fef2f2', cursor: 'pointer', color: '#dc2626', padding: '6px', borderRadius: '6px', display: 'flex' }}
                         >
                           <Ban size={15} strokeWidth={2.5} />
@@ -294,7 +314,7 @@ export default function LeaveManagement() {
                         <button 
                           type="button"
                           onClick={() => executeStatusTrigger(row.id, row.name, 'DELETE')}
-                          title="Purge Record"
+                          title="Delete Request"
                           style={{ border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', color: '#4b5563', padding: '6px', borderRadius: '6px', display: 'flex' }}
                         >
                           <Trash2 size={15} strokeWidth={2.5} />

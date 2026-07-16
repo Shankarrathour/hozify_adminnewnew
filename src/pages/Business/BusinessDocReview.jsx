@@ -349,19 +349,17 @@ export default function BusinessDocReview() {
 
         {/* Bottom Verification Actions bar */}
         <div style={{ 
-          position: 'fixed',
-          bottom: 0,
-          left: '260px', // Matches sidebar width
-          right: 0,
-          background: 'rgba(255, 255, 255, 0.9)',
-          backdropFilter: 'blur(8px)',
-          borderTop: '1px solid #e2e8f0',
-          padding: '16px 32px',
+          marginTop: '20px',
+          background: '#fff',
+          border: '1px solid #e2e8f0',
+          borderRadius: '12px',
+          padding: '16px 24px',
           display: 'flex',
+          flexWrap: 'wrap',
+          gap: '16px',
           justifyContent: 'space-between',
           alignItems: 'center',
-          zIndex: 900,
-          boxShadow: '0 -4px 6px -1px rgba(0, 0, 0, 0.05)'
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', color: '#64748b' }}>
             <AlertTriangle size={15} className="text-amber-500" />

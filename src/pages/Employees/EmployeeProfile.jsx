@@ -120,21 +120,21 @@ export default function EmployeeProfile({ employee, onBack }) {
           {/* Banner KPIs block */}
           <div style={{ display: 'flex', gap: '12px' }}>
             {/* Bookings */}
-            <div className="kpi-card" style={{ minWidth: '120px', minHeight: '80px', padding: '12px 16px', backgroundColor: '#4f46e5', color: '#fff', border: 'none' }}>
+            <div style={{ borderRadius: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: '120px', minHeight: '80px', padding: '12px 16px', backgroundColor: '#4f46e5', color: '#fff', border: 'none' }}>
               <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)', fontWeight: '800' }}>BOOKINGS</span>
               <strong style={{ display: 'block', fontSize: '20px', margin: '4px 0 2px' }}>142</strong>
               <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.9)' }}>+12% MoM</span>
             </div>
 
             {/* Revenue */}
-            <div className="kpi-card" style={{ minWidth: '120px', minHeight: '80px', padding: '12px 16px', backgroundColor: '#0f172a', color: '#fff', border: 'none' }}>
+            <div style={{ borderRadius: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: '120px', minHeight: '80px', padding: '12px 16px', backgroundColor: '#0f172a', color: '#fff', border: 'none' }}>
               <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)', fontWeight: '800' }}>REVENUE</span>
               <strong style={{ display: 'block', fontSize: '20px', margin: '4px 0 2px' }}>$12.4k</strong>
               <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.9)' }}>Active Target</span>
             </div>
 
             {/* Rating */}
-            <div className="kpi-card" style={{ minWidth: '120px', minHeight: '80px', padding: '12px 16px', backgroundColor: '#f8fafc', border: '1.5px solid #25108f' }}>
+            <div style={{ borderRadius: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: '120px', minHeight: '80px', padding: '12px 16px', backgroundColor: '#f8fafc', border: '1.5px solid #25108f' }}>
               <span style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: '800' }}>RATING</span>
               <strong style={{ display: 'block', fontSize: '20px', margin: '4px 0 2px', color: 'var(--text)' }}>4.9</strong>
               <div style={{ display: 'flex', gap: '2px' }}>
