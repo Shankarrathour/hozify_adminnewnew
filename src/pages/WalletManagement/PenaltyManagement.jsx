@@ -60,7 +60,6 @@ export default function PenaltyManagement() {
       activeTab="Wallet Management"
       brandText="HOZIFY Wallet"
       brandSubText="Global Ledger v1.2"
-      headerTitle="SLA & Penalties"
       searchPlaceholder="Search penalties..."
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)', padding: '24px 0' }}>

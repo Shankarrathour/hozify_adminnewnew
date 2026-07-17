@@ -1,6 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import ReactDOM from "react-dom";
 import AdminShell from "../../components/layouts/AdminShell";
 import { useToast } from "../../components/common/ToastNotification";
+import { DateRange } from "react-date-range";
+import "react-date-range/dist/styles.css";
+import "react-date-range/dist/theme/default.css";
+import { format } from "date-fns";
 
 export default function SettlementReport() {
   const settlementLogs = [
@@ -46,12 +51,60 @@ export default function SettlementReport() {
     },
   ];
 
-  // Logic Added:
   const { addToast } = useToast();
-  const [showCalendar, setShowCalendar] = useState(false);
+  
+  const [dateRange, setDateRange] = useState([
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: 'selection'
+    }
+  ]);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [calendarPos, setCalendarPos] = useState({ top: 0, left: 0 });
+  const datePickerRef = useRef(null);
+  
   const [showFilter, setShowFilter] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("ALL");
-  const [selectedDate, setSelectedDate] = useState("Last 30 Days");
+  const filterRef = useRef(null);
+
+  const handleDateTriggerClick = useCallback(() => {
+    if (datePickerRef.current) {
+      const rect = datePickerRef.current.getBoundingClientRect();
+      setCalendarPos({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX - 250
+      });
+    }
+    setShowDatePicker(prev => !prev);
+  }, []);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (showDatePicker) {
+        if (datePickerRef.current && datePickerRef.current.contains(e.target)) return;
+        const portal = document.getElementById('settlement-date-portal');
+        if (portal && portal.contains(e.target)) return;
+        setShowDatePicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showDatePicker]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (showFilter && filterRef.current && !filterRef.current.contains(e.target)) {
+        setShowFilter(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showFilter]);
+
+  const selectedDateLabel = dateRange[0].startDate.getTime() === dateRange[0].endDate.getTime()
+    ? format(dateRange[0].startDate, 'MMM d, yyyy')
+    : `${format(dateRange[0].startDate, 'MMM d, yyyy')} - ${format(dateRange[0].endDate, 'MMM d, yyyy')}`;
 
   const filteredLogs = settlementLogs.filter((log) => {
     return selectedStatus === "ALL" ? true : log.status === selectedStatus;
@@ -70,38 +123,39 @@ export default function SettlementReport() {
           
           <div className="flex items-center gap-2 relative">
             <button 
-              onClick={() => setShowCalendar(!showCalendar)}
+              ref={datePickerRef}
+              onClick={handleDateTriggerClick}
               className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold border border-gray-200 bg-white rounded text-slate-600 hover:bg-gray-50 shadow-sm"
             >
               <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              {selectedDate}
+              {selectedDateLabel}
             </button>
-            {showCalendar && (
-              <div className="absolute top-10 right-28 bg-white border shadow-lg p-4 rounded-lg z-10 w-48 text-xs">
-                <p className="font-bold mb-2">Select Date Range</p>
-                {["Last 7 Days", "Last 30 Days", "This Month"].map(d => (
-                  <div key={d} className="cursor-pointer py-1 hover:text-blue-600" onClick={() => {setSelectedDate(d); setShowCalendar(false);}}>{d}</div>
-                ))}
-              </div>
-            )}
-            <button 
-              onClick={() => setShowFilter(!showFilter)}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold border border-gray-200 bg-white rounded text-slate-600 hover:bg-gray-50 shadow-sm"
-            >
-              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              Filters
-            </button>
-            {showFilter && (
-              <div className="absolute top-10 right-0 bg-white border shadow-lg p-4 rounded-lg z-10 w-32 text-xs">
-                {["ALL", "SUCCESS", "PENDING", "FAILED"].map(status => (
-                  <div key={status} className="cursor-pointer py-1 hover:text-blue-600" onClick={() => {setSelectedStatus(status); setShowFilter(false);}}>{status}</div>
-                ))}
-              </div>
-            )}
+            <div className="relative" ref={filterRef}>
+              <button 
+                onClick={() => setShowFilter(!showFilter)}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold border border-gray-200 bg-white rounded text-slate-600 hover:bg-gray-50 shadow-sm"
+              >
+                <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                Filter: {selectedStatus}
+              </button>
+              {showFilter && (
+                <div className="absolute top-10 right-0 bg-white border border-gray-200 shadow-xl p-2 rounded-lg z-50 w-36 text-xs text-slate-700">
+                  {["ALL", "SUCCESS", "PENDING", "FAILED"].map(status => (
+                    <div 
+                      key={status} 
+                      className={`cursor-pointer py-1.5 px-3 rounded-md transition-colors ${selectedStatus === status ? "bg-[#1a165a] text-white font-bold" : "hover:bg-gray-100 font-semibold"}`} 
+                      onClick={() => {setSelectedStatus(status); setShowFilter(false);}}
+                    >
+                      {status}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -217,7 +271,7 @@ export default function SettlementReport() {
 
           <div className="overflow-x-auto">
             <div className="table-responsive-wrapper">
-<table className="w-full text-left border-collapse text-xs">
+              <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-[#f8fafd] text-gray-400 uppercase text-[10px] font-bold tracking-wider border-b border-gray-200">
                   <th className="p-4 pl-6 font-semibold">Settlement ID</th>
@@ -252,7 +306,7 @@ export default function SettlementReport() {
                 ))}
               </tbody>
             </table>
-</div>
+            </div>
           </div>
 
           <div className="flex justify-between items-center px-6 py-4 border-t border-gray-100 text-xs text-gray-400 font-medium">
@@ -265,6 +319,49 @@ export default function SettlementReport() {
         </div>
 
       </div>
+      
+      {/* DateRange Portal */}
+      {showDatePicker && ReactDOM.createPortal(
+        <div
+          id="settlement-date-portal"
+          style={{
+            position: 'fixed',
+            top: calendarPos.top,
+            left: Math.max(10, calendarPos.left),
+            zIndex: 99999,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            background: '#fff',
+            border: '1.5px solid #e5e7eb'
+          }}
+        >
+          <DateRange
+            editableDateInputs={true}
+            onChange={item => setDateRange([item.selection])}
+            moveRangeOnFirstSelection={false}
+            ranges={dateRange}
+            rangeColors={['#1a165a']}
+          />
+          <div style={{ padding: '12px 16px', borderTop: '1px solid #eee', background: '#f9f9f9', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <button
+              onClick={() => setShowDatePicker(false)}
+              style={{ padding: '6px 14px', background: '#fff', color: '#1a165a', border: '1.5px solid #1a165a', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '700' }}
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => setShowDatePicker(false)}
+              style={{ padding: '6px 16px', background: '#1a165a', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '700' }}
+              type="button"
+            >
+              Apply Range
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
     </AdminShell>
   );
 }

@@ -162,29 +162,54 @@ function Dashboard({ nav, setModal, toast }) {
 }
 
 function BankAccountListing({ nav, setModal, toast }) {
+  const [userType, setUserType] = useState('All Types');
+  const [verificationStatus, setVerificationStatus] = useState('All Statuses');
+  const [bankName, setBankName] = useState('All Banks');
+
+  const filteredAccounts = bankAccounts.filter(a => {
+    const matchesUser = userType === 'All Types' || a.type === userType;
+    const matchesStatus = verificationStatus === 'All Statuses' || a.verification === verificationStatus;
+    const matchesBank = bankName === 'All Banks' || a.bank === bankName;
+    return matchesUser && matchesStatus && matchesBank;
+  });
+
+  const handleClearAll = () => {
+    setUserType('All Types');
+    setVerificationStatus('All Statuses');
+    setBankName('All Banks');
+    toast('Filters cleared.');
+  };
+
   return (
     <>
       <div className="banking-filter-panel" style={{ position: 'relative', zIndex: 20 }}>
         <label>User Type
           <Select
+            value={userType}
+            onChange={(e) => setUserType(e.target.value)}
             options={[
               { label: "All Types", value: "All Types" },
               { label: "Partner", value: "Partner" },
               { label: "Customer", value: "Customer" },
-              { label: "Employee", value: "Employee" }
+              { label: "Employee", value: "Employee" },
+              { label: "Seller", value: "Seller" }
             ]} />
         </label>
         <label>Verification Status
           <Select
+            value={verificationStatus}
+            onChange={(e) => setVerificationStatus(e.target.value)}
             options={[
               { label: "All Statuses", value: "All Statuses" },
               { label: "Verified", value: "Verified" },
-              { label: "Pending", value: "Pending" },
+              { label: "PENDING", value: "Pending" },
               { label: "Failed", value: "Failed" }
             ]} />
         </label>
         <label>Bank Name
           <Select
+            value={bankName}
+            onChange={(e) => setBankName(e.target.value)}
             options={[
               { label: "All Banks", value: "All Banks" },
               { label: "HDFC Bank", value: "HDFC Bank" },
@@ -193,7 +218,7 @@ function BankAccountListing({ nav, setModal, toast }) {
               { label: "Axis Bank", value: "Axis Bank" }
             ]} />
         </label>
-        <button type="button" onClick={() => toast('Filters cleared.')}>Clear All</button>
+        <button type="button" onClick={handleClearAll}>Clear All</button>
       </div>
       <Table cols={[
         { key: 'holder', label: 'Account Holder', render: (a) => <div className="banking-entity"><span>{a.holder.slice(0, 2).toUpperCase()}</span><div><b>{a.holder}</b><small>{a.type}</small></div></div> },
@@ -202,7 +227,7 @@ function BankAccountListing({ nav, setModal, toast }) {
         { key: 'verification', label: 'Verification', render: (a) => <Badge status={a.verification}>{a.verification}</Badge> },
         { key: 'wallet', label: 'Linked Wallet' },
         { key: 'status', label: 'Status', render: (a) => <Badge status={a.status}>{a.status}</Badge> }
-      ]} rows={bankAccounts} actions={(a) => <><button type="button" onClick={() => nav(ROUTES.bankAccountDetails)}><Eye size={16} /></button><button type="button" onClick={() => nav(ROUTES.bankVerificationDetail)}><ShieldCheck size={16} /></button><button type="button" onClick={() => setModal(['Disable account', `Disable ${a.holder}? Add a finance note before continuing.`, () => toast(`Account for ${a.holder} disabled.`)])}><XCircle size={16} /></button></>} />
+      ]} rows={filteredAccounts} actions={(a) => <><button type="button" onClick={() => nav(ROUTES.bankAccountDetails)}><Eye size={16} /></button><button type="button" onClick={() => nav(ROUTES.bankVerificationDetail)}><ShieldCheck size={16} /></button><button type="button" onClick={() => setModal(['Disable account', `Disable ${a.holder}? Add a finance note before continuing.`, () => toast(`Account for ${a.holder} disabled.`)])}><XCircle size={16} /></button></>} />
       <section className="banking-kpi-grid three"><Kpi label="Pending Verifications" value="12" note="+4 since last 24h" /><Kpi label="Active Accounts" value="218" note="92% of total registered" /><Kpi label="Internal Audit Status" value="Healthy" note="Next audit in 14 days" /></section>
     </>
   );

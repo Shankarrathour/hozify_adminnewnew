@@ -36,7 +36,6 @@ export default function FinancialReconciliation() {
       activeTab="Wallet Management"
       brandText="HOZIFY Wallet"
       brandSubText="Global Ledger v1.2"
-      headerTitle="Financial Reconciliation"
       searchPlaceholder="Search reconciliations..."
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)', padding: '24px 0' }}>

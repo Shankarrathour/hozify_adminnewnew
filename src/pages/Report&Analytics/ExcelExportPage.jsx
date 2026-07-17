@@ -35,21 +35,19 @@ export default function ExcelExportPage() {
           </div>
           
           {/* Filter Bar Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-end gap-3 mt-4 lg:mt-0">
             
             {/* Date Picker Filter with Integrated More Filters Icon (🎛️) */}
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-gray-400 mb-1">Select Date</span>
-              <div className="flex items-center gap-1.5">
-                <div className="relative flex items-center bg-white border border-gray-200 rounded shadow-sm px-2.5 py-1.5 focus-within:border-indigo-500">
-                  <span className="text-xs mr-1 pointer-events-none">📅</span>
-                  <input 
-                    type="date" 
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="bg-transparent text-xs font-bold text-slate-700 focus:outline-none cursor-pointer"
-                  />
-                </div>
+              <div className="relative flex items-center bg-white border border-gray-200 rounded shadow-sm px-3 py-[7px] focus-within:border-indigo-500">
+                <span className="text-xs mr-2 pointer-events-none">📅</span>
+                <input 
+                  type="date" 
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="bg-transparent text-xs font-bold text-slate-700 focus:outline-none cursor-pointer w-[110px]"
+                />
               </div>
             </div>
 
@@ -57,7 +55,7 @@ export default function ExcelExportPage() {
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-gray-400 mb-1">Data Type</span>
               <Select
-                className="px-3 py-1.5 bg-white border border-gray-200 rounded text-xs font-bold text-slate-700 shadow-sm focus:outline-none focus:border-indigo-500 min-w-[120px] h-[28px]"
+                className="px-3 py-[7px] bg-white border border-gray-200 rounded text-xs font-bold text-slate-700 shadow-sm focus:outline-none focus:border-indigo-500 min-w-[130px]"
                 options={[{
                   label: "All Types",
                   value: "All Types"

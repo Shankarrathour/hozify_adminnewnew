@@ -30,6 +30,20 @@ export default function ConsumptionTracking() {
   const { navigate } = useApp();
   const { addToast } = useToast();
   const [velocityFrame, setVelocityFrame] = useState('Last 14 Days');
+
+  const chartPaths = {
+    'Last 14 Days': {
+      area: 'M 0 130 Q 80 110, 150 120 T 300 70 T 420 110 T 500 80 L 500 150 L 0 150 Z',
+      line: 'M 0 130 Q 80 110, 150 120 T 300 70 T 420 110 T 500 80',
+      dots: [{x: 150, y: 120}, {x: 300, y: 70}, {x: 420, y: 110}]
+    },
+    'Last 30 Days': {
+      area: 'M 0 100 Q 80 140, 150 90 T 250 120 T 380 60 T 500 40 L 500 150 L 0 150 Z',
+      line: 'M 0 100 Q 80 140, 150 90 T 250 120 T 380 60 T 500 40',
+      dots: [{x: 150, y: 90}, {x: 250, y: 120}, {x: 380, y: 60}]
+    }
+  };
+  const currentChart = chartPaths[velocityFrame] || chartPaths['Last 14 Days'];
   const [activeView, setActiveView] = useState('Table'); // Table or Analytics
   const [showSuccessToast, setShowSuccessToast] = useState(true);
 
@@ -240,7 +254,8 @@ export default function ConsumptionTracking() {
             </div>
           </div>
 
-          <div style={{ overflowX: 'auto' }}>
+          {activeView === 'Table' ? (
+            <div style={{ overflowX: 'auto' }}>
             <div className="table-responsive-wrapper">
 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
               <thead>
@@ -421,6 +436,13 @@ export default function ConsumptionTracking() {
             </table>
 </div>
           </div>
+          ) : (
+            <div style={{ padding: '60px 20px', textAlign: 'center', color: '#7a7688' }}>
+              <BarChart3 size={48} style={{ margin: '0 auto', color: '#cbd5e1' }} />
+              <p style={{ marginTop: '16px', fontSize: '15px', fontWeight: '700', color: '#1c2536' }}>Detailed Analytics View</p>
+              <p style={{ fontSize: '13px', marginTop: '6px' }}>Consumption trends and variance analysis will be visualized here.</p>
+            </div>
+          )}
 
           <div style={{ marginTop: '16px' }}>
             <span 
@@ -466,7 +488,7 @@ export default function ConsumptionTracking() {
                     label: "Last 30 Days",
                     value: "Last 30 Days"
                   }]} />
-                <ChevronDown size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#565365' }} />
+
               </div>
             </div>
 
@@ -484,12 +506,12 @@ export default function ConsumptionTracking() {
                 <line x1="0" y1="120" x2="500" y2="120" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="3,3" />
                 
                 {/* Dotted path and circles */}
-                <path d="M 0 130 Q 80 110, 150 120 T 300 70 T 420 110 T 500 80 L 500 150 L 0 150 Z" fill="url(#area-grad)" />
-                <path d="M 0 130 Q 80 110, 150 120 T 300 70 T 420 110 T 500 80" fill="none" stroke="#25108f" strokeWidth="2.5" />
+                <path d={currentChart.area} fill="url(#area-grad)" style={{ transition: 'd 0.5s ease' }} />
+                <path d={currentChart.line} fill="none" stroke="#25108f" strokeWidth="2.5" style={{ transition: 'd 0.5s ease' }} />
                 
-                <circle cx="150" cy="120" r="3.5" fill="#25108f" stroke="#ffffff" strokeWidth="1" />
-                <circle cx="300" cy="70" r="3.5" fill="#25108f" stroke="#ffffff" strokeWidth="1" />
-                <circle cx="420" cy="110" r="3.5" fill="#25108f" stroke="#ffffff" strokeWidth="1" />
+                {currentChart.dots.map((dot, idx) => (
+                  <circle key={idx} cx={dot.x} cy={dot.y} r="3.5" fill="#25108f" stroke="#ffffff" strokeWidth="1" style={{ transition: 'cx 0.5s ease, cy 0.5s ease' }} />
+                ))}
               </svg>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AdminShell from "../../components/layouts/AdminShell";
 import { Download, Plus, SlidersHorizontal, ChevronDown, Check, CheckCircle2, XCircle, Trash2, Filter, ShieldAlert } from "lucide-react";
+import toast from "react-hot-toast";
 
 import Select from "../../components/ui/Select";
 
@@ -108,8 +109,11 @@ export default function UserReviews() {
   // --- Rule Formulation Trigger ---
   const handleRuleSubmission = (e) => {
     e.preventDefault();
-    if(!ruleMeta.name.trim()) return alert("Please specify target rule constraints mapping parameter index.");
-    alert(`Success! Security core compiled operational rule blueprint: [${ruleMeta.name}]`);
+    if(!ruleMeta.name.trim()) {
+      toast.error("Please specify target rule constraints mapping parameter index.");
+      return;
+    }
+    toast.success(`Success! Security core compiled operational rule blueprint: [${ruleMeta.name}]`);
     setRuleMeta({ name: "", condition: "Auto-Flag Inappropriate" });
     setShowNewRuleForm(false);
   };

@@ -32,7 +32,6 @@ export default function TransactionDetail() {
       activeTab="Wallet Management"
       brandText="HOZIFY Wallet"
       brandSubText="Global Ledger v1.2"
-      headerTitle="Transaction Details"
       searchPlaceholder="Search ledger..."
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)', padding: '24px 0' }}>

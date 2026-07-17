@@ -28,7 +28,6 @@ export default function WalletDetails() {
       activeTab="Wallet Management"
       brandText="HOZIFY Wallet"
       brandSubText="Global Ledger v1.2"
-      headerTitle="Wallet Details"
       searchPlaceholder="Search wallet history..."
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)', padding: '24px 0' }}>

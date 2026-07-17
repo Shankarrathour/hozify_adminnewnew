@@ -328,7 +328,7 @@ export default function NotificationReports({ activeTab = 'Notification Center' 
                         label: "Apple APNs (iOS Push)",
                         value: "Apple APNs"
                       }]} />
-                    <ChevronDown size={14} style={{ position: 'absolute', right: '12px', top: '12px', color: 'var(--muted)', pointerEvents: 'none' }} />
+
                   </div>
                 </div>
 

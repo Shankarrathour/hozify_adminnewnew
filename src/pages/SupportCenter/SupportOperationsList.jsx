@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import {
   Calendar,
   Filter,
@@ -17,8 +18,12 @@ import {
 import { useApp } from '../../hooks/useApp';
 import { ROUTES } from '../../config/routes';
 import AdminShell from '../../components/layouts/AdminShell';
-
 import Select from "../../components/ui/Select";
+
+import { DateRange } from 'react-date-range';
+import 'react-date-range/dist/styles.css'; 
+import 'react-date-range/dist/theme/default.css';
+import { format } from 'date-fns';
 
 export default function SupportOperationsList({ activeTab = 'Support Center', defaultFilter = 'all' }) {
   const { navigate } = useApp();
@@ -78,12 +83,49 @@ export default function SupportOperationsList({ activeTab = 'Support Center', de
   const [selectedPriority, setSelectedPriority] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedAgent, setSelectedAgent] = useState('All');
-  const [dateRange, setDateRange] = useState('Oct 1, 2023 - Oct 31, 2023');
+  
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [calendarPos, setCalendarPos] = useState({ top: 0, left: 0 });
+  const datePickerRef = useRef(null);
+  const [dateRange, setDateRange] = useState([
+    {
+      startDate: new Date(2023, 9, 1),
+      endDate: new Date(2023, 9, 31),
+      key: 'selection'
+    }
+  ]);
+
+  const handleDateTriggerClick = useCallback(() => {
+    if (datePickerRef.current) {
+      const rect = datePickerRef.current.getBoundingClientRect();
+      setCalendarPos({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX
+      });
+    }
+    setShowDatePicker(prev => !prev);
+  }, []);
+
+  // Close calendar when clicking outside
+  useEffect(() => {
+    if (!showDatePicker) return;
+    const handler = (e) => {
+      if (datePickerRef.current && datePickerRef.current.contains(e.target)) return;
+      // if click is inside the portal calendar, don't close
+      const portal = document.getElementById('date-range-portal');
+      if (portal && portal.contains(e.target)) return;
+      setShowDatePicker(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showDatePicker]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [activeMenuId, setActiveMenuId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
-  // Initial mockup ticket data from screenshots
-  const [tickets, setTickets] = useState([
+  const baseTickets = [
     {
       id: '#TK-8842',
       user: { name: 'Jared Smith', email: 'jared.s@gmail.com', initials: 'JS', color: '#3b82f6', bg: '#eff6ff' },
@@ -156,7 +198,29 @@ export default function SupportOperationsList({ activeTab = 'Support Center', de
       agent: { name: 'Sarah J.', initials: 'SJ', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&fit=crop&q=80' },
       createdDate: 'Oct 14, 04:15 PM'
     }
-  ]);
+  ];
+
+  const [tickets, setTickets] = useState(() => {
+    let arr = [];
+    // Generate enough tickets for pagination and variety
+    for (let i = 0; i < 20; i++) {
+      arr = arr.concat(baseTickets.map((t, idx) => {
+        // Vary status and priority to make sure filters find something
+        let status = t.status;
+        let priority = t.priority;
+        if (i % 3 === 0) status = 'IN PROGRESS';
+        if (i % 4 === 0) priority = 'Critical';
+        
+        return {
+          ...t,
+          id: `#TK-${parseInt(t.id.split('-')[1]) + i * 100 + idx}`,
+          status,
+          priority
+        };
+      }));
+    }
+    return arr;
+  });
 
   // Synchronise or add dynamic ticket if added from supportCreate
   useEffect(() => {
@@ -183,7 +247,13 @@ export default function SupportOperationsList({ activeTab = 'Support Center', de
     setSelectedCategory('All');
     setSelectedAgent('All');
     setSearchQuery('');
-    setDateRange('Oct 1, 2023 - Oct 31, 2023');
+    setDateRange([
+      {
+        startDate: new Date(2023, 9, 1),
+        endDate: new Date(2023, 9, 31),
+        key: 'selection'
+      }
+    ]);
   };
 
   const handleActionClick = (ticketId, action) => {
@@ -253,6 +323,14 @@ export default function SupportOperationsList({ activeTab = 'Support Center', de
 
     return true;
   });
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedPriority, selectedCategory, selectedAgent, searchQuery, defaultFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredTickets.length / itemsPerPage));
+  const paginatedTickets = filteredTickets.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <AdminShell
@@ -324,20 +402,20 @@ export default function SupportOperationsList({ activeTab = 'Support Center', de
         </div>
 
         {/* Filter Card Grid */}
-        <div className="panel" style={{ padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', alignItems: 'center', background: '#fff' }}>
+        <div className="panel" style={{ padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', alignItems: 'center', background: '#fff', position: 'relative', zIndex: 20 }}>
           
           {/* Date Range */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', position: 'relative' }}>
             <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--muted)' }}>Date Range</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1.5px solid #25108f', padding: '8px 12px', borderRadius: '6px', background: '#fff' }}>
+            <div 
+              ref={datePickerRef}
+              onClick={handleDateTriggerClick}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1.5px solid #25108f', padding: '8px 12px', borderRadius: '6px', background: '#fff', cursor: 'pointer' }}
+            >
               <Calendar size={14} style={{ color: 'var(--muted)' }} />
-              <input
-                type="text"
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-                style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '13px', color: 'var(--text)', width: '100%', fontWeight: '600' }}
-                aria-label="Filter Date Range"
-              />
+              <span style={{ fontSize: '13px', color: 'var(--text)', fontWeight: '600' }}>
+                {format(dateRange[0].startDate, 'MMM d, yyyy')} - {format(dateRange[0].endDate, 'MMM d, yyyy')}
+              </span>
             </div>
           </div>
 
@@ -458,14 +536,14 @@ export default function SupportOperationsList({ activeTab = 'Support Center', de
                 </tr>
               </thead>
               <tbody>
-                {filteredTickets.length === 0 ? (
+                {paginatedTickets.length === 0 ? (
                   <tr>
                     <td colSpan={9} style={{ padding: '48px', textAlign: 'center', color: 'var(--muted)' }}>
                       No support tickets found matching the search criteria or filters.
                     </td>
                   </tr>
                 ) : (
-                  filteredTickets.map((tk) => (
+                  paginatedTickets.map((tk) => (
                     <tr key={tk.id} style={{ borderBottom: '1px solid var(--lavender)', position: 'relative' }}>
                       <td style={{ padding: '16px 20px' }}>
                         <input type="checkbox" aria-label={`Select ticket ${tk.id}`} />
@@ -672,29 +750,51 @@ export default function SupportOperationsList({ activeTab = 'Support Center', de
             gap: '12px'
           }}>
             <span style={{ fontSize: '12.5px', color: 'var(--muted)', fontWeight: '600' }}>
-              Showing {filteredTickets.length} of 2,482 results
+              Showing {filteredTickets.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredTickets.length)} of {filteredTickets.length} results
             </span>
 
             <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-              <button style={{ height: '28px', width: '28px', borderRadius: '4px', border: '1.5px solid #25108f', background: '#fff', display: 'flex', alignItems: 'center', justifyCenter: 'center', cursor: 'pointer', color: 'var(--muted)' }} disabled aria-label="Previous page">
+              <button 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                style={{ height: '28px', width: '28px', borderRadius: '4px', border: '1.5px solid #25108f', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', color: 'var(--muted)', opacity: currentPage === 1 ? 0.5 : 1 }} 
+                aria-label="Previous page">
                 <ChevronLeft size={14} style={{ margin: 'auto' }} />
               </button>
               
-              <button style={{ height: '28px', width: '28px', borderRadius: '4px', border: 'none', background: 'var(--primary)', color: '#fff', fontSize: '12.5px', fontWeight: '800', cursor: 'pointer' }}>
-                1
-              </button>
-              <button style={{ height: '28px', width: '28px', borderRadius: '4px', border: '1.5px solid #25108f', background: '#fff', color: 'var(--muted)', fontSize: '12.5px', fontWeight: '750', cursor: 'pointer' }}>
-                2
-              </button>
-              <button style={{ height: '28px', width: '28px', borderRadius: '4px', border: '1.5px solid #25108f', background: '#fff', color: 'var(--muted)', fontSize: '12.5px', fontWeight: '750', cursor: 'pointer' }}>
-                3
-              </button>
-              <span style={{ fontSize: '12.5px', color: 'var(--muted)', padding: '0 4px' }}>...</span>
-              <button style={{ height: '28px', width: '28px', borderRadius: '4px', border: '1.5px solid #25108f', background: '#fff', color: 'var(--muted)', fontSize: '12.5px', fontWeight: '750', cursor: 'pointer' }}>
-                124
-              </button>
+              {Array.from({ length: Math.min(5, totalPages) }).map((_, idx) => {
+                let pageNum = currentPage;
+                if (totalPages <= 5) pageNum = idx + 1;
+                else if (currentPage <= 3) pageNum = idx + 1;
+                else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + idx;
+                else pageNum = currentPage - 2 + idx;
 
-              <button style={{ height: '28px', width: '28px', borderRadius: '4px', border: '1.5px solid #25108f', background: '#fff', display: 'flex', alignItems: 'center', justifyCenter: 'center', cursor: 'pointer', color: 'var(--muted)' }} aria-label="Next page">
+                return (
+                  <button 
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    style={{ height: '28px', minWidth: '28px', padding: '0 8px', borderRadius: '4px', border: pageNum === currentPage ? 'none' : '1.5px solid #25108f', background: pageNum === currentPage ? 'var(--primary)' : '#fff', color: pageNum === currentPage ? '#fff' : 'var(--muted)', fontSize: '12.5px', fontWeight: pageNum === currentPage ? '800' : '750', cursor: 'pointer' }}>
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              {totalPages > 5 && currentPage < totalPages - 2 && (
+                <>
+                  <span style={{ fontSize: '12.5px', color: 'var(--muted)', padding: '0 4px' }}>...</span>
+                  <button 
+                    onClick={() => setCurrentPage(totalPages)}
+                    style={{ height: '28px', minWidth: '28px', padding: '0 8px', borderRadius: '4px', border: '1.5px solid #25108f', background: '#fff', color: 'var(--muted)', fontSize: '12.5px', fontWeight: '750', cursor: 'pointer' }}>
+                    {totalPages}
+                  </button>
+                </>
+              )}
+
+              <button 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                style={{ height: '28px', width: '28px', borderRadius: '4px', border: '1.5px solid #25108f', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', color: 'var(--muted)', opacity: currentPage === totalPages ? 0.5 : 1 }} 
+                aria-label="Next page">
                 <ChevronRight size={14} style={{ margin: 'auto' }} />
               </button>
             </div>
@@ -702,6 +802,49 @@ export default function SupportOperationsList({ activeTab = 'Support Center', de
         </div>
 
       </div>
+
+      {/* Calendar Portal — renders outside all overflow:hidden containers */}
+      {showDatePicker && ReactDOM.createPortal(
+        <div
+          id="date-range-portal"
+          style={{
+            position: 'fixed',
+            top: calendarPos.top,
+            left: calendarPos.left,
+            zIndex: 99999,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            background: '#fff',
+            border: '1.5px solid #e5e7eb'
+          }}
+        >
+          <DateRange
+            editableDateInputs={true}
+            onChange={item => setDateRange([item.selection])}
+            moveRangeOnFirstSelection={false}
+            ranges={dateRange}
+            rangeColors={['#25108f']}
+          />
+          <div style={{ padding: '12px 16px', borderTop: '1px solid #eee', textAlign: 'right', background: '#f9f9f9', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <button
+              onClick={() => setShowDatePicker(false)}
+              style={{ padding: '6px 14px', background: '#fff', color: '#25108f', border: '1.5px solid #25108f', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '700' }}
+              type="button"
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={() => setShowDatePicker(false)}
+              style={{ padding: '6px 16px', background: '#25108f', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '700' }}
+              type="button"
+            >
+              Apply Range
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
     </AdminShell>
   );
 }

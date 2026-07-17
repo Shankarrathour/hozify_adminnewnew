@@ -32,7 +32,6 @@ export default function FrozenWalletListing() {
       activeTab="Wallet Management"
       brandText="HOZIFY Wallet"
       brandSubText="Global Ledger v1.2"
-      headerTitle="Risk Control"
       searchPlaceholder="Search frozen wallets..."
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)', padding: '24px 0' }}>

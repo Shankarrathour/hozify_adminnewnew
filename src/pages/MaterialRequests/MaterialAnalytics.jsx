@@ -80,7 +80,7 @@ export default function MaterialAnalytics() {
                   label: "Last Year",
                   value: "Last Year"
                 }]} />
-              <ChevronDown size={15} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#565365' }} />
+
             </div>
             <button
               onClick={handleExportReport}

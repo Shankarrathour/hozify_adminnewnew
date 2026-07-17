@@ -66,7 +66,7 @@ export default function BackupManagement() {
                       label: "Azure Blob Storage",
                       value: "Azure Blob Storage"
                     }]} />
-                  <ChevronDown size={14} color="#64748b" style={{ position: 'absolute', right: '12px', top: '13px', pointerEvents: 'none' }} />
+
                 </div>
               </div>
 

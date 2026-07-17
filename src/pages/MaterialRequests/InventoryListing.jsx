@@ -199,7 +199,7 @@ export default function InventoryListing() {
                       label: "HVAC Components",
                       value: "HVAC Components"
                     }]} />
-                  <ChevronDown size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#565365' }} />
+
                 </div>
               </div>
 

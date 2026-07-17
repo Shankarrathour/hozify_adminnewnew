@@ -600,7 +600,7 @@ export default function MaterialReturns() {
                           label: "Defective",
                           value: "Defective"
                         }]} />
-                      <ChevronDown size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#565365' }} />
+
                     </div>
                   </div>
                 </div>

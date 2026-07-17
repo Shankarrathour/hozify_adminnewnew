@@ -38,7 +38,7 @@ function ModalWrapper({ isOpen, onClose, children }) {
 }
 
 // 1. Add / Edit Form Modal with Full Validations
-export function AddEditModal({ isOpen, onClose, title, fields = [], initialValues = {}, onSave }) {
+export function AddEditModal({ isOpen, onClose, title, fields = [], initialValues, onSave }) {
   const [values, setValues] = useState({});
   const [errors, setErrors] = useState({});
 

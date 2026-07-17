@@ -101,7 +101,7 @@ export default function GlobalDashboardFilters({ onFilterChange }) {
             label: "Hyderabad",
             value: "Hyderabad"
           }]} />
-        <ChevronDown size={14} style={iconStyle} />
+
       </div>
       <div style={wrapperStyle}>
         <Building size={14} style={leftIconStyle} />
@@ -122,7 +122,7 @@ export default function GlobalDashboardFilters({ onFilterChange }) {
             label: "District 3",
             value: "District 3"
           }]} />
-        <ChevronDown size={14} style={iconStyle} />
+
       </div>
       <div style={wrapperStyle}>
         <Wrench size={14} style={leftIconStyle} />
@@ -146,7 +146,7 @@ export default function GlobalDashboardFilters({ onFilterChange }) {
             label: "Painting",
             value: "Painting"
           }]} />
-        <ChevronDown size={14} style={iconStyle} />
+
       </div>
       <div style={wrapperStyle}>
         <Users size={14} style={leftIconStyle} />
@@ -164,7 +164,7 @@ export default function GlobalDashboardFilters({ onFilterChange }) {
             label: "Partner B",
             value: "Partner B"
           }]} />
-        <ChevronDown size={14} style={iconStyle} />
+
       </div>
       <div style={wrapperStyle}>
         <Calendar size={14} style={leftIconStyle} />
@@ -178,7 +178,7 @@ export default function GlobalDashboardFilters({ onFilterChange }) {
             { label: "Monthly", value: "Monthly" },
             { label: "Yearly", value: "Yearly" }
           ]} />
-        <ChevronDown size={14} style={iconStyle} />
+
       </div>
     </div>
   );

@@ -126,7 +126,7 @@ export default function WalletSettings() {
                         label: "Monthly",
                         value: "Monthly"
                       }]} />
-                    <ChevronDown size={14} color="#64748b" style={{ position: 'absolute', right: '12px', top: '13px', pointerEvents: 'none' }} />
+
                   </div>
                 </div>
                 <div>
@@ -144,7 +144,7 @@ export default function WalletSettings() {
                         label: "GBP - British Pound",
                         value: "GBP - British Pound"
                       }]} />
-                    <ChevronDown size={14} color="#64748b" style={{ position: 'absolute', right: '12px', top: '13px', pointerEvents: 'none' }} />
+
                   </div>
                 </div>
               </div>

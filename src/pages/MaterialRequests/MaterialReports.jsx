@@ -103,7 +103,7 @@ export default function MaterialReports() {
                     label: "South Hub",
                     value: "South Hub"
                   }]} />
-                <ChevronDown size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#565365' }} />
+
               </div>
             </div>
 
@@ -134,7 +134,7 @@ export default function MaterialReports() {
                     label: "Last 90 Days",
                     value: "Last 90 Days"
                   }]} />
-                <ChevronDown size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#565365' }} />
+
               </div>
             </div>
 

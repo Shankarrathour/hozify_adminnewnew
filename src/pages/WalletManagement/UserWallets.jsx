@@ -91,7 +91,6 @@ export default function UserWallets() {
       activeTab="Wallet Management"
       brandText="HOZIFY Wallet"
       brandSubText="Global Ledger v1.2"
-      headerTitle="User Wallets"
       searchPlaceholder="Search user wallets..."
     >
       <div style={{ padding: 'var(--spacing-page) 0', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)' }}>

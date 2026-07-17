@@ -16,7 +16,14 @@ const INITIAL_SECTIONS = [
 ];
 
 export default function HomeBuilderPage() {
-  const [sections, setSections] = useState(INITIAL_SECTIONS);
+  const [sections, setSections] = useState(() => {
+    try {
+      const saved = localStorage.getItem('homeBuilderSections');
+      return saved ? JSON.parse(saved) : INITIAL_SECTIONS;
+    } catch (e) {
+      return INITIAL_SECTIONS;
+    }
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   const [sectionToDelete, setSectionToDelete] = useState(null);
@@ -73,6 +80,11 @@ export default function HomeBuilderPage() {
   };
 
   const handlePublish = () => {
+    try {
+      localStorage.setItem('homeBuilderSections', JSON.stringify(sections));
+    } catch (e) {
+      console.error("Failed to save to localStorage", e);
+    }
     addToast('Home layout changes published successfully!', 'success');
   };
 
@@ -92,7 +104,7 @@ export default function HomeBuilderPage() {
             <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>Drag and drop sections to construct the user app's home screen layout dynamically.</p>
           </div>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button className="flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50">
+            <button onClick={() => addToast('Opening App Preview...', 'success')} className="flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50">
               <Eye size={16} /> Preview App
             </button>
             <button onClick={handlePublish} className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-blue-700">

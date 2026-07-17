@@ -120,33 +120,6 @@ export default function SupplierPerformance() {
       brandSubText="Executive Command"
       headerTitle="Procurement Portal"
       searchPlaceholder="Search suppliers..."
-      headerTabs={
-        <div style={{ display: 'flex', gap: '20px', height: '100%', alignItems: 'center' }}>
-          {['Analytics', 'Suppliers', 'Reports'].map((tab) => {
-            const isActive = tab === selectedTab;
-            return (
-              <button
-                key={tab}
-                onClick={() => setSelectedTab(tab)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: isActive ? '#25108f' : '#565365',
-                  fontWeight: isActive ? '700' : '500',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  padding: '8px 0',
-                  borderBottom: isActive ? '2px solid #25108f' : '2px solid transparent',
-                  outline: 'none',
-                  transition: 'all 0.2s'
-                }}
-              >
-                {tab}
-              </button>
-            );
-          })}
-        </div>
-      }
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)', padding: '24px 0' }}>
         

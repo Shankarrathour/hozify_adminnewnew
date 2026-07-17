@@ -81,7 +81,7 @@ export default function EmailSmtpIntegration() {
                     label: "API Key",
                     value: "API Key"
                   }]} />
-                <ChevronDown size={14} color="#64748b" style={{ position: 'absolute', right: '12px', top: '13px', pointerEvents: 'none' }} />
+
               </div>
             </div>
 

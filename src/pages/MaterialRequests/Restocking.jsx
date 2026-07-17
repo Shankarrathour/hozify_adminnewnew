@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Brain,
   TrendingUp,
@@ -31,6 +31,60 @@ export default function Restocking() {
   const [quantity, setQuantity] = useState('150');
   const [deliveryDate, setDeliveryDate] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarPos, setCalendarPos] = useState({ top: 0, left: 0 });
+  const calendarRef = useRef(null);
+  const triggerRef = useRef(null);
+
+  // Helper: recalculate position from trigger button's current bounding rect
+  const updateCalendarPos = () => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const calendarHeight = 340;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const openUpward = spaceBelow < calendarHeight && rect.top > calendarHeight;
+    setCalendarPos({
+      top: openUpward ? rect.top - calendarHeight - 8 : rect.bottom + 8,
+      left: rect.left,
+      width: rect.width,
+    });
+  };
+
+  // Close on outside click + track scroll/resize to keep position in sync
+  useEffect(() => {
+    if (!showCalendar) return;
+
+    const handleClickOutside = (e) => {
+      if (
+        calendarRef.current && !calendarRef.current.contains(e.target) &&
+        triggerRef.current && !triggerRef.current.contains(e.target)
+      ) {
+        setShowCalendar(false);
+      }
+    };
+
+    // On scroll or resize: recalculate position so calendar tracks the button
+    const handleScrollOrResize = () => {
+      updateCalendarPos();
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('scroll', handleScrollOrResize, true); // capture: true catches all scroll containers
+    window.addEventListener('resize', handleScrollOrResize);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+    };
+  }, [showCalendar]);
+
+  const handleCalendarToggle = () => {
+    if (!showCalendar) {
+      updateCalendarPos();
+    }
+    setShowCalendar(prev => !prev);
+  };
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -213,7 +267,7 @@ export default function Restocking() {
                       label: "M12 Fasteners",
                       value: "M12 Fasteners"
                     }]} />
-                  <ChevronDown size={14} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#565365' }} />
+
                 </div>
               </div>
 
@@ -253,7 +307,7 @@ export default function Restocking() {
                         label: "Global Alloys Ltd.",
                         value: "Global Alloys Ltd."
                       }]} />
-                    <ChevronDown size={14} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#565365' }} />
+
                   </div>
                 </div>
 
@@ -289,14 +343,16 @@ export default function Restocking() {
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#7a7688', textTransform: 'uppercase', marginBottom: '6px' }}>
                   Expected Delivery Date
                 </label>
-                <div style={{ position: 'relative', zIndex: 9999 }}>
+                <div style={{ position: 'relative' }}>
+                  {/* Trigger button */}
                   <div
-                    onClick={() => setShowCalendar(!showCalendar)}
+                    ref={triggerRef}
+                    onClick={handleCalendarToggle}
                     style={{
                       width: '100%',
                       height: '38px',
                       background: '#ffffff',
-                      border: '1px solid #cbd5e1',
+                      border: `1px solid ${showCalendar ? 'var(--primary)' : '#cbd5e1'}`,
                       borderRadius: '6px',
                       padding: '0 12px',
                       fontSize: '13px',
@@ -306,21 +362,55 @@ export default function Restocking() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      transition: 'border-color 0.2s'
                     }}
                   >
                     <span>{deliveryDate ? format(deliveryDate, 'MMM dd, yyyy') : 'Select Date'}</span>
-                    <CalendarIcon size={14} color="#64748B" />
+                    <CalendarIcon size={14} color={showCalendar ? 'var(--primary)' : '#64748B'} />
                   </div>
+
+                  {/* Fixed-position calendar portal — floats above all page content */}
                   {showCalendar && (
-                    <div className="calendar-dropdown" style={{ zIndex: 100 }}>
+                    <div
+                      ref={calendarRef}
+                      style={{
+                        position: 'fixed',
+                        top: calendarPos.top,
+                        left: calendarPos.left,
+                        zIndex: 999999,
+                        background: '#ffffff',
+                        borderRadius: '12px',
+                        boxShadow: '0 8px 32px rgba(28,37,54,0.18), 0 2px 8px rgba(28,37,54,0.10)',
+                        border: '1.5px solid #e2e8f0',
+                        overflow: 'hidden',
+                        minWidth: '320px',
+                      }}
+                    >
+                      {/* Calendar Header bar */}
+                      <div style={{
+                        padding: '10px 16px 6px',
+                        background: '#f8fafc',
+                        borderBottom: '1px solid #e2e8f0',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <span style={{ fontSize: '12px', fontWeight: '700', color: '#7a7688', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Select Delivery Date</span>
+                        <button
+                          type="button"
+                          onClick={() => setShowCalendar(false)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#7a7688', fontSize: '16px', lineHeight: 1, padding: '2px 4px' }}
+                        >✕</button>
+                      </div>
                       <DateRangeCalendar
                         date={deliveryDate}
                         onChange={(item) => {
                           setDeliveryDate(item);
                           setShowCalendar(false);
                         }}
-                        color="var(--primary)"
+                        color="#25108f"
+                        showMonthAndYearPickers
                       />
                     </div>
                   )}

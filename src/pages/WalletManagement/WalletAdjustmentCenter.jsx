@@ -50,7 +50,6 @@ export default function WalletAdjustmentCenter() {
       activeTab="Wallet Management"
       brandText="HOZIFY Wallet"
       brandSubText="Global Ledger v1.2"
-      headerTitle="Financial Admin"
       searchPlaceholder="Search adjustments..."
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)', padding: '24px 0' }}>

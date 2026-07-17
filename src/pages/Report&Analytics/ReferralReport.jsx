@@ -1,9 +1,54 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import ReactDOM from "react-dom";
+import { useApp } from "../../hooks/useApp";
 import AdminShell from "../../components/layouts/AdminShell";
+import { DateRange } from "react-date-range";
+import "react-date-range/dist/styles.css";
+import "react-date-range/dist/theme/default.css";
+import { format } from "date-fns";
 
 export default function ReferralReport() {
-  const [date, setDate] = useState("2026-06-27");
+  const { navigate } = useApp();
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Date Range Picker state
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [calendarPos, setCalendarPos] = useState({ top: 0, left: 0 });
+  const datePickerRef = useRef(null);
+  const [dateRange, setDateRange] = useState([
+    {
+      startDate: new Date(2026, 5, 27),
+      endDate: new Date(2026, 5, 27),
+      key: 'selection'
+    }
+  ]);
+
+  const handleDateTriggerClick = useCallback(() => {
+    if (datePickerRef.current) {
+      const rect = datePickerRef.current.getBoundingClientRect();
+      setCalendarPos({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX
+      });
+    }
+    setShowDatePicker(prev => !prev);
+  }, []);
+
+  useEffect(() => {
+    if (!showDatePicker) return;
+    const handler = (e) => {
+      if (datePickerRef.current && datePickerRef.current.contains(e.target)) return;
+      const portal = document.getElementById('referral-date-portal');
+      if (portal && portal.contains(e.target)) return;
+      setShowDatePicker(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showDatePicker]);
+
+  const dateLabel = dateRange[0].startDate.getTime() === dateRange[0].endDate.getTime()
+    ? format(dateRange[0].startDate, 'MMM d, yyyy')
+    : `${format(dateRange[0].startDate, 'MMM d, yyyy')} - ${format(dateRange[0].endDate, 'MMM d, yyyy')}`;
 
   return (
     <AdminShell activeTab="Reports & Analytics">
@@ -18,14 +63,13 @@ export default function ReferralReport() {
           
           <div className="flex items-center gap-3 relative">
             {/* Functional Calendar */}
-            <div className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 bg-white rounded shadow-sm">
+            <div 
+              ref={datePickerRef}
+              onClick={handleDateTriggerClick}
+              className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 bg-white rounded shadow-sm cursor-pointer"
+            >
               <span className="text-gray-400 text-sm">📅</span>
-              <input 
-                type="date" 
-                value={date} 
-                onChange={(e) => setDate(e.target.value)}
-                className="text-xs font-semibold focus:outline-none cursor-pointer bg-transparent w-24"
-              />
+              <span className="text-xs font-semibold">{dateLabel}</span>
             </div>
             {/* Filter Dropdown */}
             <div className="relative">
@@ -112,7 +156,12 @@ export default function ReferralReport() {
           <div className="lg:col-span-2 bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
              <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-bold text-slate-900">Top Referral Sources</h3>
-              <button className="text-xs font-bold text-[#1a0dab] hover:underline">View All</button>
+              <button 
+                onClick={() => navigate('/referrals/sources')} 
+                className="text-xs font-bold text-[#1a0dab] hover:underline"
+              >
+                View All
+              </button>
             </div>
             <div className="table-responsive-wrapper">
 <table className="w-full text-left text-xs border-collapse">
@@ -146,6 +195,49 @@ export default function ReferralReport() {
           </div>
         </div>
       </div>
+      
+      {/* DateRange Portal */}
+      {showDatePicker && ReactDOM.createPortal(
+        <div
+          id="referral-date-portal"
+          style={{
+            position: 'fixed',
+            top: calendarPos.top,
+            left: calendarPos.left,
+            zIndex: 99999,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            background: '#fff',
+            border: '1.5px solid #e5e7eb'
+          }}
+        >
+          <DateRange
+            editableDateInputs={true}
+            onChange={item => setDateRange([item.selection])}
+            moveRangeOnFirstSelection={false}
+            ranges={dateRange}
+            rangeColors={['#25108f']}
+          />
+          <div style={{ padding: '12px 16px', borderTop: '1px solid #eee', background: '#f9f9f9', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <button
+              onClick={() => setShowDatePicker(false)}
+              style={{ padding: '6px 14px', background: '#fff', color: '#25108f', border: '1.5px solid #25108f', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '700' }}
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => setShowDatePicker(false)}
+              style={{ padding: '6px 16px', background: '#25108f', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '700' }}
+              type="button"
+            >
+              Apply Range
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
     </AdminShell>
   );
 }

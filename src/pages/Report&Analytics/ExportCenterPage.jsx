@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import AdminShell from "../../components/layouts/AdminShell";
+import { Filter, Clock } from "lucide-react";
 
 export default function ExportCenterPage() {
   // Initial Table State Mock Data
@@ -94,7 +95,7 @@ export default function ExportCenterPage() {
       <div className="w-full min-h-screen bg-[#f8fafd] p-8 text-slate-700 antialiased ">
         
         {/* TOP TITLE HEADER & CTA BUTTONS */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Export Center</h1>
             <p className="text-sm text-gray-400 mt-1 font-medium">
@@ -102,8 +103,8 @@ export default function ExportCenterPage() {
             </p>
           </div>
           
-          <div className="flex items-center gap-3">
-            {/* Filter Toggle Menu via Icon 🎛️ */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Filter Toggle Menu via Icon */}
             <div className="relative" ref={filterRef}>
               <button 
                 onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
@@ -113,7 +114,8 @@ export default function ExportCenterPage() {
                     : "bg-white border-gray-200 text-slate-600 hover:bg-gray-50"
                 }`}
               >
-                <span>🎛️</span> Filter: <span className="text-slate-900 font-extrabold">{activeFilter}</span>
+                <Filter size={14} className={isFilterDropdownOpen || activeFilter !== "All" ? "text-indigo-700" : "text-slate-500"} /> 
+                Filter: <span className="text-slate-900 font-extrabold">{activeFilter}</span>
               </button>
 
               {isFilterDropdownOpen && (
@@ -150,7 +152,7 @@ export default function ExportCenterPage() {
         </div>
 
         {/* METRICS THREE-CARD GRID LAYER */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {/* Card 1: Storage */}
           <div className="bg-white border border-gray-200/70 rounded-xl p-5 shadow-sm flex flex-col justify-between min-h-[125px]">
             <div>
@@ -191,8 +193,8 @@ export default function ExportCenterPage() {
             <p className="text-[10px] font-black text-slate-500 tracking-wider uppercase mt-4">
               WEEKLY FINANCIAL AUDIT
             </p>
-            <div className="absolute -right-1 -bottom-center text-gray-100 text-7xl select-none pointer-events-none opacity-80 font-light">
-              🕒
+            <div className="absolute -right-4 -bottom-4 text-slate-100 opacity-80 pointer-events-none">
+              <Clock size={100} strokeWidth={1} />
             </div>
           </div>
         </div>

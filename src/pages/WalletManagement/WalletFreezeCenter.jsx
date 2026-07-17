@@ -37,7 +37,6 @@ export default function WalletFreezeCenter() {
       activeTab="Wallet Management"
       brandText="HOZIFY Wallet"
       brandSubText="Global Ledger v1.2"
-      headerTitle="Risk Management"
       searchPlaceholder="Search fraud rules..."
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)', padding: '24px 0' }}>

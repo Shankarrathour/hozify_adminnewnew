@@ -1065,20 +1065,3 @@ table thead th {
     border: none !important;
 }
 
-/* --- UNIVERSAL TABLE GRID EXACTLY LIKE PARTNER TABLE --- */
-#root table,
-#root .materio-table,
-#root .table-responsive table {
-    border-collapse: collapse !important;
-    border-spacing: 0 !important;
-    width: 100% !important;
-}
-
-#root table th,
-#root table td,
-#root table thead th,
-#root table tbody td,
-#root .materio-table th,
-#root .materio-table td {
-    border: 1.5px solid #25108f !important;
-}

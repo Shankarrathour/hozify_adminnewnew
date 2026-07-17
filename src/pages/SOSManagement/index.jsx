@@ -280,16 +280,28 @@ function Donut({ value = 72, label = "Resolved" }) {
 
 function MapPanel({ full }) {
   const { addToast } = useToast();
+  const [zoom, setZoom] = useState(1);
+
+  const handleZoomIn = () => {
+    setZoom((prev) => Math.min(prev + 0.5, 3));
+  };
+
+  const handleZoomOut = () => {
+    setZoom((prev) => Math.max(prev - 0.5, 0.5));
+  };
+
   return (
-    <div className={`sos-map ${full ? "full" : ""}`}>
-      <div className="sos-map-grid" />
-      <span className="pin critical" style={{ left: "48%", top: "42%" }} />
-      <span className="pin safe" style={{ left: "35%", top: "62%" }} />
-      <span className="pin responder" style={{ left: "72%", top: "54%" }} />
-      <div className="sos-map-label">Incident Zone</div>
-      <div className="sos-map-actions">
-        <button onClick={() => addToast("Zoomed In", "info")}>+</button>
-        <button onClick={() => addToast("Zoomed Out", "info")}>-</button>
+    <div className={`sos-map ${full ? "full" : ""}`} style={{ overflow: "hidden", position: "relative" }}>
+      <div style={{ transform: `scale(${zoom})`, transformOrigin: "center center", transition: "transform 0.3s ease", width: "100%", height: "100%", position: "absolute", inset: 0 }}>
+        <div className="sos-map-grid" />
+        <span className="pin critical" style={{ left: "48%", top: "42%" }} />
+        <span className="pin safe" style={{ left: "35%", top: "62%" }} />
+        <span className="pin responder" style={{ left: "72%", top: "54%" }} />
+      </div>
+      <div className="sos-map-label" style={{ zIndex: 10 }}>Incident Zone</div>
+      <div className="sos-map-actions" style={{ zIndex: 10 }}>
+        <button onClick={handleZoomIn}>+</button>
+        <button onClick={handleZoomOut}>-</button>
       </div>
     </div>
   );
@@ -350,21 +362,22 @@ function Filters({ children, onApply, onRefresh }) {
     "Incident Type": [
       "All",
       "Medical Emergency",
-      "Security Threat",
+      "Theft / Security",
       "Fire Hazard",
-      "Vehicle Accident",
+      "Road Accident",
     ],
-    Status: ["All", "Active", "Resolved", "Escalated", "Closed"],
+    Status: ["All", "Pending", "Dispatched", "On-Site", "Escalated"],
     "City / Region": [
       "Global View",
       "New York",
-      "Los Angeles",
-      "Chicago",
-      "Houston",
-      "Miami",
+      "London",
+      "Tokyo",
+      "Sydney",
     ],
     Date: ["All Time", "Today", "Last 7 Days", "Last 30 Days", "This Month"],
   };
+
+  const [filterValues, setFilterValues] = useState({});
 
   return (
     <div className="sos-filters">
@@ -373,14 +386,19 @@ function Filters({ children, onApply, onRefresh }) {
           <label key={label}>
             {label}
             <Select
+              value={filterValues[label] || (label === "City / Region" ? "Global View" : label === "Date" ? "All Time" : "All")}
+              onChange={(e) => setFilterValues(prev => ({ ...prev, [label]: e.target.value }))}
               options={options.map((opt) => ({ value: opt, label: opt }))}
             />
           </label>
         ))}
-      <Button primary onClick={onApply}>
+      <Button primary onClick={() => { if(onApply) onApply(filterValues); }}>
         Apply Filter
       </Button>
-      <Button icon={RefreshCcw} ghost onClick={onRefresh} />
+      <Button icon={RefreshCcw} ghost onClick={() => {
+        setFilterValues({});
+        if(onRefresh) onRefresh();
+      }} />
     </div>
   );
 }
@@ -597,6 +615,7 @@ function Dashboard({ nav, setModal }) {
 function ActiveQueue({ nav, setModal, setDrawer }) {
   const { addToast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeFilters, setActiveFilters] = useState({});
   
   const allCases = useMemo(() => {
     let arr = [];
@@ -608,7 +627,19 @@ function ActiveQueue({ nav, setModal, setDrawer }) {
     return arr.slice(0, 42);
   }, []);
 
-  const paginatedCases = allCases.slice(
+  const filteredCases = useMemo(() => {
+    return allCases.filter(c => {
+      if (activeFilters["Priority Level"] && activeFilters["Priority Level"] !== "All" && c.priority !== activeFilters["Priority Level"]) return false;
+      if (activeFilters["Incident Type"] && activeFilters["Incident Type"] !== "All" && c.type !== activeFilters["Incident Type"]) return false;
+      if (activeFilters["Status"] && activeFilters["Status"] !== "All" && c.status !== activeFilters["Status"]) return false;
+      if (activeFilters["City / Region"] && activeFilters["City / Region"] !== "Global View" && activeFilters["City / Region"] !== "All") {
+        if (!c.location.includes(activeFilters["City / Region"]) && !c.city.includes(activeFilters["City / Region"])) return false;
+      }
+      return true;
+    });
+  }, [allCases, activeFilters]);
+
+  const paginatedCases = filteredCases.slice(
     (currentPage - 1) * 10,
     currentPage * 10
   );
@@ -637,8 +668,16 @@ function ActiveQueue({ nav, setModal, setDrawer }) {
         </div>
       </div>
       <Filters
-        onRefresh={() => addToast("Queue Refreshed", "success")}
-        onApply={() => addToast("Filters Applied", "success")}
+        onRefresh={() => {
+          setActiveFilters({});
+          setCurrentPage(1);
+          addToast("Queue Refreshed", "success");
+        }}
+        onApply={(filters) => {
+          setActiveFilters(filters);
+          setCurrentPage(1);
+          addToast("Filters Applied", "success");
+        }}
       />
       <div style={{
         background: "#fff",
@@ -654,11 +693,12 @@ function ActiveQueue({ nav, setModal, setDrawer }) {
         </div>
         <div className="sos-pagination" style={{ borderTop: "1px solid #e5e7eb", padding: "14px 20px" }}>
           <span>
-            Showing {(currentPage - 1) * 10 + 1}–{Math.min(currentPage * 10, 42)} of 42 active incidents
+            Showing {filteredCases.length === 0 ? 0 : (currentPage - 1) * 10 + 1}–{Math.min(currentPage * 10, filteredCases.length)} of {filteredCases.length} active incidents
           </span>
           <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-            {[1, 2, 3, 4, 5].map((page) =>
-              page === currentPage ? (
+            {Array.from({ length: Math.max(1, Math.ceil(filteredCases.length / 10)) }).map((_, idx) => {
+              const page = idx + 1;
+              return page === currentPage ? (
                 <b key={page} style={{
                   background: "#28118c", color: "#fff",
                   borderRadius: "5px", padding: "4px 10px",
@@ -676,8 +716,8 @@ function ActiveQueue({ nav, setModal, setDrawer }) {
                 >
                   {page}
                 </span>
-              ),
-            )}
+              );
+            })}
           </div>
         </div>
       </div>

@@ -265,7 +265,7 @@ export default function CampaignListing() {
                   label: "DRAFT",
                   value: "DRAFT"
                 }]} />
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+
             </div>
 
             {/* Date Picker Dropdown */}

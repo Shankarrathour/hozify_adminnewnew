@@ -19,6 +19,7 @@ import { ROUTES } from '../../config/routes';
 
 export default function DeliveryTracking() {
   const { navigate } = useApp();
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   const handleOpenSupport = () => {
     alert('Opening logistics support ticket form...');
@@ -112,7 +113,7 @@ export default function DeliveryTracking() {
               
               {/* Custom Neon Road Network SVG */}
               <div style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, opacity: 0.85 }}>
-                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style={{ transition: 'transform 0.3s ease', transform: `scale(${zoomLevel})` }}>
                   {/* Grid Lines background */}
                   <pattern id="map-grid" width="40" height="40" patternUnits="userSpaceOnUse">
                     <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(37,16,143,0.08)" strokeWidth="1" />
@@ -194,13 +195,13 @@ export default function DeliveryTracking() {
                 gap: '8px',
                 zIndex: 10
               }}>
-                <button style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#ffffff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} aria-label="Zoom In" type="button">
+                <button onClick={() => setZoomLevel(z => Math.min(z + 0.5, 3))} style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#ffffff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} aria-label="Zoom In" type="button">
                   <Plus size={16} style={{ color: '#565365' }} />
                 </button>
-                <button style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#ffffff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} aria-label="Zoom Out" type="button">
+                <button onClick={() => setZoomLevel(z => Math.max(z - 0.5, 0.5))} style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#ffffff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} aria-label="Zoom Out" type="button">
                   <Minus size={16} style={{ color: '#565365' }} />
                 </button>
-                <button style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#ffffff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} aria-label="My Location" type="button">
+                <button onClick={() => setZoomLevel(1)} style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#ffffff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} aria-label="My Location" type="button">
                   <MapPin size={16} style={{ color: '#565365' }} />
                 </button>
               </div>

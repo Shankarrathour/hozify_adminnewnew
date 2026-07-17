@@ -12,10 +12,26 @@ const INITIAL_SCREENS = [
 ];
 
 export default function OnboardingManagerPage() {
-  const [screens, setScreens] = useState(INITIAL_SCREENS);
+  const [screens, setScreens] = useState(() => {
+    try {
+      const saved = localStorage.getItem('onboardingScreens');
+      return saved ? JSON.parse(saved) : INITIAL_SCREENS;
+    } catch(e) {
+      return INITIAL_SCREENS;
+    }
+  });
+  const [splashConfig, setSplashConfig] = useState(() => {
+    try {
+      const saved = localStorage.getItem('splashConfig');
+      return saved ? JSON.parse(saved) : { duration: 2, bgColor: '#25108f' };
+    } catch(e) {
+      return { duration: 2, bgColor: '#25108f' };
+    }
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSlide, setEditingSlide] = useState(null);
   const [slideToDelete, setSlideToDelete] = useState(null);
+  const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
   const { addToast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -69,8 +85,16 @@ export default function OnboardingManagerPage() {
   };
 
   const handlePublish = () => {
+    try {
+      localStorage.setItem('onboardingScreens', JSON.stringify(screens));
+      localStorage.setItem('splashConfig', JSON.stringify(splashConfig));
+    } catch (e) {
+      console.error("Failed to save onboardingScreens to localStorage", e);
+    }
     addToast('Splash and Onboarding screens published!', 'success');
   };
+
+  const currentPreviewSlide = screens.length > 0 ? screens[currentPreviewIndex % screens.length] : null;
 
   return (
     <AdminShell activeTab="CMS" headerTitle="Onboarding & Splash Screen Manager">
@@ -108,13 +132,13 @@ export default function OnboardingManagerPage() {
                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                  <div>
                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>Splash Duration (Seconds)</label>
-                   <input type="number" defaultValue={2} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px' }} />
+                   <input type="number" value={splashConfig.duration} onChange={(e) => setSplashConfig({...splashConfig, duration: Number(e.target.value)})} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px' }} />
                  </div>
                  <div>
                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>Background Color (HEX)</label>
                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                     <div style={{ width: '30px', height: '30px', background: '#25108f', borderRadius: '4px' }} />
-                     <input type="text" defaultValue="#25108f" style={{ flexGrow: 1, padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px' }} />
+                     <div style={{ width: '30px', height: '30px', background: splashConfig.bgColor, borderRadius: '4px' }} />
+                     <input type="text" value={splashConfig.bgColor} onChange={(e) => setSplashConfig({...splashConfig, bgColor: e.target.value})} style={{ flexGrow: 1, padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px' }} />
                    </div>
                  </div>
                </div>
@@ -174,17 +198,28 @@ export default function OnboardingManagerPage() {
                    <div style={{ width: '120px', height: '120px', background: '#e2e8f0', borderRadius: '50%', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
                      <ImageIcon size={32} />
                    </div>
-                   <h4 style={{ fontSize: '18px', fontWeight: '800', color: '#1e1b4b', margin: '0 0 8px 0' }}>{screens.length > 0 ? screens[0].title : 'No slides'}</h4>
-                   <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>{screens.length > 0 ? screens[0].subtitle : 'Please add a slide to preview.'}</p>
+                   <h4 style={{ fontSize: '18px', fontWeight: '800', color: '#1e1b4b', margin: '0 0 8px 0' }}>{currentPreviewSlide ? currentPreviewSlide.title : 'No slides'}</h4>
+                   <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>{currentPreviewSlide ? currentPreviewSlide.subtitle : 'Please add a slide to preview.'}</p>
                 </div>
 
                 <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    <div style={{ width: '16px', height: '6px', background: '#4f46e5', borderRadius: '3px' }} />
-                    <div style={{ width: '6px', height: '6px', background: '#e2e8f0', borderRadius: '3px' }} />
-                    <div style={{ width: '6px', height: '6px', background: '#e2e8f0', borderRadius: '3px' }} />
+                    {screens.map((_, idx) => (
+                      <div key={idx} style={{ 
+                        width: (currentPreviewIndex % screens.length) === idx ? '16px' : '6px', 
+                        height: '6px', 
+                        background: (currentPreviewIndex % screens.length) === idx ? '#4f46e5' : '#e2e8f0', 
+                        borderRadius: '3px',
+                        transition: 'all 0.3s'
+                      }} />
+                    ))}
                   </div>
-                  <button style={{ width: '100%', padding: '12px', background: '#4f46e5', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold' }}>Next</button>
+                  <button 
+                    onClick={() => screens.length > 0 && setCurrentPreviewIndex(prev => prev + 1)}
+                    style={{ width: '100%', padding: '12px', background: '#4f46e5', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    Next
+                  </button>
                 </div>
              </div>
           </div>

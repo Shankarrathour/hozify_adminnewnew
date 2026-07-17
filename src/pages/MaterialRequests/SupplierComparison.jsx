@@ -48,13 +48,6 @@ export default function SupplierComparison() {
       searchPlaceholder="Search suppliers, orders..."
       customProfileName="Admin User"
       customProfileRole="Procurement Director"
-      headerTabs={
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <span style={{ fontSize: '13px', fontWeight: '600', color: '#565365', cursor: 'pointer' }} onClick={() => navigate(ROUTES.materialAnalytics)}>Analytics</span>
-          <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--primary)', borderBottom: '2px solid #25108f', paddingBottom: '4px' }}>Suppliers</span>
-          <span style={{ fontSize: '13px', fontWeight: '600', color: '#565365', cursor: 'pointer' }} onClick={() => navigate(ROUTES.materialReports)}>Reports</span>
-        </div>
-      }
     >
       <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)' }}>
         
@@ -179,26 +172,26 @@ export default function SupplierComparison() {
 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #25108f' }}>
-                  <th style={{ padding: '20px 24px', fontSize: '11px', fontWeight: '800', color: '#7a7688', textTransform: 'uppercase', width: '25%' }}>Evaluation Attribute</th>
+                  <th style={{ padding: '20px 24px', fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', width: '25%' }}>Evaluation Attribute</th>
                   <th style={{ padding: '20px 24px', width: '25%' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                      <strong style={{ fontSize: '14px', color: '#1c2536' }}>Global Steel Co.</strong>
-                      <span style={{ fontSize: '11px', color: '#7a7688' }}>Tier 1 Partner</span>
+                      <strong style={{ fontSize: '14px', color: '#ffffff' }}>Global Steel Co.</strong>
+                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)' }}>Tier 1 Partner</span>
                     </div>
                   </th>
-                  <th style={{ padding: '20px 24px', width: '25%', background: '#f5f3ff', borderLeft: '1px solid #e0e7ff', borderRight: '1px solid #e0e7ff' }}>
+                  <th style={{ padding: '20px 24px', width: '25%', background: 'rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.2)', borderRight: '1px solid rgba(255,255,255,0.2)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <strong style={{ fontSize: '14px', color: '#1c2536' }}>Precision Alloys Ltd</strong>
+                        <strong style={{ fontSize: '14px', color: '#ffffff' }}>Precision Alloys Ltd</strong>
                         <span style={{ fontSize: '9px', fontWeight: '800', color: '#ffffff', background: '#7c3aed', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>Winner Recommendation</span>
                       </div>
-                      <span style={{ fontSize: '11px', color: '#7a7688' }}>New Bidder</span>
+                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)' }}>New Bidder</span>
                     </div>
                   </th>
                   <th style={{ padding: '20px 24px', width: '25%' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                      <strong style={{ fontSize: '14px', color: '#1c2536' }}>Nexus Fabrication</strong>
-                      <span style={{ fontSize: '11px', color: '#7a7688' }}>Legacy Vendor</span>
+                      <strong style={{ fontSize: '14px', color: '#ffffff' }}>Nexus Fabrication</strong>
+                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)' }}>Legacy Vendor</span>
                     </div>
                   </th>
                 </tr>
@@ -390,7 +383,7 @@ export default function SupplierComparison() {
                     label: "Last 30 Days",
                     value: "Last 30 Days"
                   }]} />
-                <ChevronDown size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#565365' }} />
+
               </div>
             </div>
             

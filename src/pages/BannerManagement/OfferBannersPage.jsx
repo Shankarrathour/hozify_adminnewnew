@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import AdminShell from "../../components/layouts/AdminShell";
 import { 
   Filter, Trash2, Eye, Layers, Edit2, MoreVertical,
-  ExternalLink, Calendar, Clock, RefreshCw, AlertTriangle, Globe, Plus, X
+  ExternalLink, Calendar, Clock, RefreshCw, AlertTriangle, Globe, Plus, X, CheckCircle2
 } from "lucide-react";
 import { useToast } from '../../components/common/ToastNotification';
 
@@ -204,156 +204,161 @@ export default function OfferBannersPage() {
         </div>
 
         {/* HERO MAIN TRACKER SECTION */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* SUMMER FLASH SALE CARD (Spans 2 columns) */}
-          <div className={`lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col justify-between transition-opacity ${summerSaleStats.isArchived ? 'opacity-50 grayscale' : ''}`}>
-            <div className="h-64 bg-slate-800 relative p-6 flex flex-col justify-between text-white" 
-                 style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #142643, #1a3c8a)' }}>
-              <div className="flex items-center space-x-2">
-                <BadgTag text="★ Top Performer" styles="bg-slate-900/60 text-white backdrop-blur-sm" />
-                <BadgTag text={summerSaleStats.isArchived ? "Archived" : "Active"} styles={summerSaleStats.isArchived ? "bg-slate-600 text-white" : "bg-indigo-600 text-white"} />
+        {activeFilter === "Active" && (
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              {/* SUMMER FLASH SALE CARD (Spans 2 columns) */}
+              <div className={`lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col justify-between transition-opacity ${summerSaleStats.isArchived ? 'opacity-50 grayscale' : ''}`}>
+                <div className="h-64 bg-slate-800 relative p-6 flex flex-col justify-between text-white" 
+                     style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #142643, #1a3c8a)' }}>
+                  <div className="flex items-center space-x-2">
+                    <BadgTag text="★ Top Performer" styles="bg-slate-900/60 text-white backdrop-blur-sm" />
+                    <BadgTag text={summerSaleStats.isArchived ? "Archived" : "Active"} styles={summerSaleStats.isArchived ? "bg-slate-600 text-white" : "bg-indigo-600 text-white"} />
+                  </div>
+                  <div className="space-y-1 text-center my-auto">
+                    <p className="text-xs uppercase tracking-widest text-slate-400 font-bold">Summer Sale</p>
+                    <h2 className="text-5xl font-black tracking-tight text-white">40%</h2>
+                  </div>
+                </div>
+                
+                <div className="p-6 space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <h3 className="text-base font-bold text-slate-900">Summer Solstice Flash Sale</h3>
+                        <ExternalLink size={14} className="text-slate-400 cursor-pointer hover:text-indigo-600" onClick={() => window.open('https://hozify.com/offers', '_blank')} />
+                      </div>
+                      <p className="text-xs text-slate-400 max-w-lg leading-relaxed">
+                        Our highest-converting banner this quarter. Targeted at premium segment users with personalized discount tiers.
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Ctr Rate</p>
+                      <p className="text-xl font-black text-emerald-500 mt-0.5">{summerSaleStats.ctr}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs pt-2 border-t border-slate-50">
+                    <div className="flex items-center space-x-4 text-slate-500 font-medium">
+                      <span className="flex items-center space-x-1.5"><Layers size={13} /> <span className="underline">://hozify.com</span></span>
+                      {!summerSaleStats.isArchived && <span className="flex items-center space-x-1.5 text-rose-500 font-bold"><Clock size={13} /> <span>Expires in 42h 12m</span></span>}
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <button onClick={() => openEditModal('summer', true, { name: 'Summer Solstice Flash Sale', targeting: 'Premium Segment', expiry: '42h 12m', status: 'Active' })} className="p-1.5 border border-slate-200 rounded-lg text-slate-500 bg-white hover:bg-slate-50 cursor-pointer" title="Edit Settings"><Edit2 size={13} /></button>
+                      <button onClick={() => {
+                        setSummerSaleStats(prev => ({ ...prev, isArchived: !prev.isArchived }));
+                        addToast(summerSaleStats.isArchived ? 'Banner Reactivated' : 'Banner Archived', 'info');
+                      }} className="p-1.5 border border-slate-200 rounded-lg text-slate-500 bg-white hover:bg-slate-50 cursor-pointer" title="Toggle Archive State"><MoreVertical size={13} /></button>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-1 text-center my-auto">
-                <p className="text-xs uppercase tracking-widest text-slate-400 font-bold">Summer Sale</p>
-                <h2 className="text-5xl font-black tracking-tight text-white">40%</h2>
+
+              {/* NEWSLETTER OPT-IN SIDEBAR */}
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden p-6 flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div className="h-32 rounded-xl bg-slate-100 border border-dashed border-slate-200 flex items-center justify-center">
+                    <BadgTag text="Desktop Only" styles="bg-slate-700 text-white " />
+                  </div>
+                  <div className="space-y-1.5">
+                    <h3 className="text-sm font-bold text-slate-900">Newsletter Opt-in Promo</h3>
+                    <p className="text-xs text-slate-400 leading-relaxed">Floating sidebar banner for first-time visitors.</p>
+                  </div>
+                  <div className="flex justify-between items-center text-xs pt-1.5">
+                    <span className="text-slate-400 font-medium flex items-center space-x-1"><Calendar size={13} /> <span>Exp. Date:</span></span>
+                    <span className="font-bold text-slate-800">Dec 31, 2024</span>
+                  </div>
+                  <div className="space-y-1 pt-2 border-t border-slate-50">
+                    <div className="h-1.5 w-full bg-black-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-400 rounded-full w-[65%]" />
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-medium">65% of budget consumed</p>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center pt-4 text-xs">
+                  <span className="font-bold text-slate-900">CTA: Join Now</span>
+                  <div className="flex items-center space-x-1.5">
+                    <button onClick={() => openEditModal('newsletter', true, { name: 'Newsletter Opt-in Promo', targeting: 'Desktop Visitors', expiry: 'Dec 31, 2024', status: 'Active' })} className="p-1.5 border border-slate-100 rounded-lg text-slate-400 bg-white hover:bg-slate-50 cursor-pointer" title="Edit"><Edit2 size={12} /></button>
+                  </div>
+                </div>
               </div>
+
             </div>
             
-            <div className="p-6 space-y-4">
-              <div className="flex justify-between items-start">
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-2">
-                    <h3 className="text-base font-bold text-slate-900">Summer Solstice Flash Sale</h3>
-                    <ExternalLink size={14} className="text-slate-400 cursor-pointer hover:text-indigo-600" onClick={() => window.open('https://hozify.com/offers', '_blank')} />
-                  </div>
-                  <p className="text-xs text-slate-400 max-w-lg leading-relaxed">
-                    Our highest-converting banner this quarter. Targeted at premium segment users with personalized discount tiers.
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Ctr Rate</p>
-                  <p className="text-xl font-black text-emerald-500 mt-0.5">{summerSaleStats.ctr}</p>
-                </div>
-              </div>
+            {/* SECOND LEVEL ASSETS PACK BLOCKS */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs pt-2 border-t border-slate-50">
-                <div className="flex items-center space-x-4 text-slate-500 font-medium">
-                  <span className="flex items-center space-x-1.5"><Layers size={13} /> <span className="underline">://hozify.com</span></span>
-                  {!summerSaleStats.isArchived && <span className="flex items-center space-x-1.5 text-rose-500 font-bold"><Clock size={13} /> <span>Expires in 42h 12m</span></span>}
+              {/* Tech Upgrade Card */}
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col justify-between space-y-5">
+                <div className="space-y-4">
+                  <div className="h-36 rounded-xl bg-gradient-to-br from-slate-700 to-indigo-700 p-4 flex items-start text-white">
+                    <BadgTag text="New Launch" styles="bg-indigo-600 text-white" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-bold text-slate-900">Tech Upgrade 2024</h3>
+                    <p className="text-xs text-slate-400">Electronics category specific hero banner.</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100/50">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Clicks</p>
+                      <p className="text-sm font-black text-slate-800 mt-0.5">4.2k</p>
+                    </div>
+                    <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100/50">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Conv.</p>
+                      <p className="text-sm font-black text-slate-800 mt-0.5">2.1%</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-1.5">
-                  <button onClick={() => openEditModal('summer', true, { name: 'Summer Solstice Flash Sale', targeting: 'Premium Segment', expiry: '42h 12m', status: 'Active' })} className="p-1.5 border border-slate-200 rounded-lg text-slate-500 bg-white hover:bg-slate-50 cursor-pointer" title="Edit Settings"><Edit2 size={13} /></button>
+                <div className="flex justify-between items-center pt-2 text-xs">
+                  {techUpgradeExpiring ? (
+                    <span className="text-rose-500 font-bold flex items-center space-x-1"><AlertTriangle size={13} /> <span>Expiring soon</span></span>
+                  ) : (
+                    <span className="text-emerald-500 font-bold flex items-center space-x-1"><CheckCircle2 size={13} /> <span>Extended</span></span>
+                  )}
                   <button onClick={() => {
-                    setSummerSaleStats(prev => ({ ...prev, isArchived: !prev.isArchived }));
-                    addToast(summerSaleStats.isArchived ? 'Banner Reactivated' : 'Banner Archived', 'info');
-                  }} className="p-1.5 border border-slate-200 rounded-lg text-slate-500 bg-white hover:bg-slate-50 cursor-pointer" title="Toggle Archive State"><MoreVertical size={13} /></button>
+                    setTechUpgradeExpiring(false);
+                    addToast('Banner duration extended successfully', 'success');
+                  }} className="font-bold text-indigo-950 hover:underline cursor-pointer">Extend →</button>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* NEWSLETTER OPT-IN SIDEBAR */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden p-6 flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="h-32 rounded-xl bg-slate-100 border border-dashed border-slate-200 flex items-center justify-center">
-                <BadgTag text="Desktop Only" styles="bg-slate-700 text-white " />
-              </div>
-              <div className="space-y-1.5">
-                <h3 className="text-sm font-bold text-slate-900">Newsletter Opt-in Promo</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">Floating sidebar banner for first-time visitors.</p>
-              </div>
-              <div className="flex justify-between items-center text-xs pt-1.5">
-                <span className="text-slate-400 font-medium flex items-center space-x-1"><Calendar size={13} /> <span>Exp. Date:</span></span>
-                <span className="font-bold text-slate-800">Dec 31, 2024</span>
-              </div>
-              <div className="space-y-1 pt-2 border-t border-slate-50">
-                <div className="h-1.5 w-full bg-black-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-400 rounded-full w-[65%]" />
+              {/* App Exclusive Reward */}
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col justify-between space-y-5">
+                <div className="space-y-4">
+                  <div className="h-36 rounded-xl bg-slate-50 border border-slate-100 flex items-start p-4">
+                    <BadgTag text="App Only" styles="bg-slate-200 text-slate-600" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-bold text-slate-900">App Exclusive Reward</h3>
+                    <p className="text-xs text-slate-400">Deep-linked mobile app exclusive discount campaign.</p>
+                  </div>
+                  <div className="flex items-center space-x-2 pt-1">
+                    <div className="flex -space-x-1.5 overflow-hidden">
+                      <div className="inline-block h-5 w-5 rounded-full ring-2 ring-white bg-indigo-400" />
+                      <div className="inline-block h-5 w-5 rounded-full ring-2 ring-white bg-purple-400" />
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-medium">5 managers assigned</span>
+                  </div>
                 </div>
-                <p className="text-[10px] text-slate-400 font-medium">65% of budget consumed</p>
-              </div>
-            </div>
-            <div className="flex justify-between items-center pt-4 text-xs">
-              <span className="font-bold text-slate-900">CTA: Join Now</span>
-              <div className="flex items-center space-x-1.5">
-                <button onClick={() => openEditModal('newsletter', true, { name: 'Newsletter Opt-in Promo', targeting: 'Desktop Visitors', expiry: 'Dec 31, 2024', status: 'Active' })} className="p-1.5 border border-slate-100 rounded-lg text-slate-400 bg-white hover:bg-slate-50 cursor-pointer" title="Edit"><Edit2 size={12} /></button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-        {/* SECOND LEVEL ASSETS PACK BLOCKS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          
-          {/* Tech Upgrade Card */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col justify-between space-y-5">
-            <div className="space-y-4">
-              <div className="h-36 rounded-xl bg-gradient-to-br from-slate-700 to-indigo-700 p-4 flex items-start text-white">
-                <BadgTag text="New Launch" styles="bg-indigo-600 text-white" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-sm font-bold text-slate-900">Tech Upgrade 2024</h3>
-                <p className="text-xs text-slate-400">Electronics category specific hero banner.</p>
-              </div>
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100/50">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Clicks</p>
-                  <p className="text-sm font-black text-slate-800 mt-0.5">4.2k</p>
-                </div>
-                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100/50">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Conv.</p>
-                  <p className="text-sm font-black text-slate-800 mt-0.5">2.1%</p>
+                <div className="flex justify-between items-center pt-2 text-xs">
+                  <BadgTag text={appRewardStatus} styles={appRewardStatus === 'Live' ? "bg-emerald-50 text-emerald-600 lowercase border border-emerald-100 px-2.5" : "bg-purple-50 text-purple-600 lowercase border border-purple-100 px-2.5"} />
+                  <button onClick={handleRefreshAppReward} className="p-1.5 border border-slate-100 rounded-lg text-slate-400 bg-white hover:bg-slate-50 cursor-pointer" title="Refresh status"><RefreshCw size={12} className={appRewardStatus === 'Live' ? 'text-emerald-500' : ''} /></button>
                 </div>
               </div>
-            </div>
-            <div className="flex justify-between items-center pt-2 text-xs">
-              {techUpgradeExpiring ? (
-                <span className="text-rose-500 font-bold flex items-center space-x-1"><AlertTriangle size={13} /> <span>Expiring soon</span></span>
-              ) : (
-                <span className="text-emerald-500 font-bold flex items-center space-x-1"><CheckCircle2 size={13} /> <span>Extended</span></span>
-              )}
-              <button onClick={() => {
-                setTechUpgradeExpiring(false);
-                addToast('Banner duration extended successfully', 'success');
-              }} className="font-bold text-indigo-950 hover:underline cursor-pointer">Extend →</button>
-            </div>
-          </div>
 
-          {/* App Exclusive Reward */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col justify-between space-y-5">
-            <div className="space-y-4">
-              <div className="h-36 rounded-xl bg-slate-50 border border-slate-100 flex items-start p-4">
-                <BadgTag text="App Only" styles="bg-slate-200 text-slate-600" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-sm font-bold text-slate-900">App Exclusive Reward</h3>
-                <p className="text-xs text-slate-400">Deep-linked mobile app exclusive discount campaign.</p>
-              </div>
-              <div className="flex items-center space-x-2 pt-1">
-                <div className="flex -space-x-1.5 overflow-hidden">
-                  <div className="inline-block h-5 w-5 rounded-full ring-2 ring-white bg-indigo-400" />
-                  <div className="inline-block h-5 w-5 rounded-full ring-2 ring-white bg-purple-400" />
+              {/* CREATE NEW OFFER BANNER BOX BUTTON */}
+              <div onClick={openCreateModal} className="border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-slate-50 rounded-2xl p-6 flex flex-col items-center justify-center text-center group cursor-pointer transition-all space-y-3 min-h-[300px]">
+                <div className="text-2xl text-slate-400 group-hover:text-indigo-950 font-bold">+</div>
+                <div className="space-y-1 max-w-[200px]">
+                  <h3 className="text-sm font-bold text-slate-900">Create Offer Banner</h3>
+                  <p className="text-[11px] text-slate-400 leading-relaxed">Add a new promotional asset to the rotation</p>
                 </div>
-                <span className="text-[10px] text-slate-400 font-medium">5 managers assigned</span>
               </div>
-            </div>
-            <div className="flex justify-between items-center pt-2 text-xs">
-              <BadgTag text={appRewardStatus} styles={appRewardStatus === 'Live' ? "bg-emerald-50 text-emerald-600 lowercase border border-emerald-100 px-2.5" : "bg-purple-50 text-purple-600 lowercase border border-purple-100 px-2.5"} />
-              <button onClick={handleRefreshAppReward} className="p-1.5 border border-slate-100 rounded-lg text-slate-400 bg-white hover:bg-slate-50 cursor-pointer" title="Refresh status"><RefreshCw size={12} className={appRewardStatus === 'Live' ? 'text-emerald-500' : ''} /></button>
-            </div>
-          </div>
 
-          {/* CREATE NEW OFFER BANNER BOX BUTTON */}
-          <div onClick={openCreateModal} className="border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-slate-50 rounded-2xl p-6 flex flex-col items-center justify-center text-center group cursor-pointer transition-all space-y-3 min-h-[300px]">
-            <div className="text-2xl text-slate-400 group-hover:text-indigo-950 font-bold">+</div>
-            <div className="space-y-1 max-w-[200px]">
-              <h3 className="text-sm font-bold text-slate-900">Create Offer Banner</h3>
-              <p className="text-[11px] text-slate-400 leading-relaxed">Add a new promotional asset to the rotation</p>
             </div>
-          </div>
-
-        </div>
+          </>
+        )}
 
         {/* LIVE PERFORMANCE DATAGRID TABLE */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-4">

@@ -225,6 +225,24 @@ export default function GlobalAdminShell({ children }) {
     </div>
   );
 
+  const getActivePageLabel = () => {
+    let foundLabel = null;
+    const searchNav = (items) => {
+      for (const item of items) {
+        if (item.route === route) {
+          foundLabel = item.label;
+          return true;
+        }
+        if (item.children && searchNav(item.children)) {
+          return true;
+        }
+      }
+      return false;
+    };
+    searchNav(activeNavModules);
+    return foundLabel;
+  };
+
   return (
     <main className="dashboard global-dashboard">
       <style>{`
@@ -464,7 +482,7 @@ export default function GlobalAdminShell({ children }) {
             )}
             {/* Always show the active module/tab name in navbar */}
             <span style={{ fontWeight: '800', fontSize: '20px', color: '#FFFFFF', whiteSpace: 'nowrap', letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
-              {headerTitle || activeTab}
+              {headerTitle || getActivePageLabel() || activeTab}
             </span>
           </div>
 

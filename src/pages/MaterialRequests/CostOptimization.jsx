@@ -67,7 +67,7 @@ export default function CostOptimization() {
                 type="button"
               >
                 <span>{timeframe}</span>
-                <ChevronDown size={15} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+
               </button>
             </div>
             <button

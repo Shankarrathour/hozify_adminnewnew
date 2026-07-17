@@ -1,5 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import ReactDOM from "react-dom";
 import AdminShell from "../../components/layouts/AdminShell";
+import { DateRange } from "react-date-range";
+import "react-date-range/dist/styles.css";
+import "react-date-range/dist/theme/default.css";
+import { format } from "date-fns";
 import { useToast } from "../../components/common/ToastNotification";
 import {
   Wallet,
@@ -53,9 +58,47 @@ const formatCurrency = (amount) => {
 
 export default function WalletReportPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [showCalendar, setShowCalendar] = useState(false);
   const [selectedTxn, setSelectedTxn] = useState(null);
   const { addToast } = useToast();
+
+  const [dateRange, setDateRange] = useState([
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: 'selection'
+    }
+  ]);
+  
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [calendarPos, setCalendarPos] = useState({ top: 0, left: 0 });
+  const datePickerRef = useRef(null);
+
+  const handleDateTriggerClick = useCallback(() => {
+    if (datePickerRef.current) {
+      const rect = datePickerRef.current.getBoundingClientRect();
+      setCalendarPos({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX - 250 // offset to right-align mostly
+      });
+    }
+    setShowDatePicker(prev => !prev);
+  }, []);
+
+  useEffect(() => {
+    if (!showDatePicker) return;
+    const handler = (e) => {
+      if (datePickerRef.current && datePickerRef.current.contains(e.target)) return;
+      const portal = document.getElementById('wallet-date-portal');
+      if (portal && portal.contains(e.target)) return;
+      setShowDatePicker(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showDatePicker]);
+
+  const dateLabel = dateRange[0].startDate.getTime() === dateRange[0].endDate.getTime()
+    ? format(dateRange[0].startDate, 'MMM d, yyyy')
+    : `${format(dateRange[0].startDate, 'MMM d, yyyy')} - ${format(dateRange[0].endDate, 'MMM d, yyyy')}`;
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -89,18 +132,12 @@ export default function WalletReportPage() {
           <div className="flex items-center gap-2 relative">
             {/* Calendar Button */}
             <button 
-              onClick={() => setShowCalendar(!showCalendar)}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-xs font-bold text-slate-700 shadow-sm hover:bg-gray-50 transition-colors"
+              ref={datePickerRef}
+              onClick={handleDateTriggerClick}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-xs font-bold text-slate-700 shadow-sm hover:bg-gray-50 transition-colors cursor-pointer"
             >
-              <span>📅</span> Last 30 Days <span className="text-[10px] text-gray-400">▼</span>
+              <span>📅</span> {dateLabel} <span className="text-[10px] text-gray-400">▼</span>
             </button>
-            {showCalendar && (
-              <input 
-                type="date" 
-                className="absolute top-12 right-24 p-2 border rounded shadow-lg z-50 bg-white"
-                onChange={() => setShowCalendar(false)}
-              />
-            )}
 
             {/* Export Button */}
             <button 
@@ -296,6 +333,49 @@ export default function WalletReportPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* DateRange Portal */}
+      {showDatePicker && ReactDOM.createPortal(
+        <div
+          id="wallet-date-portal"
+          style={{
+            position: 'fixed',
+            top: calendarPos.top,
+            left: Math.max(10, calendarPos.left), // Ensure it doesn't go off-screen to the left
+            zIndex: 99999,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            background: '#fff',
+            border: '1.5px solid #e5e7eb'
+          }}
+        >
+          <DateRange
+            editableDateInputs={true}
+            onChange={item => setDateRange([item.selection])}
+            moveRangeOnFirstSelection={false}
+            ranges={dateRange}
+            rangeColors={['#1d0094']}
+          />
+          <div style={{ padding: '12px 16px', borderTop: '1px solid #eee', background: '#f9f9f9', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <button
+              onClick={() => setShowDatePicker(false)}
+              style={{ padding: '6px 14px', background: '#fff', color: '#1d0094', border: '1.5px solid #1d0094', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '700' }}
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => setShowDatePicker(false)}
+              style={{ padding: '6px 16px', background: '#1d0094', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '700' }}
+              type="button"
+            >
+              Apply Range
+            </button>
+          </div>
+        </div>,
+        document.body
       )}
     </AdminShell>
   );

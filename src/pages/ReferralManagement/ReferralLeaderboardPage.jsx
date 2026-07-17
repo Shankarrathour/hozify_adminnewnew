@@ -10,7 +10,7 @@ const topReferrers = [
     role: "Enterprise Partner",
     referrals: 1240,
     earned: "$12,400",
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
+    image: "/avatars/avatar_elena.jpg",
   },
   {
     rank: 1,
@@ -19,7 +19,7 @@ const topReferrers = [
     referrals: 3892,
     earned: "$45,210",
     highlight: true,
-    image: "https://randomuser.me/api/portraits/men/32.jpg",
+    image: "/avatars/avatar_julian.jpg",
   },
   {
     rank: 3,
@@ -27,7 +27,7 @@ const topReferrers = [
     role: "Top Contributor",
     referrals: 945,
     earned: "$8,920",
-    image: "https://randomuser.me/api/portraits/women/65.jpg",
+    image: "/avatars/avatar_sarah.jpg",
   },
 ];
 

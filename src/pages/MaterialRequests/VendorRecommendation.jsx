@@ -43,20 +43,13 @@ export default function VendorRecommendation() {
 
   return (
     <AdminShell
-      activeTab="Suppliers"
+      activeTab="Material Management"
       brandText="Hozify Procurement"
-      brandSubText="EXECUTIVE COMMAND"
-      searchPlaceholder="Search vendors or materials..."
+      brandSubText="VENDOR INTELLIGENCE"
+      searchPlaceholder="Search vendors, suppliers, or logistics..."
       customProfileName="Alex Rivera"
       customProfileRole="Sr. Procurement"
       customProfileAvatar="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&h=100&q=80"
-      headerTabs={
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <span style={{ fontSize: '13px', fontWeight: '600', color: '#565365', cursor: 'pointer' }} onClick={() => navigate(ROUTES.materialAnalytics)}>Analytics</span>
-          <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--primary)', borderBottom: '2px solid #25108f', paddingBottom: '4px' }}>Suppliers</span>
-          <span style={{ fontSize: '13px', fontWeight: '600', color: '#565365', cursor: 'pointer' }} onClick={() => navigate(ROUTES.materialReports)}>Reports</span>
-        </div>
-      }
     >
       <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)', position: 'relative', minHeight: 'calc(100vh - 120px)', paddingBottom: selectedVendors.length > 0 ? '90px' : '24px' }}>
         
@@ -116,10 +109,10 @@ export default function VendorRecommendation() {
         </div>
 
         {/* Top Split Layout: Vendors Table & Stats Column */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', lgGridTemplateColumns: '2fr 1fr', gap: 'var(--spacing-section)' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-section)' }}>
           
           {/* Left: Best Value Suggestions */}
-          <div className="panel" style={{ background: '#ffffff', border: '1.5px solid #25108f', borderRadius: '12px', padding: 'var(--spacing-section)' }}>
+          <div className="panel" style={{ flex: '1 1 65%', minWidth: '350px', background: '#ffffff', border: '1.5px solid #25108f', borderRadius: '12px', padding: 'var(--spacing-section)', overflowX: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Zap size={16} style={{ color: 'var(--primary)' }} />
@@ -138,12 +131,12 @@ export default function VendorRecommendation() {
                 <thead>
                   <tr style={{ borderBottom: '1.5px solid #25108f' }}>
                     <th style={{ padding: '12px 8px', width: '30px' }} />
-                    <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: '800', color: '#7a7688', textTransform: 'uppercase' }}>Vendor Entity</th>
-                    <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: '800', color: '#7a7688', textTransform: 'uppercase', textAlign: 'center' }}>Score</th>
-                    <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: '800', color: '#7a7688', textTransform: 'uppercase' }}>Price / Unit</th>
-                    <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: '800', color: '#7a7688', textTransform: 'uppercase' }}>Lead Time</th>
-                    <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: '800', color: '#7a7688', textTransform: 'uppercase' }}>Rating</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'right' }}>Actions</th>
+                    <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase' }}>Vendor Entity</th>
+                    <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', textAlign: 'center' }}>Score</th>
+                    <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase' }}>Price / Unit</th>
+                    <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase' }}>Lead Time</th>
+                    <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase' }}>Rating</th>
+                    <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -249,7 +242,7 @@ export default function VendorRecommendation() {
           </div>
 
           {/* Right: Optimization KPIs & Market Volatility */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)' }}>
+          <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)' }}>
             
             {/* Success Optimization */}
             <div className="panel" style={{ background: '#0b1329', color: '#ffffff', borderRadius: '12px', padding: 'var(--spacing-section)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -324,7 +317,7 @@ export default function VendorRecommendation() {
             </h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--spacing-section)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 'var(--spacing-section)' }}>
             
             {/* Card 1: Apex */}
             <div className="panel" style={{ background: '#ffffff', border: '1.5px solid #25108f', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>

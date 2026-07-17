@@ -33,7 +33,6 @@ export default function WalletListing({ defaultType = 'All' }) {
       activeTab="Wallet Management"
       brandText="HOZIFY Wallet"
       brandSubText="Global Ledger v1.2"
-      headerTitle="Wallet Directory"
       searchPlaceholder="Search all wallets..."
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)', padding: '24px 0' }}>
