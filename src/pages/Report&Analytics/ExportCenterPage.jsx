@@ -193,8 +193,8 @@ export default function ExportCenterPage() {
             <p className="text-[10px] font-black text-slate-500 tracking-wider uppercase mt-4">
               WEEKLY FINANCIAL AUDIT
             </p>
-            <div className="absolute -right-4 -bottom-4 text-slate-100 opacity-80 pointer-events-none">
-              <Clock size={100} strokeWidth={1} />
+            <div className="absolute right-2 bottom-2 text-slate-100 opacity-80 pointer-events-none">
+              <Clock size={80} strokeWidth={1.5} />
             </div>
           </div>
         </div>

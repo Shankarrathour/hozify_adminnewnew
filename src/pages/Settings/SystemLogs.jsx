@@ -1,12 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Filter, Calendar, Zap, Download, Maximize, Settings, 
   ChevronLeft, ChevronRight 
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
-import toast from 'react-hot-toast';
+import { useToast } from '../../components/common/ToastNotification';
+
+const LOG_DATA = [
+  { id: 1, date: '2023-11-28', time: '14:23:41.002', severity: 'CRITICAL', service: 'Auth-Gateway', messageTitle: 'DB_CONNECTION_FAILURE:', messageBody: 'Connection timeout on secondary replica cluster.', latency: '--' },
+  { id: 2, date: '2023-11-28', time: '14:23:40.812', severity: 'WARNING', service: 'Payment-Proxy', messageTitle: 'RETRIABLE_EXCEPTION:', messageBody: 'Card validation service responded with 503. Retrying in 2s.', latency: '1.2s' },
+  { id: 3, date: '2023-11-28', time: '14:23:39.155', severity: 'INFO', service: 'Search-Indexer', messageTitle: 'INDEX_UPDATE_SUCCESS:', messageBody: "Re-indexed 4,209 documents for 'Global-Search-V3'.", latency: '420ms' },
+  { id: 4, date: '2023-11-28', time: '14:23:38.991', severity: 'INFO', service: 'API-v2', messageTitle: '', messageBody: 'GET /v2/analytics/operational?period=24h&scope=full [200 OK]', latency: '12ms' },
+  { id: 5, date: '2023-11-28', time: '14:23:37.402', severity: 'CRITICAL', service: 'Node-Manager', messageTitle: 'MEMORY_THRESHOLD_EXCEEDED:', messageBody: 'Process id 8421 killed by OOM killer.', latency: '--' },
+  { id: 6, date: '2023-11-28', time: '14:23:36.002', severity: 'WARNING', service: 'Job-Scheduler', messageTitle: 'LATE_EXECUTION:', messageBody: "Job 'Nightly-Backup' started with 12 minute delay.", latency: '--' },
+  { id: 7, date: '2023-11-28', time: '14:23:35.812', severity: 'INFO', service: 'CDN-Worker', messageTitle: 'CACHE_PURGE_REQUEST:', messageBody: "Static asset purge initiated for path '/assets/v4/*'.", latency: '2ms' },
+  { id: 8, date: '2023-11-28', time: '14:23:34.155', severity: 'INFO', service: 'Invoicing-Svc', messageTitle: 'EMAIL_DISPATCHED:', messageBody: 'Monthly statement sent to client 88219.', latency: '1.4s' }
+];
 
 export default function SystemLogs() {
+  const { addToast } = useToast();
+  const [activeFilter, setActiveFilter] = useState('All Logs');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const getFilteredLogs = () => {
+    if (activeFilter === 'All Logs') return LOG_DATA;
+    return LOG_DATA.filter(log => log.severity === activeFilter.toUpperCase() || log.severity.includes(activeFilter.toUpperCase().substring(0, 4)));
+  };
+
+  const filteredLogs = getFilteredLogs();
+
+  const getSeverityStyle = (severity) => {
+    switch(severity) {
+      case 'CRITICAL': return { bg: '#fee2e2', color: '#dc2626' };
+      case 'WARNING': return { bg: '#fef3c7', color: '#d97706' };
+      case 'INFO': return { bg: '#e0f2fe', color: '#0284c7' };
+      default: return { bg: '#f1f5f9', color: '#475569' };
+    }
+  };
+
   return (
     <AdminShell
       activeTab="Settings"
@@ -28,15 +59,27 @@ export default function SystemLogs() {
           </div>
           <div style={{ display: 'flex', gap: '16px' }}>
             <div style={{ display: 'flex', border: '1px solid #e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
-              <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ height: '40px', padding: '0 16px', background: '#f1f5f9', border: 'none', fontSize: '12px', fontWeight: '800', color: '#0f172a', cursor: 'pointer' }}>All Logs</button>
-              <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ height: '40px', padding: '0 16px', background: '#fff', border: 'none', borderLeft: '1px solid #e2e8f0', fontSize: '12px', fontWeight: '700', color: '#64748b', cursor: 'pointer' }}>Critical</button>
-              <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ height: '40px', padding: '0 16px', background: '#fff', border: 'none', borderLeft: '1px solid #e2e8f0', fontSize: '12px', fontWeight: '700', color: '#64748b', cursor: 'pointer' }}>Warnings</button>
-              <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ height: '40px', padding: '0 16px', background: '#fff', border: 'none', borderLeft: '1px solid #e2e8f0', fontSize: '12px', fontWeight: '700', color: '#64748b', cursor: 'pointer' }}>Info</button>
+              {['All Logs', 'Critical', 'Warnings', 'Info'].map((f, i) => (
+                <button 
+                  key={f}
+                  onClick={() => { setActiveFilter(f); setCurrentPage(1); }} 
+                  style={{ 
+                    height: '40px', padding: '0 16px', 
+                    background: activeFilter === f ? '#f1f5f9' : '#fff', 
+                    border: 'none', borderLeft: i === 0 ? 'none' : '1px solid #e2e8f0', 
+                    fontSize: '12px', fontWeight: activeFilter === f ? '800' : '700', 
+                    color: activeFilter === f ? '#0f172a' : '#64748b', 
+                    cursor: 'pointer', transition: 'all 0.2s' 
+                  }}
+                >
+                  {f}
+                </button>
+              ))}
             </div>
-            <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ height: '40px', padding: '0 16px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: '700', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <button onClick={() => addToast("Advanced filters modal opened", "info")} style={{ height: '40px', padding: '0 16px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: '700', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
               <Filter size={14} /> Advanced Filters
             </button>
-            <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ height: '40px', padding: '0 16px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: '700', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <button onClick={() => addToast("Time range set to Last 24 Hours", "info")} style={{ height: '40px', padding: '0 16px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: '700', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
               <Calendar size={14} /> Last 24 Hours
             </button>
           </div>
@@ -113,148 +156,83 @@ export default function SystemLogs() {
           <div style={{ background: '#1e1b4b', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <h2 style={{ fontSize: '12px', fontWeight: '800', color: '#fff', letterSpacing: '1px', margin: 0 }}>EVENT REGISTRY</h2>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '9px', fontWeight: '800', padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.5px' }}>
+              <span className="animate-pulse" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '9px', fontWeight: '800', padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.5px' }}>
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade80' }}></span> LIVE STREAMING
               </span>
             </div>
             <div style={{ display: 'flex', gap: '16px', color: '#94a3b8' }}>
-              <Download size={16} style={{ cursor: 'pointer' }} />
-              <Maximize size={16} style={{ cursor: 'pointer' }} />
-              <Settings size={16} style={{ cursor: 'pointer' }} />
+              <Download onClick={() => addToast("Downloading raw logs...", "success")} size={16} style={{ cursor: 'pointer' }} />
+              <Maximize onClick={() => addToast("Entering full-screen mode", "info")} size={16} style={{ cursor: 'pointer' }} />
+              <Settings onClick={() => addToast("Opening log settings", "info")} size={16} style={{ cursor: 'pointer' }} />
             </div>
           </div>
 
           <div className="table-responsive-wrapper">
-<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>TIMESTAMP (UTC)</th>
-                <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>SEVERITY</th>
-                <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>SERVICE</th>
-                <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>MESSAGE</th>
-                <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>LATENCY</th>
-              </tr>
-            </thead>
-            <tbody style={{ fontFamily: "var(--materio-space)", fontSize: '11px' }}>
-              
-              {/* Row 1 */}
-              <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '16px 24px', color: '#64748b' }}>2023-11-28<br/>14:23:41.002</td>
-                <td style={{ padding: '16px 24px' }}>
-                  <span style={{ display: 'inline-block', background: '#fee2e2', color: '#dc2626', fontSize: '9px', fontWeight: '800', padding: '4px 8px', borderRadius: '4px', letterSpacing: '0.5px',  }}>CRITICAL</span>
-                </td>
-                <td style={{ padding: '16px 24px', color: '#0f172a', fontWeight: '700' }}>Auth-Gateway</td>
-                <td style={{ padding: '16px 24px', color: '#334155', maxWidth: '400px', lineHeight: '1.5' }}>
-                  <span style={{ color: '#dc2626', fontWeight: '700' }}>DB_CONNECTION_FAILURE:</span> Connection timeout on secondary replica cluster.
-                </td>
-                <td style={{ padding: '16px 24px', color: '#94a3b8', textAlign: 'right' }}>--</td>
-              </tr>
-
-              {/* Row 2 */}
-              <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '16px 24px', color: '#64748b' }}>2023-11-28<br/>14:23:40.812</td>
-                <td style={{ padding: '16px 24px' }}>
-                  <span style={{ display: 'inline-block', background: '#fef3c7', color: '#d97706', fontSize: '9px', fontWeight: '800', padding: '4px 8px', borderRadius: '4px', letterSpacing: '0.5px',  }}>WARNING</span>
-                </td>
-                <td style={{ padding: '16px 24px', color: '#0f172a', fontWeight: '700' }}>Payment-Proxy</td>
-                <td style={{ padding: '16px 24px', color: '#334155', maxWidth: '400px', lineHeight: '1.5' }}>
-                  RETRIABLE_EXCEPTION: Card validation service responded with 503. Retrying in 2s.
-                </td>
-                <td style={{ padding: '16px 24px', color: '#16a34a', textAlign: 'right' }}>1.2s</td>
-              </tr>
-
-              {/* Row 3 */}
-              <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '16px 24px', color: '#64748b' }}>2023-11-28<br/>14:23:39.155</td>
-                <td style={{ padding: '16px 24px' }}>
-                  <span style={{ display: 'inline-block', background: '#e0f2fe', color: '#0284c7', fontSize: '9px', fontWeight: '800', padding: '4px 8px', borderRadius: '4px', letterSpacing: '0.5px',  }}>INFO</span>
-                </td>
-                <td style={{ padding: '16px 24px', color: '#0f172a', fontWeight: '700' }}>Search-Indexer</td>
-                <td style={{ padding: '16px 24px', color: '#334155', maxWidth: '400px', lineHeight: '1.5' }}>
-                  INDEX_UPDATE_SUCCESS: Re-indexed 4,209 documents for 'Global-Search-V3'.
-                </td>
-                <td style={{ padding: '16px 24px', color: '#16a34a', textAlign: 'right' }}>420ms</td>
-              </tr>
-
-              {/* Row 4 */}
-              <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '16px 24px', color: '#64748b' }}>2023-11-28<br/>14:23:38.991</td>
-                <td style={{ padding: '16px 24px' }}>
-                  <span style={{ display: 'inline-block', background: '#e0f2fe', color: '#0284c7', fontSize: '9px', fontWeight: '800', padding: '4px 8px', borderRadius: '4px', letterSpacing: '0.5px',  }}>INFO</span>
-                </td>
-                <td style={{ padding: '16px 24px', color: '#0f172a', fontWeight: '700' }}>API-v2</td>
-                <td style={{ padding: '16px 24px', color: '#334155', maxWidth: '400px', lineHeight: '1.5' }}>
-                  GET /v2/analytics/operational?period=24h&scope=full [200 OK]
-                </td>
-                <td style={{ padding: '16px 24px', color: '#16a34a', textAlign: 'right' }}>12ms</td>
-              </tr>
-
-              {/* Row 5 */}
-              <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '16px 24px', color: '#64748b' }}>2023-11-28<br/>14:23:37.402</td>
-                <td style={{ padding: '16px 24px' }}>
-                  <span style={{ display: 'inline-block', background: '#fee2e2', color: '#dc2626', fontSize: '9px', fontWeight: '800', padding: '4px 8px', borderRadius: '4px', letterSpacing: '0.5px',  }}>CRITICAL</span>
-                </td>
-                <td style={{ padding: '16px 24px', color: '#0f172a', fontWeight: '700' }}>Node-Manager</td>
-                <td style={{ padding: '16px 24px', color: '#334155', maxWidth: '400px', lineHeight: '1.5' }}>
-                  MEMORY_THRESHOLD_EXCEEDED: Process id 8421 killed by OOM killer.
-                </td>
-                <td style={{ padding: '16px 24px', color: '#94a3b8', textAlign: 'right' }}>--</td>
-              </tr>
-
-              {/* Row 6 */}
-              <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '16px 24px', color: '#64748b' }}>2023-11-28<br/>14:23:36.002</td>
-                <td style={{ padding: '16px 24px' }}>
-                  <span style={{ display: 'inline-block', background: '#fef3c7', color: '#d97706', fontSize: '9px', fontWeight: '800', padding: '4px 8px', borderRadius: '4px', letterSpacing: '0.5px',  }}>WARNING</span>
-                </td>
-                <td style={{ padding: '16px 24px', color: '#0f172a', fontWeight: '700' }}>Job-Scheduler</td>
-                <td style={{ padding: '16px 24px', color: '#334155', maxWidth: '400px', lineHeight: '1.5' }}>
-                  LATE_EXECUTION: Job 'Nightly-Backup' started with 12 minute delay.
-                </td>
-                <td style={{ padding: '16px 24px', color: '#94a3b8', textAlign: 'right' }}>--</td>
-              </tr>
-
-              {/* Row 7 */}
-              <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '16px 24px', color: '#64748b' }}>2023-11-28<br/>14:23:35.812</td>
-                <td style={{ padding: '16px 24px' }}>
-                  <span style={{ display: 'inline-block', background: '#e0f2fe', color: '#0284c7', fontSize: '9px', fontWeight: '800', padding: '4px 8px', borderRadius: '4px', letterSpacing: '0.5px',  }}>INFO</span>
-                </td>
-                <td style={{ padding: '16px 24px', color: '#0f172a', fontWeight: '700' }}>CDN-Worker</td>
-                <td style={{ padding: '16px 24px', color: '#334155', maxWidth: '400px', lineHeight: '1.5' }}>
-                  CACHE_PURGE_REQUEST: Static asset purge initiated for path '/assets/v4/*'.
-                </td>
-                <td style={{ padding: '16px 24px', color: '#16a34a', textAlign: 'right' }}>2ms</td>
-              </tr>
-
-              {/* Row 8 */}
-              <tr>
-                <td style={{ padding: '16px 24px', color: '#64748b' }}>2023-11-28<br/>14:23:34.155</td>
-                <td style={{ padding: '16px 24px' }}>
-                  <span style={{ display: 'inline-block', background: '#e0f2fe', color: '#0284c7', fontSize: '9px', fontWeight: '800', padding: '4px 8px', borderRadius: '4px', letterSpacing: '0.5px',  }}>INFO</span>
-                </td>
-                <td style={{ padding: '16px 24px', color: '#0f172a', fontWeight: '700' }}>Invoicing-Svc</td>
-                <td style={{ padding: '16px 24px', color: '#334155', maxWidth: '400px', lineHeight: '1.5' }}>
-                  EMAIL_DISPATCHED: Monthly statement sent to client 88219.
-                </td>
-                <td style={{ padding: '16px 24px', color: '#16a34a', textAlign: 'right' }}>1.4s</td>
-              </tr>
-            </tbody>
-          </table>
-</div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                  <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>TIMESTAMP (UTC)</th>
+                  <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>SEVERITY</th>
+                  <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>SERVICE</th>
+                  <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>MESSAGE</th>
+                  <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>LATENCY</th>
+                </tr>
+              </thead>
+              <tbody style={{ fontFamily: "var(--materio-space)", fontSize: '11px' }}>
+                {filteredLogs.map((log, index) => {
+                  const style = getSeverityStyle(log.severity);
+                  return (
+                    <tr key={log.id} className="animate-in fade-in" style={{ borderBottom: index === filteredLogs.length - 1 ? 'none' : '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '16px 24px', color: '#64748b' }}>{log.date}<br/>{log.time}</td>
+                      <td style={{ padding: '16px 24px' }}>
+                        <span style={{ display: 'inline-block', background: style.bg, color: style.color, fontSize: '9px', fontWeight: '800', padding: '4px 8px', borderRadius: '4px', letterSpacing: '0.5px' }}>
+                          {log.severity}
+                        </span>
+                      </td>
+                      <td style={{ padding: '16px 24px', color: '#0f172a', fontWeight: '700' }}>{log.service}</td>
+                      <td style={{ padding: '16px 24px', color: '#334155', maxWidth: '400px', lineHeight: '1.5' }}>
+                        {log.messageTitle && <span style={{ color: log.severity === 'CRITICAL' ? '#dc2626' : '#0f172a', fontWeight: '700' }}>{log.messageTitle} </span>}
+                        {log.messageBody}
+                      </td>
+                      <td style={{ padding: '16px 24px', color: log.latency === '--' ? '#94a3b8' : '#16a34a', textAlign: 'right' }}>
+                        {log.latency}
+                      </td>
+                    </tr>
+                  )
+                })}
+                {filteredLogs.length === 0 && (
+                  <tr>
+                    <td colSpan="5" style={{ padding: '40px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
+                      No logs found for this filter in the current view.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
           {/* Pagination Footer */}
           <div style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #e2e8f0' }}>
-            <span style={{ fontSize: '11px', color: '#64748b' }}>Showing 1-50 of 12,402 entries</span>
+            <span style={{ fontSize: '11px', color: '#64748b' }}>Showing {filteredLogs.length > 0 ? 1 : 0}-{filteredLogs.length} of {activeFilter === 'All Logs' ? '12,402' : filteredLogs.length} entries</span>
             <div style={{ display: 'flex', gap: '4px' }}>
-              <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ width: '28px', height: '28px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b' }}><ChevronLeft size={14} /></button>
-              <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ width: '28px', height: '28px', background: '#1e1b4b', border: 'none', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', fontSize: '11px', fontWeight: '700' }}>1</button>
-              <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ width: '28px', height: '28px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b', fontSize: '11px', fontWeight: '700' }}>2</button>
-              <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ width: '28px', height: '28px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b', fontSize: '11px', fontWeight: '700' }}>3</button>
+              <button 
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                style={{ width: '28px', height: '28px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', color: currentPage === 1 ? '#cbd5e1' : '#64748b' }}
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <button onClick={() => setCurrentPage(1)} style={{ width: '28px', height: '28px', background: currentPage === 1 ? '#1e1b4b' : '#fff', border: currentPage === 1 ? 'none' : '1px solid #e2e8f0', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: currentPage === 1 ? '#fff' : '#64748b', fontSize: '11px', fontWeight: '700' }}>1</button>
+              <button onClick={() => setCurrentPage(2)} style={{ width: '28px', height: '28px', background: currentPage === 2 ? '#1e1b4b' : '#fff', border: currentPage === 2 ? 'none' : '1px solid #e2e8f0', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: currentPage === 2 ? '#fff' : '#64748b', fontSize: '11px', fontWeight: '700' }}>2</button>
+              <button onClick={() => setCurrentPage(3)} style={{ width: '28px', height: '28px', background: currentPage === 3 ? '#1e1b4b' : '#fff', border: currentPage === 3 ? 'none' : '1px solid #e2e8f0', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: currentPage === 3 ? '#fff' : '#64748b', fontSize: '11px', fontWeight: '700' }}>3</button>
               <span style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: '11px' }}>...</span>
-              <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ width: '32px', height: '28px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b', fontSize: '11px', fontWeight: '700' }}>249</button>
-              <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ width: '28px', height: '28px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b' }}><ChevronRight size={14} /></button>
+              <button style={{ width: '32px', height: '28px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b', fontSize: '11px', fontWeight: '700' }}>249</button>
+              <button 
+                onClick={() => setCurrentPage(currentPage + 1)}
+                style={{ width: '28px', height: '28px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b' }}
+              >
+                <ChevronRight size={14} />
+              </button>
             </div>
           </div>
         </div>

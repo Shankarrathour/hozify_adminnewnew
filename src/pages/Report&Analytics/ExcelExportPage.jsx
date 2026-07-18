@@ -4,10 +4,21 @@ import AdminShell from "../../components/layouts/AdminShell";
 import Select from "../../components/ui/Select";
 
 export default function ExcelExportPage() {
-  // States for interactive actions
   const [currentPage, setCurrentPage] = useState(1);
   const [showSyncContent, setShowSyncContent] = useState(false);
   const [selectedDate, setSelectedDate] = useState("2023-10-01"); // Default date state
+  const [sortOrder, setSortOrder] = useState("newest");
+
+  const exportData = [
+    { id: 1, name: "system_logs_oct.xlsx", type: "System", user: "System Admin", avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=40&q=80", date: "Oct 26, 2023", time: "11:45", timestamp: 1698311100000, size: "5.1 MB", status: "Ready" },
+    { id: 2, name: "q4_financial_consolidated_2023.xlsx", type: "Financial", user: "Sarah Jenkins", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=40&q=80", date: "Oct 24, 2023", time: "14:22", timestamp: 1698142920000, size: "24.5 MB", status: "Ready" },
+    { id: 3, name: "q3_marketing_campaigns_2023.xlsx", type: "Marketing", user: "John Doe", avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=40&q=80", date: "Oct 21, 2023", time: "09:15", timestamp: 1697870100000, size: "18.2 MB", status: "Ready" },
+  ];
+
+  const sortedData = [...exportData].sort((a, b) => {
+    return sortOrder === "newest" ? b.timestamp - a.timestamp : a.timestamp - b.timestamp;
+  });
+
 
   const handleNextPage = () => {
     if (currentPage < 3) {
@@ -124,8 +135,11 @@ export default function ExcelExportPage() {
             <span className="text-xs font-black text-slate-800 tracking-wide uppercase">Recent Export Logs</span>
             <div className="flex items-center gap-1.5 text-xs text-gray-400">
               <span className="font-semibold text-[11px]">Sorted by:</span>
-              <button className="text-slate-700 font-bold hover:underline inline-flex items-center gap-0.5">
-                Newest First <span>▼</span>
+              <button 
+                onClick={() => setSortOrder(prev => prev === "newest" ? "oldest" : "newest")}
+                className="text-slate-700 font-bold hover:underline inline-flex items-center gap-0.5 focus:outline-none"
+              >
+                {sortOrder === "newest" ? "Newest First" : "Oldest First"} <span>▼</span>
               </button>
             </div>
           </div>
@@ -145,30 +159,32 @@ export default function ExcelExportPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 font-bold text-slate-700 bg-white">
-                <tr className="hover:bg-slate-50/40 transition-colors">
-                  <td className="py-3.5 px-5 flex items-center gap-3">
-                    <span className="w-8 h-8 rounded bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center text-xl shadow-sm">📄</span>
-                    <span className="font-black text-slate-900 text-xs">q4_financial_consolidated_2023.xlsx</span>
-                  </td>
-                  <td className="py-3.5 px-4">
-                    <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded uppercase">Financial</span>
-                  </td>
-                  <td className="py-3.5 px-4 flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-slate-200 overflow-hidden shrink-0">
-                      <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=40&q=80" alt="Avatar" className="w-full h-full object-cover" />
-                    </div>
-                    <span className="text-xs text-slate-800 font-medium">Sarah Jenkins</span>
-                  </td>
-                  <td className="py-3.5 px-4 text-slate-500 font-medium text-[11px] leading-tight">
-                    Oct 24, 2023 <span className="block text-gray-400 text-[10px] mt-0.5">14:22</span>
-                  </td>
-                  <td className="py-3.5 px-4 text-slate-600 font-semibold text-xs">24.5 MB</td>
-                  <td className="py-3.5 px-5 text-right">
-                    <span className="text-[9px] font-black bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded inline-flex items-center gap-1 uppercase tracking-wide">
-                      ● Ready
-                    </span>
-                  </td>
-                </tr>
+                {sortedData.map((row) => (
+                  <tr key={row.id} className="hover:bg-slate-50/40 transition-colors">
+                    <td className="py-3.5 px-5 flex items-center gap-3">
+                      <span className="w-8 h-8 rounded bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center text-xl shadow-sm">📄</span>
+                      <span className="font-black text-slate-900 text-xs">{row.name}</span>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded uppercase">{row.type}</span>
+                    </td>
+                    <td className="py-3.5 px-4 flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-full bg-slate-200 overflow-hidden shrink-0">
+                        <img src={row.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                      </div>
+                      <span className="text-xs text-slate-800 font-medium">{row.user}</span>
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-500 font-medium text-[11px] leading-tight">
+                      {row.date} <span className="block text-gray-400 text-[10px] mt-0.5">{row.time}</span>
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-600 font-semibold text-xs">{row.size}</td>
+                    <td className="py-3.5 px-5 text-right">
+                      <span className="text-[9px] font-black bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded inline-flex items-center gap-1 uppercase tracking-wide">
+                        ● {row.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
 </div>

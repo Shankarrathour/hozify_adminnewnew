@@ -1,15 +1,67 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   ShieldCheck, ArrowUpRight, Globe,
-  Laptop, Smartphone, Monitor, Shield, ArrowRight
+  Laptop, Smartphone, Monitor, Shield, ArrowRight, Loader2
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
-import toast from 'react-hot-toast';
+import { useToast } from '../../components/common/ToastNotification';
 import Toggle from '../../components/common/Toggle';
-
 import Select from "../../components/ui/Select";
 
+const INITIAL_LIVE_SESSIONS = [
+  { id: 1, initials: 'JD', name: 'jane.doe@hozify.com', role: 'Regional Manager', bg: '#dbeafe', color: '#1e40af', ip: '192.168.1.105', device: 'macOS Ventura', icon: 'Laptop', lastActive: 'Just now' },
+  { id: 2, initials: 'AS', name: 'a.smith@hozify.com', role: 'Compliance Officer', bg: '#451a03', color: '#fff', ip: '45.23.11.89', device: 'iOS 17.4', icon: 'Smartphone', lastActive: '12 mins ago' },
+  { id: 3, initials: 'RK', name: 'r.kumar@hozify.com', role: 'Lead Developer', bg: '#1e1b4b', color: '#fff', ip: '102.45.2.14', device: 'Windows 11', icon: 'Monitor', lastActive: '34 mins ago' },
+  { id: 4, initials: 'ML', name: 'm.lee@hozify.com', role: 'Marketing Lead', bg: '#e2e8f0', color: '#475569', ip: '88.2.141.5', device: 'Ubuntu Linux', icon: 'Monitor', lastActive: '1 hour ago' },
+];
+
 export default function SessionManagement() {
+  const { addToast } = useToast();
+
+  const [idleTimeout, setIdleTimeout] = useState('30');
+  const [concurrentLimits, setConcurrentLimits] = useState('3 Devices');
+  const [enforceMfa, setEnforceMfa] = useState(true);
+  
+  const [isUpdatingPolicy, setIsUpdatingPolicy] = useState(false);
+  const [isRevokingAll, setIsRevokingAll] = useState(false);
+  
+  const [sessions, setSessions] = useState(INITIAL_LIVE_SESSIONS);
+
+  const handleUpdatePolicy = () => {
+    setIsUpdatingPolicy(true);
+    setTimeout(() => {
+      setIsUpdatingPolicy(false);
+      addToast("Security policy updated successfully.", "success");
+    }, 1000);
+  };
+
+  const handleRevokeSingle = (id) => {
+    setSessions(prev => prev.filter(s => s.id !== id));
+    addToast("Session revoked.", "success");
+  };
+
+  const handleRevokeAll = () => {
+    setIsRevokingAll(true);
+    setTimeout(() => {
+      setSessions([]);
+      setIsRevokingAll(false);
+      addToast("All live sessions have been revoked.", "success");
+    }, 1200);
+  };
+
+  const handleExport = () => {
+    addToast("Session logs exported to CSV.", "info");
+  };
+
+  const getDeviceIcon = (iconName) => {
+    switch (iconName) {
+      case 'Laptop': return <Laptop size={14} color="#64748b" />;
+      case 'Smartphone': return <Smartphone size={14} color="#64748b" />;
+      case 'Monitor': return <Monitor size={14} color="#64748b" />;
+      default: return <Monitor size={14} color="#64748b" />;
+    }
+  };
+
   return (
     <AdminShell
       activeTab="Settings"
@@ -28,9 +80,11 @@ export default function SessionManagement() {
             {/* Top Metrics Row */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--spacing-section)' }}>
               {/* Metric 1 */}
-              <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: 'var(--spacing-section)', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+              <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: 'var(--spacing-section)', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', transition: 'all 0.3s' }}>
                 <span style={{ display: 'block', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>ACTIVE SESSIONS</span>
-                <div style={{ fontSize: '36px', fontWeight: '800', color: '#0f172a', marginBottom: '16px', lineHeight: '1', letterSpacing: '-1px' }}>142</div>
+                <div style={{ fontSize: '36px', fontWeight: '800', color: '#0f172a', marginBottom: '16px', lineHeight: '1', letterSpacing: '-1px' }}>
+                  {138 + sessions.length}
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#16a34a', fontSize: '11px', fontWeight: '800' }}>
                   <ArrowUpRight size={14} /> +12% vs last hour
                 </div>
@@ -93,27 +147,27 @@ export default function SessionManagement() {
 
               <div style={{ marginBottom: '24px' }}>
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>Idle Timeout (minutes)</label>
-                <input type="text" defaultValue="30" style={{ width: '100%', height: '40px', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '0 12px', fontSize: '14px', color: '#0f172a', boxSizing: 'border-box', outline: 'none' }} />
+                <input 
+                  type="number" 
+                  value={idleTimeout}
+                  onChange={(e) => setIdleTimeout(e.target.value)}
+                  style={{ width: '100%', height: '40px', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '0 12px', fontSize: '14px', color: '#0f172a', boxSizing: 'border-box', outline: 'none' }} 
+                />
               </div>
 
               <div style={{ marginBottom: '32px' }}>
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>Concurrent Login Limits</label>
                 <Select
+                  value={concurrentLimits}
+                  onChange={(e) => setConcurrentLimits(e.target.value)}
                   style={{ width: '100%', height: '40px', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '0 12px', fontSize: '14px', color: '#0f172a', boxSizing: 'border-box', outline: 'none', background: '#fff', cursor: 'pointer', appearance: 'none' }}
-                  options={[{
-                    label: "3 Devices",
-                    value: "3 Devices"
-                  }, {
-                    label: "5 Devices",
-                    value: "5 Devices"
-                  }, {
-                    label: "Unlimited",
-                    value: "Unlimited"
-                  }]} />
-                {/* Custom dropdown arrow to simulate appearance */}
-                <div style={{ position: 'relative', marginTop: '-26px', right: '-90%', pointerEvents: 'none' }}>
-                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </div>
+                  options={[
+                    { label: "1 Device", value: "1 Device" },
+                    { label: "3 Devices", value: "3 Devices" }, 
+                    { label: "5 Devices", value: "5 Devices" }, 
+                    { label: "Unlimited", value: "Unlimited" }
+                  ]} 
+                />
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', marginTop: '24px' }}>
@@ -121,10 +175,15 @@ export default function SessionManagement() {
                   <h4 style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', margin: '0 0 4px' }}>Enforce MFA</h4>
                   <p style={{ fontSize: '11px', color: '#64748b', margin: 0 }}>Mandatory for all admin sessions</p>
                 </div>
-                <Toggle defaultChecked={true} />
+                <Toggle checked={enforceMfa} onChange={(val) => setEnforceMfa(val)} />
               </div>
 
-              <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ width: '100%', height: '44px', background: '#0f172a', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '800', color: '#fff', cursor: 'pointer' }}>
+              <button 
+                onClick={handleUpdatePolicy} 
+                disabled={isUpdatingPolicy}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', height: '44px', background: '#0f172a', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '800', color: '#fff', cursor: isUpdatingPolicy ? 'not-allowed' : 'pointer', opacity: isUpdatingPolicy ? 0.8 : 1 }}
+              >
+                {isUpdatingPolicy && <Loader2 size={14} className="animate-spin" />}
                 Update Security Policy
               </button>
             </div>
@@ -137,115 +196,69 @@ export default function SessionManagement() {
           <div style={{ padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0' }}>
             <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Live Sessions</h2>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ height: '32px', padding: '0 16px', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '11px', fontWeight: '700', color: '#475569', cursor: 'pointer' }}>
+              <button onClick={handleExport} style={{ height: '32px', padding: '0 16px', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '11px', fontWeight: '700', color: '#475569', cursor: 'pointer' }}>
                 Export Logs
               </button>
-              <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ height: '32px', padding: '0 16px', background: '#dc2626', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: '700', color: '#fff', cursor: 'pointer' }}>
+              <button 
+                onClick={handleRevokeAll}
+                disabled={isRevokingAll || sessions.length === 0}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '32px', padding: '0 16px', background: '#dc2626', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: '700', color: '#fff', cursor: (isRevokingAll || sessions.length === 0) ? 'not-allowed' : 'pointer', opacity: (isRevokingAll || sessions.length === 0) ? 0.6 : 1 }}
+              >
+                {isRevokingAll && <Loader2 size={12} className="animate-spin" />}
                 Revoke All
               </button>
             </div>
           </div>
 
           <div className="table-responsive-wrapper">
-<table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', width: '35%' }}>USER IDENTITY</th>
-                <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>IP ADDRESS</th>
-                <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>DEVICE / OS</th>
-                <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>LAST ACTIVE</th>
-                <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* Row 1 */}
-              <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#dbeafe', color: '#1e40af', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '800' }}>JD</div>
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', marginBottom: '2px' }}>jane.doe@hozify.com</div>
-                    <div style={{ fontSize: '11px', color: '#64748b' }}>Regional Manager</div>
-                  </div>
-                </td>
-                <td style={{ padding: '16px 24px', fontSize: '12px', color: '#334155', fontFamily: "var(--materio-space)", }}>192.168.1.105</td>
-                <td style={{ padding: '16px 24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#334155' }}>
-                    <Laptop size={14} color="#64748b" /> macOS Ventura
-                  </div>
-                </td>
-                <td style={{ padding: '16px 24px', fontSize: '12px', color: '#334155' }}>Just now</td>
-                <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                  <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ background: 'none', border: 'none', fontSize: '11px', fontWeight: '800', color: '#dc2626', cursor: 'pointer', padding: 0 }}>Revoke</button>
-                </td>
-              </tr>
-
-              {/* Row 2 */}
-              <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#451a03', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '800' }}></div>
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', marginBottom: '2px' }}>a.smith@hozify.com</div>
-                    <div style={{ fontSize: '11px', color: '#64748b' }}>Compliance Officer</div>
-                  </div>
-                </td>
-                <td style={{ padding: '16px 24px', fontSize: '12px', color: '#334155', fontFamily: "var(--materio-space)", }}>45.23.11.89</td>
-                <td style={{ padding: '16px 24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#334155' }}>
-                    <Smartphone size={14} color="#64748b" /> iOS 17.4
-                  </div>
-                </td>
-                <td style={{ padding: '16px 24px', fontSize: '12px', color: '#334155' }}>12 mins ago</td>
-                <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                  <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ background: 'none', border: 'none', fontSize: '11px', fontWeight: '800', color: '#dc2626', cursor: 'pointer', padding: 0 }}>Revoke</button>
-                </td>
-              </tr>
-
-              {/* Row 3 */}
-              <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#1e1b4b', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '800' }}>RK</div>
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', marginBottom: '2px' }}>r.kumar@hozify.com</div>
-                    <div style={{ fontSize: '11px', color: '#64748b' }}>Lead Developer</div>
-                  </div>
-                </td>
-                <td style={{ padding: '16px 24px', fontSize: '12px', color: '#334155', fontFamily: "var(--materio-space)", }}>102.45.2.14</td>
-                <td style={{ padding: '16px 24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#334155' }}>
-                    <Monitor size={14} color="#64748b" /> Windows 11
-                  </div>
-                </td>
-                <td style={{ padding: '16px 24px', fontSize: '12px', color: '#334155' }}>34 mins ago</td>
-                <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                  <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ background: 'none', border: 'none', fontSize: '11px', fontWeight: '800', color: '#dc2626', cursor: 'pointer', padding: 0 }}>Revoke</button>
-                </td>
-              </tr>
-
-              {/* Row 4 */}
-              <tr>
-                <td style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#e2e8f0', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '800' }}>ML</div>
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', marginBottom: '2px' }}>m.lee@hozify.com</div>
-                    <div style={{ fontSize: '11px', color: '#64748b' }}>Marketing Lead</div>
-                  </div>
-                </td>
-                <td style={{ padding: '16px 24px', fontSize: '12px', color: '#334155', fontFamily: "var(--materio-space)", }}>88.2.141.5</td>
-                <td style={{ padding: '16px 24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#334155' }}>
-                    <Monitor size={14} color="#64748b" /> Ubuntu Linux
-                  </div>
-                </td>
-                <td style={{ padding: '16px 24px', fontSize: '12px', color: '#334155' }}>1 hour ago</td>
-                <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                  <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ background: 'none', border: 'none', fontSize: '11px', fontWeight: '800', color: '#dc2626', cursor: 'pointer', padding: 0 }}>Revoke</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-</div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                  <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', width: '35%' }}>USER IDENTITY</th>
+                  <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>IP ADDRESS</th>
+                  <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>DEVICE / OS</th>
+                  <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>LAST ACTIVE</th>
+                  <th style={{ padding: '12px 24px', fontSize: '10px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sessions.map((session, index) => (
+                  <tr key={session.id} className="animate-in fade-in slide-in-from-top-1" style={{ borderBottom: index === sessions.length - 1 ? 'none' : '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: session.bg, color: session.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '800' }}>
+                        {session.initials}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', marginBottom: '2px' }}>{session.name}</div>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>{session.role}</div>
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 24px', fontSize: '12px', color: '#334155', fontFamily: "var(--materio-space)" }}>{session.ip}</td>
+                    <td style={{ padding: '16px 24px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#334155' }}>
+                        {getDeviceIcon(session.icon)} {session.device}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 24px', fontSize: '12px', color: '#334155' }}>{session.lastActive}</td>
+                    <td style={{ padding: '16px 24px', textAlign: 'right' }}>
+                      <button onClick={() => handleRevokeSingle(session.id)} style={{ background: 'none', border: 'none', fontSize: '11px', fontWeight: '800', color: '#dc2626', cursor: 'pointer', padding: 0 }}>
+                        Revoke
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {sessions.length === 0 && (
+                  <tr>
+                    <td colSpan="5" style={{ padding: '32px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
+                      No active sessions found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
           <div style={{ padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
-            <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ background: 'none', border: 'none', fontSize: '11px', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+            <button onClick={() => addToast("Loading more sessions...", "info")} style={{ background: 'none', border: 'none', fontSize: '11px', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
               View all sessions <ArrowRight size={14} />
             </button>
           </div>

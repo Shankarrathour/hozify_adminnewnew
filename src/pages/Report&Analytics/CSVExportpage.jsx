@@ -5,6 +5,7 @@ export default function CSVExportPage() {
   // --- States ---
   const [activeTab, setActiveTab] = useState("All"); // All, Completed, Processing
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showQueueModal, setShowQueueModal] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showCalendarDropdown, setShowCalendarDropdown] = useState(false);
   
@@ -366,11 +367,55 @@ export default function CSVExportPage() {
                 </div>
               </div>
             </div>
-            <button className="w-full text-center text-xs text-[#1d0094] font-black hover:underline mt-4">
+            <button 
+              onClick={() => setShowQueueModal(true)}
+              className="w-full text-center text-xs text-[#1d0094] font-black hover:underline mt-4 focus:outline-none"
+            >
               View Full Queue ➔
             </button>
           </div>
         </div>
+
+        {/* MODAL OVERLAY TRIGGER FOR QUEUE */}
+        {showQueueModal && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-sm w-full overflow-hidden border border-gray-100">
+              <div className="p-4 bg-[#1d0094] text-white flex justify-between items-center">
+                <span className="text-xs font-bold uppercase tracking-wider">Full Export Queue</span>
+                <button onClick={() => setShowQueueModal(false)} className="text-white hover:text-gray-200 font-bold focus:outline-none">✕</button>
+              </div>
+              <div className="p-5 text-xs space-y-3 max-h-[300px] overflow-y-auto">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-2.5 border border-gray-50 bg-[#f8fafd]/60 rounded-lg">
+                    <span className="text-xs font-bold text-slate-900 truncate max-w-[180px]">Legacy_User_Data.csv</span>
+                    <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded uppercase">Queued</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2.5 border border-gray-50 bg-[#f8fafd]/60 rounded-lg">
+                    <span className="text-xs font-bold text-slate-900 truncate max-w-[180px]">Inventory_Backup_Full.csv</span>
+                    <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded uppercase">Queued</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2.5 border border-gray-50 bg-[#f8fafd]/60 rounded-lg">
+                    <span className="text-xs font-bold text-slate-900 truncate max-w-[180px]">System_Logs_Q3.csv</span>
+                    <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded uppercase">Queued</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2.5 border border-gray-50 bg-[#f8fafd]/60 rounded-lg">
+                    <span className="text-xs font-bold text-slate-900 truncate max-w-[180px]">Marketing_Leads_Sept.csv</span>
+                    <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded uppercase">Queued</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2.5 border border-gray-50 bg-[#f8fafd]/60 rounded-lg">
+                    <span className="text-xs font-bold text-slate-900 truncate max-w-[180px]">Financial_Audit_2023.csv</span>
+                    <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded uppercase">Queued</span>
+                  </div>
+                </div>
+              </div>
+              <div className="p-3 bg-gray-50 border-t border-gray-100 flex justify-end gap-2">
+                <button onClick={() => setShowQueueModal(false)} className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-bold transition-colors">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* MODAL OVERLAY TRIGGER FOR INTERACTIVE VIEW SUGGESTIONS */}
         {showScheduleModal && (

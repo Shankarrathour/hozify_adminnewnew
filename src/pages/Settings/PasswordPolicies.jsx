@@ -1,14 +1,52 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
-  Shield, Lock, Clock, AlertTriangle 
+  Shield, Lock, Clock, AlertTriangle, Loader2 
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
-import toast from 'react-hot-toast';
+import { useToast } from '../../components/common/ToastNotification';
 import Toggle from '../../components/common/Toggle';
-
 import Select from "../../components/ui/Select";
 
+const INITIAL_STATE = {
+  minLength: 12,
+  mixedCase: true,
+  specialChars: true,
+  numericValues: true,
+  maxLoginAttempts: 5,
+  lockoutDuration: '1 Hour',
+  passwordLifetime: 90,
+  historyRetention: 5,
+  preventIdenticalMatch: true
+};
+
 export default function PasswordPolicies() {
+  const { addToast } = useToast();
+  
+  const [formData, setFormData] = useState(INITIAL_STATE);
+  const [isDeploying, setIsDeploying] = useState(false);
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleRestoreDefaults = () => {
+    setFormData(INITIAL_STATE);
+    addToast("Restored to default enterprise policies.", "info");
+  };
+
+  const handleCancel = () => {
+    setFormData(INITIAL_STATE);
+    addToast("Changes cancelled.", "info");
+  };
+
+  const handleDeploy = () => {
+    setIsDeploying(true);
+    setTimeout(() => {
+      setIsDeploying(false);
+      addToast("Password policy successfully deployed to all 1,240 accounts.", "success");
+    }, 1200);
+  };
+
   return (
     <AdminShell
       activeTab="Settings"
@@ -69,10 +107,14 @@ export default function PasswordPolicies() {
                 <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <h4 style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', margin: '0 0 4px' }}>Minimum Length</h4>
-                    <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0 }}>Must be at least 12<br/>characters</p>
+                    <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0 }}>Must be at least {formData.minLength}<br/>characters</p>
                   </div>
-                  <div style={{ background: '#f8fafc', padding: '8px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: '800', color: '#0f172a' }}>
-                    12
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button type="button" onClick={() => handleChange('minLength', Math.max(8, formData.minLength - 1))} style={{ width: '28px', height: '28px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</button>
+                    <div style={{ background: '#f8fafc', padding: '8px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: '800', color: '#0f172a', minWidth: '40px', textAlign: 'center' }}>
+                      {formData.minLength}
+                    </div>
+                    <button type="button" onClick={() => handleChange('minLength', Math.min(32, formData.minLength + 1))} style={{ width: '28px', height: '28px', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
                   </div>
                 </div>
 
@@ -82,7 +124,7 @@ export default function PasswordPolicies() {
                     <h4 style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', margin: '0 0 4px' }}>Mixed Case</h4>
                     <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0 }}>Require uppercase &<br/>lowercase</p>
                   </div>
-                  <Toggle defaultChecked={true} />
+                  <Toggle checked={formData.mixedCase} onChange={(val) => handleChange('mixedCase', val)} />
                 </div>
 
                 {/* Special Characters */}
@@ -91,7 +133,7 @@ export default function PasswordPolicies() {
                     <h4 style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', margin: '0 0 4px' }}>Special Characters</h4>
                     <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0 }}>Require symbols (!, @, #, $,<br/>etc.)</p>
                   </div>
-                  <Toggle defaultChecked={true} />
+                  <Toggle checked={formData.specialChars} onChange={(val) => handleChange('specialChars', val)} />
                 </div>
 
                 {/* Numeric Values */}
@@ -100,7 +142,7 @@ export default function PasswordPolicies() {
                     <h4 style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', margin: '0 0 4px' }}>Numeric Values</h4>
                     <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0 }}>Require at least one number</p>
                   </div>
-                  <Toggle defaultChecked={true} />
+                  <Toggle checked={formData.numericValues} onChange={(val) => handleChange('numericValues', val)} />
                 </div>
 
               </div>
@@ -121,25 +163,34 @@ export default function PasswordPolicies() {
               <div style={{ marginBottom: '24px' }}>
                 <label style={{ display: 'block', fontSize: '10px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>MAX LOGIN ATTEMPTS</label>
                 <div style={{ borderBottom: '2px solid #e2e8f0', paddingBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                   <span style={{ fontSize: '14px', color: 'var(--text)' }}></span>
-                   <span style={{ fontSize: '14px', fontWeight: '800', color: '#0f172a' }}>5</span>
+                   <div style={{ display: 'flex', gap: '12px' }}>
+                      {[3, 5, 10].map(val => (
+                        <button 
+                          key={val}
+                          onClick={() => handleChange('maxLoginAttempts', val)}
+                          style={{ background: 'none', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '13px', fontWeight: '700', color: formData.maxLoginAttempts === val ? '#0f172a' : '#94a3b8', backgroundColor: formData.maxLoginAttempts === val ? '#f1f5f9' : 'transparent', cursor: 'pointer' }}
+                        >
+                          {val}
+                        </button>
+                      ))}
+                   </div>
+                   <span style={{ fontSize: '14px', fontWeight: '800', color: '#0f172a' }}>{formData.maxLoginAttempts}</span>
                 </div>
               </div>
 
               <div style={{ marginBottom: '24px' }}>
                 <label style={{ display: 'block', fontSize: '10px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>LOCKOUT DURATION</label>
                 <Select
+                  value={formData.lockoutDuration}
+                  onChange={(e) => handleChange('lockoutDuration', e.target.value)}
                   style={{ width: '100%', height: '40px', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '0 12px', fontSize: '13px', color: 'var(--text)', outline: 'none', background: '#fff', cursor: 'pointer' }}
-                  options={[{
-                    label: "1 Hour",
-                    value: "1 Hour"
-                  }, {
-                    label: "2 Hours",
-                    value: "2 Hours"
-                  }, {
-                    label: "24 Hours",
-                    value: "24 Hours"
-                  }]} />
+                  options={[
+                    { label: "15 Minutes", value: "15 Minutes" }, 
+                    { label: "1 Hour", value: "1 Hour" }, 
+                    { label: "2 Hours", value: "2 Hours" }, 
+                    { label: "24 Hours", value: "24 Hours" }
+                  ]} 
+                />
               </div>
 
               <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0, lineHeight: '1.5' }}>
@@ -154,15 +205,29 @@ export default function PasswordPolicies() {
               <div style={{ background: '#f8fafc', borderRadius: '8px', padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px', border: '1px solid #e2e8f0' }}>
                 <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>PASSWORD LIFETIME</span>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                  <span style={{ fontSize: '48px', fontWeight: '800', color: '#0f172a', lineHeight: '1', letterSpacing: '-1px' }}>90</span>
+                  <span className="animate-in fade-in" style={{ fontSize: '48px', fontWeight: '800', color: '#0f172a', lineHeight: '1', letterSpacing: '-1px' }}>{formData.passwordLifetime}</span>
                   <span style={{ fontSize: '12px', fontWeight: '700', color: '#0f172a' }}>DAYS</span>
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
-                <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ flex: 1, height: '36px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--text)', cursor: 'pointer' }}>30d</button>
-                <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ flex: 1, height: '36px', background: '#f8fafc', border: '1px solid #0f172a', borderRadius: '6px', fontSize: '12px', fontWeight: '800', color: '#0f172a', cursor: 'pointer' }}>90d</button>
-                <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ flex: 1, height: '36px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--text)', cursor: 'pointer' }}>180d</button>
+                {[30, 90, 180].map(days => (
+                  <button 
+                    key={days}
+                    onClick={() => handleChange('passwordLifetime', days)}
+                    style={{ 
+                      flex: 1, height: '36px', 
+                      background: formData.passwordLifetime === days ? '#f8fafc' : '#fff', 
+                      border: formData.passwordLifetime === days ? '1px solid #0f172a' : '1px solid #e2e8f0', 
+                      borderRadius: '6px', fontSize: '12px', 
+                      fontWeight: formData.passwordLifetime === days ? '800' : '600', 
+                      color: formData.passwordLifetime === days ? '#0f172a' : 'var(--text)', 
+                      cursor: 'pointer' 
+                    }}
+                  >
+                    {days}d
+                  </button>
+                ))}
               </div>
 
               <div style={{ background: '#fff', border: '1px solid #fecaca', borderRadius: '8px', padding: '16px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
@@ -190,27 +255,54 @@ export default function PasswordPolicies() {
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '48px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '6px 12px' }}>
-              <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--muted)', cursor: 'pointer', fontWeight: '700', fontSize: '16px' }}>-</button>
-              <span style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', minWidth: '24px', textAlign: 'center' }}>5</span>
-              <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--muted)', cursor: 'pointer', fontWeight: '700', fontSize: '16px' }}>+</button>
+              <button 
+                type="button" 
+                onClick={() => handleChange('historyRetention', Math.max(0, formData.historyRetention - 1))} 
+                style={{ background: 'none', border: 'none', padding: '0 8px', color: 'var(--muted)', cursor: 'pointer', fontWeight: '700', fontSize: '16px' }}
+              >
+                -
+              </button>
+              <span style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', minWidth: '24px', textAlign: 'center' }}>
+                {formData.historyRetention}
+              </span>
+              <button 
+                type="button" 
+                onClick={() => handleChange('historyRetention', Math.min(24, formData.historyRetention + 1))} 
+                style={{ background: 'none', border: 'none', padding: '0 8px', color: 'var(--muted)', cursor: 'pointer', fontWeight: '700', fontSize: '16px' }}
+              >
+                +
+              </button>
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', borderLeft: '1px solid #e2e8f0', paddingLeft: '48px' }}>
               <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text)', maxWidth: '120px' }}>Prevent identical match check</span>
-              <Toggle defaultChecked={true} />
+              <Toggle checked={formData.preventIdenticalMatch} onChange={(val) => handleChange('preventIdenticalMatch', val)} />
             </div>
           </div>
         </div>
 
         {/* Action Buttons */}
         <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '24px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '16px' }}>
-          <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ background: 'none', border: 'none', fontSize: '12px', fontWeight: '700', color: 'var(--muted)', cursor: 'pointer', marginRight: '8px' }}>
+          <button 
+            onClick={handleRestoreDefaults}
+            disabled={isDeploying}
+            style={{ background: 'none', border: 'none', fontSize: '12px', fontWeight: '700', color: 'var(--muted)', cursor: isDeploying ? 'not-allowed' : 'pointer', marginRight: '8px' }}
+          >
             Restore Defaults
           </button>
-          <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ height: '36px', padding: '0 24px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: '700', color: 'var(--text)', cursor: 'pointer' }}>
+          <button 
+            onClick={handleCancel}
+            disabled={isDeploying}
+            style={{ height: '36px', padding: '0 24px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: '700', color: 'var(--text)', cursor: isDeploying ? 'not-allowed' : 'pointer' }}
+          >
             Cancel changes
           </button>
-          <button onClick={(e) => { e.preventDefault(); toast.success("Action performed successfully!"); }} style={{ height: '36px', padding: '0 24px', background: '#0f172a', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: '700', color: '#fff', cursor: 'pointer' }}>
+          <button 
+            onClick={handleDeploy}
+            disabled={isDeploying}
+            style={{ height: '36px', padding: '0 24px', background: '#0f172a', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: '700', color: '#fff', cursor: isDeploying ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: isDeploying ? 0.8 : 1 }}
+          >
+            {isDeploying && <Loader2 size={14} className="animate-spin" />}
             Deploy Updated Policy
           </button>
         </div>

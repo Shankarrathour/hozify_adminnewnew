@@ -38,72 +38,59 @@ const queueNavItems = [
 ];
 
 const approvalTasks = [
-  {
-    partnerName: 'Nexis Logistics',
-    partnerId: 'ID: PRT-99201',
-    partnerInitials: 'NX',
-    logoBg: '#cbd5e1', // Slate gray
-    type: 'ISP',
-    pendingItem: 'KYC Verification',
-    pendingIcon: ShieldCheck,
-    submittedDate: 'Oct 24, 2023 09:12 AM',
-    priority: 'High',
-    priorityColor: 'red'
-  },
-  {
-    partnerName: 'Blue Freight Inc.',
-    partnerId: 'ID: PRT-88421',
-    partnerInitials: 'BF',
-    logoBg: '#c084fc', // Light purple
-    type: 'BSP',
-    pendingItem: 'Bank Verification',
-    pendingIcon: Landmark,
-    submittedDate: 'Oct 24, 2023 10:45 AM',
-    priority: 'Medium',
-    priorityColor: 'orange'
-  },
-  {
-    partnerName: 'Swift Ventures',
-    partnerId: 'ID: PRT-10293',
-    partnerInitials: 'SV',
-    logoBg: '#93c5fd', // Light blue
-    type: 'ISP',
-    pendingItem: 'Tax Documents',
-    pendingIcon: FileText,
-    submittedDate: 'Oct 23, 2023 04:30 PM',
-    priority: 'Low',
-    priorityColor: 'gray'
-  },
-  {
-    partnerName: 'Global Reach Co.',
-    partnerId: 'ID: PRT-20938',
-    partnerInitials: 'GR',
-    logoBg: '#fed7aa', // Light orange
-    type: 'BSP',
-    pendingItem: 'New Branch: Singapore',
-    pendingIcon: GitBranch,
-    submittedDate: 'Oct 23, 2023 01:15 PM',
-    priority: 'Medium',
-    priorityColor: 'orange'
-  }
+  { id: 1, partnerName: 'Nexis Logistics', partnerId: 'ID: PRT-99201', partnerInitials: 'NX', logoBg: '#cbd5e1', type: 'ISP', pendingItem: 'KYC Verification', pendingIcon: ShieldCheck, submittedDate: 'Oct 24, 2023 09:12 AM', priority: 'High', priorityColor: 'red', assignedToMe: true },
+  { id: 2, partnerName: 'Blue Freight Inc.', partnerId: 'ID: PRT-88421', partnerInitials: 'BF', logoBg: '#c084fc', type: 'BSP', pendingItem: 'Bank Verification', pendingIcon: Landmark, submittedDate: 'Oct 24, 2023 10:45 AM', priority: 'Medium', priorityColor: 'orange', assignedToMe: true },
+  { id: 3, partnerName: 'Swift Ventures', partnerId: 'ID: PRT-10293', partnerInitials: 'SV', logoBg: '#93c5fd', type: 'ISP', pendingItem: 'Tax Documents', pendingIcon: FileText, submittedDate: 'Oct 23, 2023 04:30 PM', priority: 'Low', priorityColor: 'gray', assignedToMe: false },
+  { id: 4, partnerName: 'Global Reach Co.', partnerId: 'ID: PRT-20938', partnerInitials: 'GR', logoBg: '#fed7aa', type: 'BSP', pendingItem: 'New Branch: Singapore', pendingIcon: GitBranch, submittedDate: 'Oct 23, 2023 01:15 PM', priority: 'Medium', priorityColor: 'orange', assignedToMe: false },
+  { id: 5, partnerName: 'Alpha Trade', partnerId: 'ID: PRT-11223', partnerInitials: 'AT', logoBg: '#fecaca', type: 'ISP', pendingItem: 'Account Update', pendingIcon: Settings, submittedDate: 'Oct 22, 2023 09:00 AM', priority: 'Low', priorityColor: 'gray', assignedToMe: true },
+  { id: 6, partnerName: 'Zenith Logistics', partnerId: 'ID: PRT-44556', partnerInitials: 'ZL', logoBg: '#bbf7d0', type: 'BSP', pendingItem: 'Compliance Audit', pendingIcon: ShieldAlert, submittedDate: 'Oct 21, 2023 11:30 AM', priority: 'High', priorityColor: 'red', assignedToMe: false },
+  { id: 7, partnerName: 'Omega Systems', partnerId: 'ID: PRT-77889', partnerInitials: 'OS', logoBg: '#fef08a', type: 'ISP', pendingItem: 'License Renewal', pendingIcon: FileText, submittedDate: 'Oct 20, 2023 02:45 PM', priority: 'Medium', priorityColor: 'orange', assignedToMe: true },
+  { id: 8, partnerName: 'Nexus Corp', partnerId: 'ID: PRT-33445', partnerInitials: 'NC', logoBg: '#e9d5ff', type: 'BSP', pendingItem: 'Bank Verification', pendingIcon: Landmark, submittedDate: 'Oct 19, 2023 10:15 AM', priority: 'High', priorityColor: 'red', assignedToMe: false },
+  { id: 9, partnerName: 'Pinnacle Trade', partnerId: 'ID: PRT-55667', partnerInitials: 'PT', logoBg: '#bae6fd', type: 'ISP', pendingItem: 'KYC Verification', pendingIcon: ShieldCheck, submittedDate: 'Oct 18, 2023 03:20 PM', priority: 'Low', priorityColor: 'gray', assignedToMe: true },
+  { id: 10, partnerName: 'Vertex Inc.', partnerId: 'ID: PRT-88990', partnerInitials: 'VI', logoBg: '#fbcfe8', type: 'BSP', pendingItem: 'New Branch: London', pendingIcon: GitBranch, submittedDate: 'Oct 17, 2023 01:10 PM', priority: 'Medium', priorityColor: 'orange', assignedToMe: false },
+  { id: 11, partnerName: 'Quantum LLC', partnerId: 'ID: PRT-12345', partnerInitials: 'QL', logoBg: '#d9f99d', type: 'ISP', pendingItem: 'Tax Documents', pendingIcon: FileText, submittedDate: 'Oct 16, 2023 04:50 PM', priority: 'High', priorityColor: 'red', assignedToMe: true },
+  { id: 12, partnerName: 'Aurora Ltd.', partnerId: 'ID: PRT-67890', partnerInitials: 'AL', logoBg: '#fed7aa', type: 'BSP', pendingItem: 'Compliance Audit', pendingIcon: ShieldAlert, submittedDate: 'Oct 15, 2023 09:30 AM', priority: 'Low', priorityColor: 'gray', assignedToMe: false }
 ];
 
 export default function ApprovalQueue() {
   const { navigate } = useApp();
   const { addToast } = useToast();
+  
+  const [tasks, setTasks] = useState(approvalTasks);
   const [activeTab, setActiveTab] = useState('All Tasks');
-
-  const handleBack = () => {
-    navigate(ROUTES.partners);
-  };
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const kpisData = [
     { title: 'Pending KYC', value: '24', topLabel: '! 8 Urgent', topLabelClass: 'red-text bg-red-soft font-bold', icon: Users },
     { title: 'Pending Services', value: '12', topLabel: '4 New Today', topLabelClass: 'blue-text bg-blue-soft font-bold', icon: Box },
     { title: 'Pending Branches', value: '08', topLabel: 'Stable flow', topLabelClass: 'gray-badge font-bold', icon: GitMerge },
     { title: 'Pending Documents', value: '45', topLabel: 'High volume', topLabelClass: 'blue-text bg-blue-soft font-bold', icon: FileText },
-    { title: 'Bank Verification', value: '05', topLabel: 'Critical action', topLabelClass: 'red-text bg-red-soft font-bold', icon: Landmark }
+    // Shortened topLabel to fix layout cut-off issues
+    { title: 'Bank Verification', value: '05', topLabel: 'Critical', topLabelClass: 'red-text bg-red-soft font-bold', icon: Landmark }
   ];
+
+  const handleAction = (e, taskId, actionName, partnerName) => {
+    e.stopPropagation();
+    addToast(`${actionName} request from ${partnerName}`, actionName === 'Approved' ? 'success' : 'error');
+    setTasks(prev => prev.filter(t => t.id !== taskId));
+  };
+
+  const filteredTasks = tasks.filter(t => {
+    if (activeTab === 'Assigned to Me') return t.assignedToMe;
+    return true;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filteredTasks.length / rowsPerPage));
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const paginatedTasks = filteredTasks.slice(startIndex, startIndex + rowsPerPage);
+
+  // Ensure current page is valid when filtering changes
+  React.useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
 
   return (
     <AdminShell
@@ -150,20 +137,28 @@ export default function ApprovalQueue() {
             <div className="segmented-tab-filter">
               <button
                 className={activeTab === 'All Tasks' ? 'active' : ''}
-                onClick={() => setActiveTab('All Tasks')}
+                onClick={() => {
+                  setActiveTab('All Tasks');
+                  setCurrentPage(1);
+                }}
                 type="button"
               >
                 All Tasks
               </button>
               <button
                 className={activeTab === 'Assigned to Me' ? 'active' : ''}
-                onClick={() => setActiveTab('Assigned to Me')}
+                onClick={() => {
+                  setActiveTab('Assigned to Me');
+                  setCurrentPage(1);
+                }}
                 type="button"
               >
                 Assigned to Me
               </button>
             </div>
-            <span className="queue-showing-results-text">Showing 1-10 of 94 items</span>
+            <span className="queue-showing-results-text">
+              Showing {filteredTasks.length === 0 ? 0 : startIndex + 1}-{Math.min(startIndex + rowsPerPage, filteredTasks.length)} of {filteredTasks.length} items
+            </span>
           </div>
         </div>
 
@@ -181,48 +176,70 @@ export default function ApprovalQueue() {
               </tr>
             </thead>
             <tbody>
-              {approvalTasks.map((task, idx) => {
-                const PendingIcon = task.pendingIcon;
-                return (
-                  <tr key={idx} className="partner-row-clickable" onClick={() => navigate(ROUTES.partnerDetails)}>
-                    <td className="partner-name-cell">
-                      <div className="partner-info-wrap">
-                        <span className="queue-partner-avatar-logo" style={{ backgroundColor: task.logoBg }}>
-                          {task.partnerInitials}
-                        </span>
-                        <div className="partner-name-meta">
-                          <span className="partner-name-txt">{task.partnerName}</span>
-                          <span className="partner-est-txt">{task.partnerId}</span>
+              {paginatedTasks.length === 0 ? (
+                <tr>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+                    No tasks found.
+                  </td>
+                </tr>
+              ) : (
+                paginatedTasks.map((task) => {
+                  const PendingIcon = task.pendingIcon;
+                  return (
+                    <tr key={task.id} className="partner-row-clickable" onClick={() => navigate(ROUTES.partnerDetails)}>
+                      <td className="partner-name-cell">
+                        <div className="partner-info-wrap">
+                          <span className="queue-partner-avatar-logo" style={{ backgroundColor: task.logoBg }}>
+                            {task.partnerInitials}
+                          </span>
+                          <div className="partner-name-meta">
+                            <span className="partner-name-txt">{task.partnerName}</span>
+                            <span className="partner-est-txt">{task.partnerId}</span>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span className={`partner-type-badge ${task.type.toLowerCase()}`}>
-                        {task.type}
-                      </span>
-                    </td>
-                    <td className="pending-item-cell-wrap">
-                      <div className="pending-item-inner">
-                        <PendingIcon size={16} className="pending-icon-indicator" />
-                        <span>{task.pendingItem}</span>
-                      </div>
-                    </td>
-                    <td className="submitted-date-cell">{task.submittedDate}</td>
-                    <td>
-                      <div className="priority-cell-wrap">
-                        <span className={`priority-bullet-dot ${task.priorityColor}`} />
-                        <span>{task.priority}</span>
-                      </div>
-                    </td>
-                    <td className="actions-cell-wrap">
-                      <div className="actions-buttons-cell-row" onClick={(e) => e.stopPropagation()}>
-                        <button className="btn-action-circle approve-green" type="button" title="Approve" onClick={() => addToast(`Approved request from ${task.partnerName}`, 'success')}>✔</button>
-                        <button className="btn-action-circle reject-red" type="button" title="Reject" onClick={() => addToast(`Rejected request from ${task.partnerName}`, 'error')}>✘</button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                      <td>
+                        <span className={`partner-type-badge ${task.type.toLowerCase()}`}>
+                          {task.type}
+                        </span>
+                      </td>
+                      <td className="pending-item-cell-wrap">
+                        <div className="pending-item-inner">
+                          <PendingIcon size={16} className="pending-icon-indicator" />
+                          <span>{task.pendingItem}</span>
+                        </div>
+                      </td>
+                      <td className="submitted-date-cell">{task.submittedDate}</td>
+                      <td>
+                        <div className="priority-cell-wrap">
+                          <span className={`priority-bullet-dot ${task.priorityColor}`} />
+                          <span>{task.priority}</span>
+                        </div>
+                      </td>
+                      <td className="actions-cell-wrap">
+                        <div className="actions-buttons-cell-row" onClick={(e) => e.stopPropagation()}>
+                          <button 
+                            className="btn-action-circle approve-green" 
+                            type="button" 
+                            title="Approve" 
+                            onClick={(e) => handleAction(e, task.id, 'Approved', task.partnerName)}
+                          >
+                            ✔
+                          </button>
+                          <button 
+                            className="btn-action-circle reject-red" 
+                            type="button" 
+                            title="Reject" 
+                            onClick={(e) => handleAction(e, task.id, 'Rejected', task.partnerName)}
+                          >
+                            ✘
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
 </div>
@@ -233,6 +250,11 @@ export default function ApprovalQueue() {
             <span>Rows per page:</span>
             <Select
               aria-label="Rows per page select"
+              value={rowsPerPage.toString()}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
               options={[{
                 label: "10",
                 value: "10"
@@ -242,19 +264,35 @@ export default function ApprovalQueue() {
               }, {
                 label: "50",
                 value: "50"
-              }]} />
+              }]} 
+            />
           </div>
 
           <div className="pagination-wrap">
-            <button className="pag-nav-btn" type="button" disabled>
+            <button 
+              className="pag-nav-btn" 
+              type="button" 
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            >
               <ChevronLeft size={16} />
             </button>
-            <button className="pag-num-btn active" type="button">1</button>
-            <button className="pag-num-btn" type="button">2</button>
-            <button className="pag-num-btn" type="button">3</button>
-            <span className="pag-ellipsis">...</span>
-            <button className="pag-num-btn" type="button">10</button>
-            <button className="pag-nav-btn" type="button">
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <button 
+                key={i}
+                className={`pag-num-btn ${currentPage === i + 1 ? 'active' : ''}`}
+                onClick={() => setCurrentPage(i + 1)}
+                type="button"
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button 
+              className="pag-nav-btn" 
+              type="button" 
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            >
               <ChevronRight size={16} />
             </button>
           </div>

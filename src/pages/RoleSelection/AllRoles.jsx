@@ -23,6 +23,8 @@ export default function AllRoles() {
   const [newRoleName, setNewRoleName] = useState("");
   const [newRoleDesc, setNewRoleDesc] = useState("");
   const [isSaved, setIsSaved] = useState(false);
+  const [showRoleFilter, setShowRoleFilter] = useState(false);
+  const [roleFilter, setRoleFilter] = useState('all');
 
   // Master Mock Roles Data structure with complete functional schemas
   const [roles, setRoles] = useState([
@@ -84,9 +86,6 @@ export default function AllRoles() {
   
   // Dynamic Checkbox Switch Toggler
   const handlePermissionChange = (moduleKey, action) => {
-    if (activeRoleData.isSystem && activeRoleData.id === "admin") {
-      return; // Lock admin downgrades natively
-    }
     setIsSaved(false);
     setRoles(prevRoles => prevRoles.map(role => {
       if (role.id === selectedRole) {
@@ -154,9 +153,11 @@ export default function AllRoles() {
   };
 
   // Filter query configuration
-  const filteredRoles = roles.filter(r => 
-    r.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredRoles = roles.filter(r => {
+    const matchesSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = roleFilter === 'all' ? true : roleFilter === 'system' ? r.isSystem : !r.isSystem;
+    return matchesSearch && matchesType;
+  });
 
   return (
     <AdminShell activeTab="Role & Permissions">
@@ -201,9 +202,27 @@ export default function AllRoles() {
               className="w-full text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:bg-white focus:border-indigo-950"
             />
           </div>
-          <div className="text-[11px] font-bold text-slate-400 flex items-center gap-1">
-            <SlidersHorizontal className="h-3 w-3" />
-            <span>Active Roles Configured: <strong className="text-slate-700">{roles.length}</strong></span>
+          <div className="relative">
+            <button 
+              onClick={() => setShowRoleFilter(!showRoleFilter)}
+              className="text-[11px] font-bold text-slate-400 flex items-center gap-1.5 hover:text-indigo-600 hover:bg-indigo-50 px-2 py-1.5 rounded-lg transition-colors cursor-pointer"
+            >
+              <SlidersHorizontal className="h-3 w-3" />
+              <span>Active Roles Configured: <strong className="text-slate-700">{filteredRoles.length}</strong></span>
+            </button>
+            
+            {showRoleFilter && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                <div className="p-2 border-b border-slate-100 bg-slate-50">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">Filter Roles By Type</span>
+                </div>
+                <div className="p-1.5 flex flex-col gap-1">
+                  <button onClick={() => {setRoleFilter('all'); setShowRoleFilter(false)}} className={`text-left px-3 py-2 text-xs font-semibold rounded-lg ${roleFilter === 'all' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'}`}>All Roles</button>
+                  <button onClick={() => {setRoleFilter('system'); setShowRoleFilter(false)}} className={`text-left px-3 py-2 text-xs font-semibold rounded-lg ${roleFilter === 'system' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'}`}>Core System Roles</button>
+                  <button onClick={() => {setRoleFilter('custom'); setShowRoleFilter(false)}} className={`text-left px-3 py-2 text-xs font-semibold rounded-lg ${roleFilter === 'custom' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'}`}>Custom Roles</button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -317,13 +336,13 @@ export default function AllRoles() {
                 <div className="table-responsive-wrapper">
 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                      <th className="p-3 w-1/3">Module Endpoint</th>
+                    <tr className="bg-[#1d0094] border-b border-[#1d0094] text-[10px] uppercase font-bold text-white tracking-wider">
+                      <th className="p-3 w-1/3 rounded-tl-lg">Module Endpoint</th>
                       <th className="p-3 text-center">Read / View</th>
                       <th className="p-3 text-center">Create</th>
                       <th className="p-3 text-center">Edit</th>
                       <th className="p-3 text-center">Delete</th>
-                      <th className="p-3 text-center">Export</th>
+                      <th className="p-3 text-center rounded-tr-lg">Export</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 bg-white text-xs font-semibold text-slate-700">
@@ -345,9 +364,8 @@ export default function AllRoles() {
                                 <input 
                                   type="checkbox"
                                   checked={!!itemPerms[action]}
-                                  disabled={isAdminLock}
                                   onChange={() => handlePermissionChange(mod.key, action)}
-                                  className="h-4 w-4 rounded border-slate-300 text-indigo-950 focus:ring-indigo-950/20 cursor-pointer accent-indigo-950 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                  className="h-4 w-4 rounded border-slate-300 text-indigo-950 focus:ring-indigo-950/20 cursor-pointer accent-indigo-950 transition-all"
                                 />
                               </label>
                             </td>

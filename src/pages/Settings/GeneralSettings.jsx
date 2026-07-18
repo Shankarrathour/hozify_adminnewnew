@@ -1,12 +1,42 @@
-import React from 'react';
-import { Info, Palette } from 'lucide-react';
+import React, { useState } from 'react';
+import { Info, Palette, Loader2 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
 import { useToast } from '../../components/common/ToastNotification';
 
 import Select from "../../components/ui/Select";
 
+const INITIAL_STATE = {
+  orgName: "Hozify Enterprise Solutions",
+  legalId: "HE-992-001-X",
+  supportEmail: "enterprise-support@hozify.com",
+  timezone: "(UTC-05:00) Eastern Time (US & Canada)",
+  language: "English (United States)"
+};
+
 export default function GeneralSettings() {
   const { addToast } = useToast();
+  
+  const [formData, setFormData] = useState(INITIAL_STATE);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleDiscard = () => {
+    setFormData(INITIAL_STATE);
+    addToast("Changes discarded and restored to original state.", "info");
+  };
+
+  const handleSave = () => {
+    setIsSaving(true);
+    // Simulate API delay
+    setTimeout(() => {
+      setIsSaving(false);
+      addToast("Configuration saved successfully!", "success");
+    }, 800);
+  };
+
   return (
     <AdminShell
       activeTab="Settings"
@@ -43,7 +73,8 @@ export default function GeneralSettings() {
                 <label style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Organization Name</label>
                 <input 
                   type="text" 
-                  defaultValue="Hozify Enterprise Solutions"
+                  value={formData.orgName}
+                  onChange={(e) => handleChange('orgName', e.target.value)}
                   style={{ width: '100%', height: '40px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', color: 'var(--text)', outline: 'none' }}
                 />
               </div>
@@ -51,7 +82,8 @@ export default function GeneralSettings() {
                 <label style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Legal Entity ID</label>
                 <input 
                   type="text" 
-                  defaultValue="HE-992-001-X"
+                  value={formData.legalId}
+                  onChange={(e) => handleChange('legalId', e.target.value)}
                   style={{ width: '100%', height: '40px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', color: 'var(--text)', outline: 'none' }}
                 />
               </div>
@@ -60,7 +92,8 @@ export default function GeneralSettings() {
               <label style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Support Email Address</label>
               <input 
                 type="email" 
-                defaultValue="enterprise-support@hozify.com"
+                value={formData.supportEmail}
+                onChange={(e) => handleChange('supportEmail', e.target.value)}
                 style={{ width: '100%', height: '40px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', color: 'var(--text)', outline: 'none' }}
               />
             </div>
@@ -132,7 +165,8 @@ export default function GeneralSettings() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <label style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Timezone</label>
                   <Select
-                    defaultValue="(UTC-05:00) Eastern Time (US & Canada)"
+                    value={formData.timezone}
+                    onChange={(e) => handleChange('timezone', e.target.value)}
                     style={{ width: '100%', height: '40px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', color: 'var(--text)', outline: 'none', backgroundColor: '#fff' }}
                     options={[{
                       label: "(UTC-05:00) Eastern Time (US & Canada)",
@@ -146,7 +180,8 @@ export default function GeneralSettings() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <label style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>System Language</label>
                   <Select
-                    defaultValue="English (United States)"
+                    value={formData.language}
+                    onChange={(e) => handleChange('language', e.target.value)}
                     style={{ width: '100%', height: '40px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', color: 'var(--text)', outline: 'none', backgroundColor: '#fff' }}
                     options={[{
                       label: "English (United States)",
@@ -196,10 +231,21 @@ export default function GeneralSettings() {
 
           {/* Action Buttons */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px', borderTop: '1px solid #e2e8f0', paddingTop: '24px' }}>
-            <button onClick={(e) => { e.preventDefault(); addToast("Changes discarded.", "info"); }} type="button" style={{ padding: '0 20px', height: '44px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px', fontWeight: '700', color: 'var(--text)', cursor: 'pointer' }}>
+            <button 
+              onClick={handleDiscard} 
+              disabled={isSaving}
+              type="button" 
+              style={{ padding: '0 20px', height: '44px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px', fontWeight: '700', color: 'var(--text)', cursor: isSaving ? 'not-allowed' : 'pointer', opacity: isSaving ? 0.6 : 1 }}
+            >
               Discard Changes
             </button>
-            <button onClick={(e) => { e.preventDefault(); addToast("Configuration saved successfully!", "success"); }} type="button" style={{ padding: '0 24px', height: '44px', background: '#1e1b4b', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: '700', color: '#fff', cursor: 'pointer' }}>
+            <button 
+              onClick={handleSave} 
+              disabled={isSaving}
+              type="button" 
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 24px', height: '44px', background: '#1e1b4b', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: '700', color: '#fff', cursor: isSaving ? 'not-allowed' : 'pointer', opacity: isSaving ? 0.8 : 1 }}
+            >
+              {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
               Save Configuration
             </button>
           </div>
