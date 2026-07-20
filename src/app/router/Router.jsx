@@ -88,6 +88,7 @@ import Blogs from '../../pages/CMSManagement/Blogs';
 import SeoSettings from '../../pages/CMSManagement/SeoSettings';
 import Employees from '../../pages/Employees';
 import KYCModule from '../../pages/KYC';
+import KYCDashboard from '../../pages/KYC/KYCDashboard';
 import Branches from '../../pages/Branches';
 import BranchSchedule from '../../pages/Branches/BranchSchedule';
 import BranchSuspend from '../../pages/Branches/BranchSuspend';
@@ -116,12 +117,18 @@ import AddBusiness from '../../pages/Business/AddBusiness';
 import BusinessDocReview from '../../pages/Business/BusinessDocReview';
 import BusinessTaxonomy from '../../pages/Business/BusinessTaxonomy';
 import QuotationManagement from '../../pages/QuotationManagement';
+import QuotationDashboard from '../../pages/QuotationManagement/QuotationDashboard';
+import OrderDashboard from '../../pages/OrderManagement/OrderDashboard';
 import BankingSettlementManagement from '../../pages/BankingSettlementManagement';
 import SOSManagement from '../../pages/SOSManagement';
 
 // Dashboard sub-routes
 import ChannelPerformance from '../../pages/Dashboard/ChannelPerformance';
 import ConversionAnalytics from '../../pages/Dashboard/ConversionAnalytics';
+import AdminDashboard from '../../pages/Dashboard/AdminDashboard';
+import PaymentDashboard from '../../pages/PaymentManagement/PaymentDashboard';
+import ServiceDashboard from '../../pages/Services/ServiceDashboard';
+import GSTDashboard from '../../pages/GSTManagement/GSTDashboard';
 
 // Notification Center sub-routes
 import PushNotifications from '../../pages/NotificationCenter/PushNotifications';
@@ -416,6 +423,9 @@ export function Router() {
       return <Users />;
       
     // KYC Management routing
+    case ROUTES.kycDashboard:
+      return <KYCDashboard />;
+      
     case ROUTES.kyc:
     case ROUTES.kycPending:
     case ROUTES.kycApproved:
@@ -498,6 +508,8 @@ export function Router() {
       return <LiveDashboard />;
     case ROUTES.materials:
       return <InventoryDashboard />;
+    case ROUTES.quotationDashboard:
+      return <QuotationDashboard />;
     case ROUTES.quotations:
       return <QuotationManagement />;
     case ROUTES.wallet:
@@ -535,6 +547,8 @@ export function Router() {
     // --- NEW MODULE SUB-ROUTES ---
 
     // Dashboard sub-routes
+    case ROUTES.adminDashboard:
+      return <AdminDashboard />;
     case ROUTES.dashboardRevenue:
       return <RevenueDashboard activeTab="Dashboard" />;
     case ROUTES.dashboardBookings:
@@ -553,6 +567,12 @@ export function Router() {
       return <ChannelPerformance activeTab="Dashboard" />;
     case ROUTES.dashboardConversionAnalytics:
       return <ConversionAnalytics activeTab="Dashboard" />;
+    case ROUTES.dashboardPayment:
+      return <PaymentDashboard />;
+    case ROUTES.dashboardServices:
+      return <ServiceDashboard />;
+    case ROUTES.dashboardGST:
+      return <GSTDashboard />;
 
     // User Management sub-routes
     case ROUTES.userApprovals:
@@ -1429,6 +1449,8 @@ export function Router() {
       return <AppConfigPage />;
     case ROUTES.appManagementMaintenance:
       return <MaintenanceModePage />;
+    case ROUTES.orderDashboard:
+      return <OrderDashboard />;
     case ROUTES.orderManagement:
       return <OrderMgmtPage />;
     case ROUTES.priceManagement:

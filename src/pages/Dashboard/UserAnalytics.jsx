@@ -1,345 +1,525 @@
-import React, { useState } from 'react';
-import { 
-  Users, 
-  UserCheck, 
-  UserMinus, 
-  ShieldAlert, 
-  ArrowRight,
-  TrendingUp,
-  Download,
-  MoreVertical
+import React, { useState, useMemo } from 'react';
+import {
+  Users, UserPlus, UserCheck, UserMinus, LogIn, LogOut,
+  ShieldX, Trash2, TrendingUp, TrendingDown, Download,
+  ChevronDown, RotateCcw
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
-import { useDateFilter } from '../../contexts/DateFilterContext';
-import DateFilter from '../../components/common/DateFilter';
-import SkeletonLoader from '../../components/common/SkeletonLoader';
-import EmptyState from '../../components/common/EmptyState';
+import { useToast } from '../../components/common/ToastNotification';
+import {
+  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
+
+// ─── MOCK DATA ────────────────────────────────────────────────────────────────
+
+const trendData = [
+  { day:'01 May', newUsers:1800, active:6200, login:4800, logout:3100, blocked:400 },
+  { day:'05 May', newUsers:2100, active:7800, login:5600, logout:3800, blocked:350 },
+  { day:'10 May', newUsers:1600, active:6800, login:5100, logout:3400, blocked:420 },
+  { day:'15 May', newUsers:2500, active:8500, login:6200, logout:4200, blocked:300 },
+  { day:'20 May', newUsers:2200, active:7900, login:6100, logout:4000, blocked:380 },
+  { day:'25 May', newUsers:2800, active:9000, login:7000, logout:4600, blocked:280 },
+  { day:'31 May', newUsers:3100, active:9800, login:7500, logout:5100, blocked:250 },
+];
+
+const monthlyGrowth = [
+  { month:'Jan', users:61000 }, { month:'Feb', users:65000 }, { month:'Mar', users:70000 },
+  { month:'Apr', users:75000 }, { month:'May', users:82000 }, { month:'Jun', users:79000 },
+  { month:'Jul', users:76000 }, { month:'Aug', users:80000 }, { month:'Sep', users:70000 },
+  { month:'Oct', users:66000 }, { month:'Nov', users:62000 }, { month:'Dec', users:58000 },
+];
+
+const statusDist = [
+  { name:'Active Users',   value:48215, color:'#22c55e', pct:'48.9%' },
+  { name:'Inactive Users', value:1204,  color:'#94a3b8', pct:'1.2%'  },
+  { name:'Logged In',      value:32756, color:'#2563eb', pct:'33.2%' },
+  { name:'Logged Out',     value:65886, color:'#8b5cf6', pct:'66.8%' },
+  { name:'Blocked Users',  value:156,   color:'#ef4444', pct:'0.2%'  },
+];
+
+const genderDist = [
+  { name:'Male',   value:61652, color:'#2563eb', pct:'62.5%' },
+  { name:'Female', value:36240, color:'#ec4899', pct:'36.8%' },
+  { name:'Other',  value:750,   color:'#f59e0b', pct:'0.7%'  },
+];
+
+const citiesData = [
+  { rank:1, city:'Hyderabad', users:8654, pct:18.0 },
+  { rank:2, city:'Bengaluru', users:6245, pct:13.0 },
+  { rank:3, city:'Mumbai',    users:5842, pct:12.1 },
+  { rank:4, city:'Delhi',     users:4958, pct:10.3 },
+  { rank:5, city:'Pune',      users:3652, pct:7.6  },
+  { rank:6, city:'Chennai',   users:3215, pct:6.7  },
+  { rank:7, city:'Kolkata',   users:2654, pct:5.5  },
+  { rank:8, city:'Ahmedabad', users:2059, pct:4.3  },
+  { rank:9, city:'Jaipur',    users:1654, pct:3.4  },
+  { rank:10,city:'Surat',     users:1450, pct:2.9  },
+];
+
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+const heatmapData = DAYS.map(day => ({
+  day,
+  values: Array.from({ length: 24 }, (_, h) => {
+    const base = h >= 9 && h <= 22 ? 60 : 15;
+    return Math.floor(base + Math.random() * 40);
+  }),
+}));
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+
+function fmtNum(n) {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+  if (n >= 1_000)     return n.toLocaleString();
+  return n.toString();
+}
+
+function heatColor(val) {
+  if (val < 25) return '#ede9fe';
+  if (val < 45) return '#c4b5fd';
+  if (val < 60) return '#a78bfa';
+  if (val < 78) return '#7c3aed';
+  return '#4c1d95';
+}
+
+// ─── CUSTOM TOOLTIP ──────────────────────────────────────────────────────────
+
+const LineTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{ background:'#1e293b', borderRadius:10, padding:'10px 14px', fontSize:11 }}>
+      <div style={{ color:'#94a3b8', fontWeight:700, marginBottom:6 }}>{label}</div>
+      {payload.map(p => (
+        <div key={p.name} style={{ display:'flex', alignItems:'center', gap:6, marginBottom:3 }}>
+          <span style={{ width:8, height:8, borderRadius:'50%', background:p.color, display:'inline-block' }} />
+          <span style={{ color:'#cbd5e1' }}>{p.name}:</span>
+          <strong style={{ color:'#fff' }}>{fmtNum(p.value)}</strong>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const BarTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{
+      background:'#fff', borderRadius:10, padding:'10px 14px', fontSize:11,
+      boxShadow:'0 4px 20px rgba(0,0,0,0.12)', border:'1px solid #e8edf2',
+    }}>
+      <div style={{ color:'#0f172a', fontWeight:700, marginBottom:6 }}>{label} 2026</div>
+      <div style={{ display:'flex', alignItems:'center', gap:6, color:'#4f46e5' }}>
+        <span style={{ width:8, height:8, borderRadius:'50%', background:'#4f46e5', display:'inline-block', flexShrink:0 }} />
+        <span style={{ color:'#334155', fontWeight:500 }}>Total Users:</span>
+        <strong style={{ color:'#0f172a' }}>{payload[0].value.toLocaleString()}</strong>
+      </div>
+    </div>
+  );
+};
+
+// ─── DONUT CENTER LABEL ───────────────────────────────────────────────────────
+const DonutCenter = ({ viewBox, value, label }) => {
+  const { cx, cy } = viewBox;
+  return (
+    <g>
+      <text x={cx} y={cy-7} textAnchor="middle" fill="#0f172a" fontSize={18} fontWeight={800}>{value}</text>
+      <text x={cx} y={cy+10} textAnchor="middle" fill="#94a3b8" fontSize={9} fontWeight={600}>{label}</text>
+    </g>
+  );
+};
+
+// ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
 export default function UserAnalytics({ activeTab = 'Dashboard' }) {
-  const { preset, isFiltering, hasData } = useDateFilter();
+  const { addToast } = useToast();
+  const [period, setPeriod] = useState('Monthly');
 
+  const handleApply = () => addToast('Filters applied successfully', 'success');
+  const handleReset = () => { setPeriod('Monthly'); addToast('Filters reset', 'info'); };
+  const handleExport = () => addToast('Generating report... Download will start shortly.', 'success');
+
+  // KPI definitions
   const kpis = [
-    { title: "New Users", value: "2,842", subtitle: "this week", trend: "+12%", positive: true, icon: UserCheck, color: 'var(--green)', bg: "#ecfdf5" },
-    { title: "Active Users", value: "48.2k", subtitle: "MAU", trend: "+5.2%", positive: true, icon: Users, color: 'var(--primary)', bg: "#f4eff8" },
-    { title: "Inactive Users", value: "1,204", subtitle: "30d+ idle", trend: "-2.1%", positive: false, icon: UserMinus, color: "#b45309", bg: "#fffbeb" },
-    { title: "Blocked Users", value: "156", subtitle: "manual + auto", trend: "Security Flag", alert: true, icon: ShieldAlert, color: 'var(--red)', bg: "#fee2e2" }
-  ];
-
-  const referringUsers = [
-    { name: "Alex Morgan", role: "Premium Tier", count: 482, conv: "12.5%", initials: "AM", bg: "#eff6ff", text: "#1e40af" },
-    { name: "Sarah Chen", role: "VIP Partner", count: 315, conv: "18.2%", initials: "SC", bg: "#fdf2f8", text: "#9d174d" },
-    { name: "David Kimmich", role: "Regular User", count: 294, conv: "9.8%", initials: "DK", bg: "#fffbeb", text: "#b45309" }
-  ];
-
-  const blockedUsers = [
-    { name: "unkn0wn_99", id: "B9901", reason: "Bot Behavior", date: "2h ago", color: "#fee2e2", txt: "#d32929" },
-    { name: "spam_master_x", id: "B9904", reason: "Spamming", date: "5h ago", color: "#fffbeb", txt: "#b45309" },
-    { name: "johnny_doe_88", id: "B9907", reason: "ToS Violation", date: "8h ago", color: "#eff6ff", txt: "#1e40af" }
+    { label:'Total Users',     val:98642,  sub:'All Time',   pct:18.5, up:true,  color:'#2563eb', bg:'#eff6ff', icon:<Users size={16} color="#2563eb" />      },
+    { label:'New Users',       val:2842,   sub:'This Month', pct:12.4, up:true,  color:'#22c55e', bg:'#f0fdf4', icon:<UserPlus size={16} color="#22c55e" />    },
+    { label:'Active Users',    val:48215,  sub:'This Month', pct:8.7,  up:true,  color:'#8b5cf6', bg:'#faf5ff', icon:<UserCheck size={16} color="#8b5cf6" />   },
+    { label:'Inactive Users',  val:1204,   sub:'This Month', pct:2.1,  up:false, color:'#f97316', bg:'#fff7ed', icon:<UserMinus size={16} color="#f97316" />   },
+    { label:'Logged In',       val:32756,  sub:'This Month', pct:9.6,  up:true,  color:'#2563eb', bg:'#eff6ff', icon:<LogIn size={16} color="#2563eb" />       },
+    { label:'Logged Out',      val:65886,  sub:'This Month', pct:10.3, up:true,  color:'#8b5cf6', bg:'#faf5ff', icon:<LogOut size={16} color="#8b5cf6" />      },
+    { label:'Blocked Users',   val:156,    sub:'This Month', pct:5.4,  up:false, color:'#ef4444', bg:'#fff1f2', icon:<ShieldX size={16} color="#ef4444" />     },
   ];
 
   return (
-    <AdminShell
-      activeTab={activeTab}
-      brandText="HOZIFY"
-      brandSubText="Enterprise Admin"
-      headerTitle="User Analytics"
-      searchPlaceholder="Search user metrics, profiles, or logs..."
-    >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)', padding: '24px 0' }}>
-        
-        {/* Title Block & Time Tabs */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', position: 'relative', zIndex: 100 }}>
-          <div>
-            <h1 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text)', margin: 0 }}>
-              User Analytics
-            </h1>
-            <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '4px 0 0' }}>
-              In-depth performance metrics and user behavior insights.
-            </p>
+    <AdminShell activeTab={activeTab} headerTitle="User Dashboard" searchPlaceholder="Search pages, modules...">
+      <div style={{ padding:'20px 24px 48px', background:'#f8fafc', minHeight:'100vh', fontFamily:"'Inter', -apple-system, sans-serif" }}>
+
+        {/* ── FILTER BAR ── */}
+        <div style={{
+          background:'#fff', borderRadius:10, padding:'12px 16px',
+          boxShadow:'0 1px 3px rgba(0,0,0,0.06)', marginBottom:16,
+          display:'flex', alignItems:'flex-end', flexWrap:'wrap', gap:12,
+          border:'1px solid #e8edf2',
+        }}>
+          {/* Location Dropdowns */}
+          {[
+            { label:'State',    opts:['All States','Maharashtra','Karnataka','Telangana','Tamil Nadu','Delhi'] },
+            { label:'City',     opts:['All Cities','Mumbai','Bengaluru','Hyderabad','Chennai','Delhi','Pune'] },
+            { label:'District', opts:['All Districts','Andheri','Koramangala','Banjara Hills','T. Nagar'] },
+          ].map(f => (
+            <div key={f.label} style={{ display:'flex', flexDirection:'column', gap:4 }}>
+              <label style={{ fontSize:10, fontWeight:600, color:'#94a3b8', letterSpacing:0.3 }}>{f.label}</label>
+              <div style={{ position:'relative' }}>
+                <select style={{
+                  appearance:'none', background:'#fff', border:'1px solid #dde3ea',
+                  borderRadius:6, padding:'6px 28px 6px 10px', fontSize:12,
+                  fontWeight:500, color:'#334155', cursor:'pointer', outline:'none', minWidth:120,
+                }}>
+                  {f.opts.map(o => <option key={o}>{o}</option>)}
+                </select>
+                <ChevronDown size={11} style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', color:'#94a3b8', pointerEvents:'none' }} />
+              </div>
+            </div>
+          ))}
+
+          {/* Divider */}
+          <div style={{ width:1, height:34, background:'#e8edf2', alignSelf:'flex-end', margin:'0 4px' }} />
+
+          {/* Period Pills */}
+          <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+            <label style={{ fontSize:10, fontWeight:600, color:'transparent', letterSpacing:0.3 }}>_</label>
+            <div style={{ display:'flex', border:'1px solid #dde3ea', borderRadius:6, overflow:'hidden' }}>
+              {['Daily','Weekly','Monthly','Yearly'].map((p, i) => (
+                <button key={p} onClick={() => setPeriod(p)} style={{
+                  padding:'6px 14px', border:'none',
+                  borderLeft: i > 0 ? '1px solid #dde3ea' : 'none',
+                  fontSize:12, fontWeight:600, cursor:'pointer', transition:'all 0.15s',
+                  background: period === p ? '#0f172a' : '#fff',
+                  color: period === p ? '#fff' : '#64748b',
+                }}>{p}</button>
+              ))}
+            </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <DateFilter />
+          {/* Month + Year dropdowns */}
+          {[
+            { label:'Month', opts:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], def:'May' },
+            { label:'Year',  opts:['2026','2025','2024','2023'], def:'2026' },
+          ].map(f => (
+            <div key={f.label} style={{ display:'flex', flexDirection:'column', gap:4 }}>
+              <label style={{ fontSize:10, fontWeight:600, color:'transparent', letterSpacing:0.3 }}>_</label>
+              <div style={{ position:'relative' }}>
+                <select defaultValue={f.def} style={{
+                  appearance:'none', background:'#fff', border:'1px solid #dde3ea',
+                  borderRadius:6, padding:'6px 28px 6px 10px', fontSize:12,
+                  fontWeight:500, color:'#334155', cursor:'pointer', outline:'none', minWidth:72,
+                }}>
+                  {f.opts.map(o => <option key={o}>{o}</option>)}
+                </select>
+                <ChevronDown size={11} style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', color:'#94a3b8', pointerEvents:'none' }} />
+              </div>
+            </div>
+          ))}
+
+          {/* Apply / Reset */}
+          <div style={{ display:'flex', gap:8, alignSelf:'flex-end' }}>
+            <button onClick={handleApply} style={{
+              padding:'7px 20px', borderRadius:6, border:'none',
+              background:'#0f172a', color:'#fff', fontSize:12, fontWeight:600,
+              cursor:'pointer', transition:'opacity 0.15s',
+            }}
+              onMouseEnter={e=>e.currentTarget.style.opacity='0.85'}
+              onMouseLeave={e=>e.currentTarget.style.opacity='1'}
+            >Apply</button>
+            <button onClick={handleReset} style={{
+              padding:'7px 16px', borderRadius:6, border:'1px solid #dde3ea',
+              background:'#fff', color:'#334155', fontSize:12, fontWeight:600,
+              cursor:'pointer', transition:'background 0.15s',
+            }}
+              onMouseEnter={e=>e.currentTarget.style.background='#f8fafc'}
+              onMouseLeave={e=>e.currentTarget.style.background='#fff'}
+            >Reset</button>
           </div>
         </div>
 
-        {isFiltering ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-              <SkeletonLoader height="120px" />
-              <SkeletonLoader height="120px" />
-              <SkeletonLoader height="120px" />
-              <SkeletonLoader height="120px" />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1.7fr 1fr', gap: '20px' }}>
-              <SkeletonLoader height="280px" />
-              <SkeletonLoader height="280px" />
-            </div>
-            <SkeletonLoader height="300px" />
-          </div>
-        ) : !hasData ? (
-          <EmptyState />
-        ) : (
-          <>
-        {/* KPI Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-          {kpis.map((kpi, idx) => {
-            const IconComponent = kpi.icon;
-            return (
-              <div key={idx} className="panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase' }}>
-                    {kpi.title}
-                  </span>
-                  <div style={{ height: '32px', width: '32px', borderRadius: '50%', background: kpi.bg, color: kpi.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <IconComponent size={15} />
-                  </div>
+        {/* ── KPI CARDS – single row 7 cards ── */}
+        <div style={{
+          display:'grid',
+          gridTemplateColumns:'repeat(7, 1fr)',
+          gap:12, marginBottom:16,
+        }}>
+          {kpis.map((k, i) => (
+            <div key={i} style={{
+              background:'#fff', borderRadius:10, padding:'14px 14px 12px',
+              boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2',
+              transition:'transform 0.18s, box-shadow 0.18s', cursor:'default',
+            }}
+              onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 6px 20px rgba(37,99,235,0.1)';}}
+              onMouseLeave={e=>{e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)';}}
+            >
+              {/* Icon + Label row */}
+              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6 }}>
+                <div style={{ background:k.bg, borderRadius:8, padding:'6px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  {k.icon}
                 </div>
-                <div>
-                  <strong style={{ fontSize: '26px', fontWeight: '850', color: 'var(--text)', display: 'block', letterSpacing: '-0.5px' }}>
-                    {kpi.value}
-                  </strong>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', fontSize: '11px', fontWeight: '750' }}>
-                    <span style={{ color: 'var(--muted)' }}>{kpi.subtitle}</span>
-                    <span style={{ color: kpi.alert ? '#d32929' : (kpi.positive ? '#07956f' : '#d32929') }}>
-                      {kpi.trend}
-                    </span>
-                  </div>
-                </div>
+                <span style={{ fontSize:10, fontWeight:600, color:'#64748b', lineHeight:1.3 }}>{k.label}</span>
               </div>
-            );
-          })}
+              {/* Value */}
+              <div style={{ fontSize:22, fontWeight:800, color:'#0f172a', lineHeight:1, marginBottom:4 }}>
+                {fmtNum(k.val)}
+              </div>
+              {/* Sub + Trend */}
+              <div style={{ fontSize:10, color:'#94a3b8', marginBottom:4 }}>{k.sub}</div>
+              <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+                {k.up
+                  ? <TrendingUp size={10} color="#16a34a" />
+                  : <TrendingDown size={10} color="#dc2626" />
+                }
+                <span style={{ fontSize:10, fontWeight:700, color: k.up ? '#16a34a' : '#dc2626' }}>
+                  {k.up ? '+' : '-'}{k.pct}%
+                </span>
+              </div>
+              <div style={{ fontSize:9, color:'#cbd5e1', marginTop:3 }}>vs Apr 2026</div>
+            </div>
+          ))}
         </div>
 
-        {/* Charts & Attributions */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.7fr 1fr', gap: '20px', alignItems: 'stretch' }}>
-          
-          {/* Growth & Retention Bar Chart */}
-          <div className="panel" style={{ padding: 'var(--spacing-section)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontSize: '14px', fontWeight: '850', color: 'var(--text)', margin: 0 }}>Growth Trend & Retention</h2>
-              <div style={{ display: 'flex', gap: '12px', fontSize: '11px', fontWeight: '700' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text)' }}>
-                  <span style={{ height: '8px', width: '8px', background: 'var(--primary)', borderRadius: '50%' }} />
-                  New
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text)' }}>
-                  <span style={{ height: '8px', width: '8px', background: '#94a3b8', borderRadius: '50%' }} />
-                  Returning
-                </span>
+        {/* ── ROW 2: Line Chart + Status Donut + Gender Donut ── */}
+        <div style={{ display:'grid', gridTemplateColumns:'1.85fr 1fr 1fr', gap:12, marginBottom:12 }}>
+
+          {/* User Overview Trend - Line Chart */}
+          <div style={{ background:'#fff', borderRadius:10, padding:'18px 18px 10px', boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+              <h2 style={{ fontSize:13, fontWeight:700, color:'#0f172a', margin:0 }}>User Overview Trend</h2>
+              <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, color:'#64748b', border:'1px solid #e2e8f0', borderRadius:6, padding:'4px 10px', cursor:'pointer' }}>
+                Line Chart <ChevronDown size={11} />
               </div>
             </div>
+            <ResponsiveContainer width="100%" height={210}>
+              <LineChart data={trendData} margin={{ top:4, right:8, left:-24, bottom:0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="day" tick={{ fontSize:9, fill:'#94a3b8' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize:9, fill:'#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? (v/1000)+'K' : v} />
+                <Tooltip content={<LineTooltip />} />
+                <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize:10, paddingTop:8 }} />
+                <Line type="monotone" dataKey="newUsers"  name="New Users"    stroke="#2563eb" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="active"    name="Active Users"  stroke="#22c55e" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="login"     name="Login"         stroke="#8b5cf6" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="logout"    name="Logout"        stroke="#f97316" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="blocked"   name="Blocked"       stroke="#ef4444" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
 
-            {/* SVG Bars Column Chart */}
-            <div style={{ height: '180px', borderBottom: '1.5px solid #25108f', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '10px 10px 0' }}>
-              {[
-                { label: "Mon", new: 60, ret: 30 },
-                { label: "Tue", new: 45, ret: 40 },
-                { label: "Wed", new: 80, ret: 50 },
-                { label: "Thu", new: 55, ret: 35 },
-                { label: "Fri", new: 90, ret: 45 },
-                { label: "Sat", new: 110, ret: 60 },
-                { label: "Sun", new: 75, ret: 40 }
-              ].map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-                  <div style={{ width: '30px', height: '140px', display: 'flex', alignItems: 'flex-end', gap: '2px', background: '#f8fafc', borderRadius: '4px' }}>
-                    <div style={{ flex: 1, height: `${item.new}%`, background: 'var(--primary)', borderRadius: '2px 2px 0 0' }} />
-                    <div style={{ flex: 1, height: `${item.ret}%`, background: '#c8c0d7', borderRadius: '2px 2px 0 0' }} />
+          {/* User Status Distribution */}
+          <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2', display:'flex', flexDirection:'column' }}>
+            <h2 style={{ fontSize:13, fontWeight:700, color:'#0f172a', margin:'0 0 10px' }}>User Status Distribution</h2>
+            <div style={{ display:'flex', justifyContent:'center', alignItems:'center' }}>
+              <PieChart width={160} height={160}>
+                <Pie data={statusDist} cx={80} cy={80} innerRadius={52} outerRadius={74} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
+                  {statusDist.map((e, i) => <Cell key={i} fill={e.color} />)}
+                  <DonutCenter viewBox={{ cx:80, cy:80 }} value="98,642" label="Total Users" />
+                </Pie>
+                <Tooltip formatter={v => fmtNum(v)} />
+              </PieChart>
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:5, marginTop:6 }}>
+              {statusDist.map((item, i) => (
+                <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:10 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                    <span style={{ width:7, height:7, borderRadius:'50%', background:item.color, flexShrink:0, display:'inline-block' }} />
+                    <span style={{ color:'#475569', fontWeight:500 }}>{item.name}</span>
                   </div>
-                  <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: '750', marginTop: '6px' }}>{item.label}</span>
+                  <div style={{ display:'flex', gap:6 }}>
+                    <span style={{ fontWeight:700, color:'#0f172a' }}>{fmtNum(item.value)}</span>
+                    <span style={{ color:'#94a3b8' }}>({item.pct})</span>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* User Source Analysis Attribution Donut */}
-          <div className="panel" style={{ padding: 'var(--spacing-section)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <h2 style={{ fontSize: '14px', fontWeight: '850', color: 'var(--text)', margin: 0 }}>User Source Analysis</h2>
-
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '130px', position: 'relative' }}>
-              <div style={{
-                height: '100px',
-                width: '100px',
-                borderRadius: '50%',
-                border: '12px solid #25108f',
-                borderTopColor: '#b45309',
-                borderRightColor: '#64748b',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}>
-                <strong style={{ fontSize: '16px', fontWeight: '850', color: 'var(--text)' }}>100%</strong>
-                <span style={{ fontSize: '8px', color: 'var(--muted)', fontWeight: '800' }}>Attribution</span>
-              </div>
+          {/* Gender Distribution */}
+          <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2', display:'flex', flexDirection:'column' }}>
+            <h2 style={{ fontSize:13, fontWeight:700, color:'#0f172a', margin:'0 0 10px' }}>Gender Distribution</h2>
+            <div style={{ display:'flex', justifyContent:'center', alignItems:'center' }}>
+              <PieChart width={160} height={160}>
+                <Pie data={genderDist} cx={80} cy={80} innerRadius={52} outerRadius={74} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
+                  {genderDist.map((e, i) => <Cell key={i} fill={e.color} />)}
+                  <DonutCenter viewBox={{ cx:80, cy:80 }} value="98,642" label="Total Users" />
+                </Pie>
+                <Tooltip formatter={v => fmtNum(v)} />
+              </PieChart>
             </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:5, marginTop:6 }}>
+              {genderDist.map((item, i) => (
+                <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:10 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                    <span style={{ width:7, height:7, borderRadius:'50%', background:item.color, flexShrink:0, display:'inline-block' }} />
+                    <span style={{ color:'#475569', fontWeight:500 }}>{item.name}</span>
+                  </div>
+                  <div style={{ display:'flex', gap:6 }}>
+                    <span style={{ fontWeight:700, color:'#0f172a' }}>{fmtNum(item.value)}</span>
+                    <span style={{ color:'#94a3b8' }}>({item.pct})</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '750' }}>
-                  <span style={{ height: '8px', width: '8px', background: 'var(--primary)', borderRadius: '50%' }} />
-                  Organic Search
-                </span>
-                <strong style={{ color: 'var(--text)' }}>45%</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '750' }}>
-                  <span style={{ height: '8px', width: '8px', background: '#64748b', borderRadius: '50%' }} />
-                  Referrals
-                </span>
-                <strong style={{ color: 'var(--text)' }}>30%</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '750' }}>
-                  <span style={{ height: '8px', width: '8px', background: '#b45309', borderRadius: '50%' }} />
-                  Social Media
-                </span>
-                <strong style={{ color: 'var(--text)' }}>25%</strong>
-              </div>
+        {/* ── ROW 3: Cities + Bar Chart + Heatmap ── */}
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1.4fr 1.3fr', gap:12, marginBottom:12 }}>
+
+          {/* Top 10 Cities */}
+          <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2' }}>
+            <h2 style={{ fontSize:13, fontWeight:700, color:'#0f172a', margin:'0 0 12px' }}>Top 10 Cities by Active Users</h2>
+            <div style={{ display:'grid', gridTemplateColumns:'auto 1fr auto', columnGap:12, rowGap:0, alignItems:'center' }}>
+              {/* Header */}
+              <div style={{ fontSize:10, fontWeight:600, color:'#94a3b8', paddingBottom:8, borderBottom:'1px solid #f1f5f9' }}>City</div>
+              <div style={{ fontSize:10, fontWeight:600, color:'#94a3b8', paddingBottom:8, borderBottom:'1px solid #f1f5f9' }}>Active Users</div>
+              <div style={{ fontSize:10, fontWeight:600, color:'#94a3b8', paddingBottom:8, borderBottom:'1px solid #f1f5f9', textAlign:'right' }}>%</div>
+              {/* Rows */}
+              {citiesData.map((c, i) => (
+                <React.Fragment key={i}>
+                  <div style={{ fontSize:11, fontWeight:600, color:'#0f172a', padding:'7px 0', borderBottom: i<9 ? '1px solid #f8fafc' : 'none', whiteSpace:'nowrap' }}>{c.city}</div>
+                  <div style={{ padding:'7px 0', borderBottom: i<9 ? '1px solid #f8fafc' : 'none', display:'flex', alignItems:'center', gap:8 }}>
+                    <span style={{ fontSize:11, fontWeight:600, color:'#334155', minWidth:36, textAlign:'right' }}>{c.users.toLocaleString()}</span>
+                    <div style={{ flex:1, height:4, borderRadius:3, background:'#eef2ff', overflow:'hidden' }}>
+                      <div style={{ height:'100%', borderRadius:3, background:'#4f46e5', width:`${(c.pct/18)*100}%`, transition:'width 0.3s' }} />
+                    </div>
+                  </div>
+                  <div style={{ fontSize:11, color:'#64748b', padding:'7px 0', borderBottom: i<9 ? '1px solid #f8fafc' : 'none', textAlign:'right' }}>{c.pct}%</div>
+                </React.Fragment>
+              ))}
             </div>
           </div>
 
-        </div>
-
-        {/* Campaign Performance bar comparisons */}
-        <div className="panel" style={{ padding: 'var(--spacing-section)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: '14px', fontWeight: '850', color: 'var(--text)', margin: 0 }}>Campaign Performance</h2>
-            <button
-              onClick={() => alert("Downloading campaigns CSV reports...")}
-              style={{ border: 'none', background: 'transparent', color: 'var(--primary)', fontSize: '12px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-            >
-              <span>Download CSV</span>
-              <ArrowRight size={12} />
-            </button>
+          {/* User Growth by Month - Bar Chart with gradient */}
+          <div style={{ background:'#fff', borderRadius:10, padding:'18px 18px 10px', boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2' }}>
+            <h2 style={{ fontSize:13, fontWeight:700, color:'#0f172a', margin:'0 0 14px' }}>User Growth by Month (2026)</h2>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={monthlyGrowth} margin={{ top:8, right:4, left:-16, bottom:0 }} barSize={22}
+                style={{ cursor:'default' }}
+              >
+                <defs>
+                  <linearGradient id="barGradient" x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0%"   stopColor="#818cf8" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#3730a3" stopOpacity={1} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize:9, fill:'#94a3b8', fontWeight:500 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize:9, fill:'#94a3b8', fontWeight:500 }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={v => v === 0 ? '0' : (v / 1000) + 'K'}
+                  domain={[0, 100000]}
+                  ticks={[0, 20000, 40000, 60000, 80000, 100000]}
+                />
+                <Tooltip content={<BarTooltip />} cursor={{ fill:'rgba(99,102,241,0.06)', radius:4 }} />
+                <Bar dataKey="users" radius={[6,6,0,0]} fill="url(#barGradient)" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '10px' }}>
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: '750', marginBottom: '6px' }}>
-                <span style={{ color: 'var(--text)' }}>Summer Onboarding Drive</span>
-                <span style={{ color: 'var(--muted)' }}>84% Target Achieved</span>
-              </div>
-              <div style={{ height: '8px', background: '#f4eff8', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ width: '84%', height: '100%', background: 'var(--primary)' }} />
+          {/* Activity Heatmap */}
+          <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2', overflow:'hidden' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+              <h2 style={{ fontSize:13, fontWeight:700, color:'#0f172a', margin:0 }}>User Activity Heatmap</h2>
+              <div style={{ display:'flex', alignItems:'center', gap:4, fontSize:10, color:'#64748b', border:'1px solid #e2e8f0', borderRadius:6, padding:'4px 9px', cursor:'pointer' }}>
+                By Hour <ChevronDown size={10} />
               </div>
             </div>
-
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: '750', marginBottom: '6px' }}>
-                <span style={{ color: 'var(--text)' }}>Influencer Referral Wave v2</span>
-                <span style={{ color: 'var(--muted)' }}>62% Target Achieved</span>
+            {/* Main heatmap grid */}
+            <div style={{ display:'flex', gap:0 }}>
+              {/* Day labels column */}
+              <div style={{ display:'flex', flexDirection:'column', gap:3, paddingTop:18, marginRight:6 }}>
+                {DAYS.map(d => (
+                  <div key={d} style={{ height:14, fontSize:9, color:'#94a3b8', fontWeight:600, display:'flex', alignItems:'center', whiteSpace:'nowrap' }}>{d}</div>
+                ))}
               </div>
-              <div style={{ height: '8px', background: '#f4eff8', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ width: '62%', height: '100%', background: '#64748b' }} />
+              {/* Cells + Hour labels */}
+              <div style={{ flex:1, overflow:'hidden' }}>
+                {/* Hour labels */}
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4, paddingRight:1 }}>
+                  {['12 AM','4 AM','8 AM','12 PM','4 PM','8 PM','11 PM'].map((h) => (
+                    <span key={h} style={{ fontSize:8, color:'#94a3b8', fontWeight:500 }}>{h}</span>
+                  ))}
+                </div>
+                {/* Day rows */}
+                {heatmapData.map((row, ri) => (
+                  <div key={ri} style={{ display:'grid', gridTemplateColumns:'repeat(24, 1fr)', gap:2, marginBottom:3 }}>
+                    {row.values.map((v, ci) => (
+                      <div
+                        key={ci}
+                        title={`${row.day} ${ci}:00 — ${v}% activity`}
+                        style={{
+                          height:14, borderRadius:3,
+                          background: heatColor(v),
+                          transition:'opacity 0.12s',
+                          cursor:'default',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.opacity='0.65'}
+                        onMouseLeave={e => e.currentTarget.style.opacity='1'}
+                      />
+                    ))}
+                  </div>
+                ))}
               </div>
             </div>
-        </div>
+          </div>
         </div>
 
-        {/* Referrers & Blocked Lists */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', alignItems: 'stretch' }}>
+        {/* ── QUICK SUMMARY FOOTER ── */}
+        <div style={{
+          background:'#fff', borderRadius:10, padding:'14px 20px',
+          boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2',
+          display:'flex', alignItems:'center', justifyContent:'space-between',
+          flexWrap:'wrap', gap:12,
+        }}>
+          <h2 style={{ fontSize:13, fontWeight:700, color:'#0f172a', margin:0, minWidth:100 }}>Quick Summary</h2>
           
-          {/* Top Referring Users Table */}
-          <div className="panel" style={{ padding: 'var(--spacing-section)', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 style={{ fontSize: '14px', fontWeight: '850', color: 'var(--text)', margin: 0 }}>Top Referring Users</h2>
-              <MoreVertical onClick={() => alert("Options menu for Top Referring Users")} size={16} style={{ color: 'var(--muted)', cursor: 'pointer' }} />
-            </div>
-
-            <div className="table-wrap">
-              <div className="table-responsive-wrapper">
-<table style={{ width: '100%', minWidth: '500px', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left', tableLayout: 'fixed' }}>
-                <thead>
-                  <tr style={{ background: '#f4eff8', borderBottom: '1.5px solid #25108f' }}>
-                    <th style={{ width: '50%', padding: '8px 6px', color: 'var(--muted)', fontWeight: '800', textTransform: 'uppercase', fontSize: '10px' }}>User</th>
-                    <th style={{ width: '25%', padding: '8px 6px', color: 'var(--muted)', fontWeight: '800', textTransform: 'uppercase', fontSize: '10px' }}>Referrals</th>
-                    <th style={{ width: '25%', padding: '8px 6px', color: 'var(--muted)', fontWeight: '800', textTransform: 'uppercase', fontSize: '10px', textAlign: 'right' }}>Conv.</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {referringUsers.map((item, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid var(--lavender)' }}>
-                      <td style={{ padding: '8px 6px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ height: '28px', width: '28px', borderRadius: '50%', background: item.bg, color: item.text, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: '850' }}>
-                            {item.initials}
-                          </div>
-                          <div>
-                            <strong style={{ display: 'block', color: 'var(--text)' }}>{item.name}</strong>
-                            <span style={{ fontSize: '10px', color: 'var(--muted)' }}>{item.role}</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td style={{ padding: '8px 6px', fontWeight: '750' }}>{item.count}</td>
-                      <td style={{ padding: '8px 6px', fontWeight: '850', color: 'var(--green)', textAlign: 'right' }}>{item.conv}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-</div>
-            </div>
+          {/* Summary stats */}
+          <div style={{ display:'flex', alignItems:'center', gap:20, flex:1, flexWrap:'wrap' }}>
+            {kpis.slice(0, 7).map((k, i) => (
+              <div key={i} style={{ display:'flex', alignItems:'center', gap:8 }}>
+                {i > 0 && <div style={{ width:1, height:28, background:'#e8edf2' }} />}
+                <div style={{ background:k.bg, borderRadius:7, padding:'5px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  {k.icon}
+                </div>
+                <div>
+                  <div style={{ fontSize:9, color:'#94a3b8', fontWeight:500, whiteSpace:'nowrap' }}>{k.label}</div>
+                  <div style={{ fontSize:14, fontWeight:800, color:'#0f172a', lineHeight:1.2 }}>{fmtNum(k.val)}</div>
+                </div>
+              </div>
+            ))}
           </div>
 
-          {/* Recently Blocked User list */}
-          <div className="panel" style={{ padding: 'var(--spacing-section)', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 style={{ fontSize: '14px', fontWeight: '850', color: 'var(--text)', margin: 0 }}>Recently Blocked</h2>
-              <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: '700' }}>Last 24 Hours</span>
-            </div>
-
-            <div className="table-wrap">
-              <div className="table-responsive-wrapper">
-<table style={{ width: '100%', minWidth: '500px', borderCollapse: 'collapse', fontSize: '12.5px', textAlign: 'left', tableLayout: 'fixed' }}>
-                <thead>
-                  <tr style={{ background: '#f4eff8', borderBottom: '1.5px solid #25108f' }}>
-                    <th style={{ width: '35%', padding: '8px 6px', color: 'var(--muted)', fontWeight: '800', textTransform: 'uppercase', fontSize: '10px' }}>User</th>
-                    <th style={{ width: '25%', padding: '8px 6px', color: 'var(--muted)', fontWeight: '800', textTransform: 'uppercase', fontSize: '10px' }}>Reason</th>
-                    <th style={{ width: '25%', padding: '8px 6px', color: 'var(--muted)', fontWeight: '800', textTransform: 'uppercase', fontSize: '10px' }}>Date</th>
-                    <th style={{ width: '15%', padding: '8px 6px', color: 'var(--muted)', fontWeight: '800', textTransform: 'uppercase', fontSize: '10px', textAlign: 'right' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {blockedUsers.map((item, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid var(--lavender)' }}>
-                      <td style={{ padding: '8px 6px' }}>
-                        <strong style={{ display: 'block', color: 'var(--text)' }}>{item.name}</strong>
-                        <span style={{ fontSize: '10px', color: 'var(--muted)' }}>ID: #{item.id}</span>
-                      </td>
-                      <td style={{ padding: '8px 6px' }}>
-                        <span style={{
-                          fontSize: '9px',
-                          fontWeight: '850',
-                          background: item.color,
-                          color: item.txt,
-                          padding: '2px 6px',
-                          borderRadius: '4px'
-                        }}>
-                          {item.reason}
-                        </span>
-                      </td>
-                      <td style={{ padding: '8px 6px', color: 'var(--muted)' }}>{item.date}</td>
-                      <td style={{ padding: '8px 6px', textAlign: 'right' }}>
-                        <button
-                          onClick={() => alert(`Reviewing security flags log for ${item.name}`)}
-                          style={{ border: 'none', background: 'transparent', color: 'var(--primary)', cursor: 'pointer', fontWeight: '800' }}
-                        >
-                          Review
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-</div>
-            </div>
-          </div>
+          {/* Export button */}
+          <button onClick={handleExport} style={{
+            display:'flex', alignItems:'center', gap:6,
+            padding:'8px 16px', borderRadius:8, border:'1px solid #dde3ea',
+            background:'#fff', color:'#0f172a', fontSize:12, fontWeight:600,
+            cursor:'pointer', boxShadow:'0 1px 3px rgba(0,0,0,0.05)',
+            transition:'all 0.15s', flexShrink:0, whiteSpace:'nowrap',
+          }}
+            onMouseEnter={e=>{ e.currentTarget.style.background='#0f172a'; e.currentTarget.style.color='#fff'; }}
+            onMouseLeave={e=>{ e.currentTarget.style.background='#fff'; e.currentTarget.style.color='#0f172a'; }}
+          >
+            <Download size={13} />
+            Export Report
+            <ChevronDown size={11} />
+          </button>
         </div>
-        </>
-      )}
+
       </div>
     </AdminShell>
   );
 }
-
-

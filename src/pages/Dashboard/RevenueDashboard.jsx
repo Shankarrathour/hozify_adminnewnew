@@ -1,338 +1,509 @@
 import React, { useState } from 'react';
-import { 
-  Calendar, 
-  Download, 
-  TrendingUp, 
-  TrendingDown, 
-  MapPin, 
-  SlidersHorizontal, 
-  RotateCcw,
-  X,
-  DollarSign
+import {
+  DollarSign,
+  CreditCard,
+  TrendingUp,
+  TrendingDown,
+  RefreshCw,
+  Download,
+  ChevronDown,
+  ChevronRight,
+  Eye,
+  Briefcase,
+  Users,
+  BarChart2
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
 
-import Select from "../../components/ui/Select";
+/* ───────────────────── Mock Data ───────────────────── */
+
+const revenueChartData = [
+  { date: '01 May', revenue: 62000 },
+  { date: '05 May', revenue: 75000 },
+  { date: '08 May', revenue: 50000 },
+  { date: '11 May', revenue: 81000 },
+  { date: '14 May', revenue: 64000 },
+  { date: '16 May', revenue: 90000 },
+  { date: '18 May', revenue: 74000 },
+  { date: '20 May', revenue: 82000 },
+  { date: '22 May', revenue: 68000 },
+  { date: '24 May', revenue: 96000 },
+  { date: '26 May', revenue: 78000 },
+  { date: '28 May', revenue: 85000 },
+  { date: '31 May', revenue: 72000 },
+];
+
+const sellerTypeData = [
+  { name: 'Enterprise', value: 210, color: '#4f46e5' },
+  { name: 'Mid-Market', value: 94, color: '#f59e0b' },
+  { name: 'Small Biz', value: 45, color: '#22c55e' },
+  { name: 'Freelance', value: 16, color: '#64748b' },
+];
+
+const channelData = [
+  { name: 'Direct', value: 44, color: '#4f46e5' },
+  { name: 'Partner', value: 28, color: '#8b5cf6' },
+  { name: 'Online', value: 18, color: '#10b981' },
+  { name: 'Referral', value: 10, color: '#f59e0b' },
+];
+
+const recentTransactions = [
+  { id: 'TXN-8829', partner: 'Global Logistics Ltd.', initials: 'GL', category: 'Logistics', gross: '₹1,24,000', commission: '₹18,600', payout: '₹1,05,400', status: 'Settled', date: '31 May 2026 14:20' },
+  { id: 'TXN-8830', partner: 'HomeCare Solutions', initials: 'HC', category: 'Services', gross: '₹45,000', commission: '₹6,750', payout: '₹38,250', status: 'Pending', date: '31 May 2026 15:45' },
+  { id: 'TXN-8831', partner: 'Swift Delivery Co.', initials: 'SD', category: 'Logistics', gross: '₹2,80,000', commission: '₹42,000', payout: '₹2,38,000', status: 'Settled', date: '31 May 2026 10:12' },
+  { id: 'TXN-8832', partner: 'Urban Cleaning Inc.', initials: 'UC', category: 'Cleaning', gross: '₹8,500', commission: '₹1,275', payout: '₹7,225', status: 'Refunded', date: '31 May 2026 09:30' },
+  { id: 'TXN-8833', partner: 'Pro Electricians', initials: 'PE', category: 'Electrical', gross: '₹32,000', commission: '₹4,800', payout: '₹27,200', status: 'Settled', date: '30 May 2026 16:55' },
+];
+
+const topPartners = [
+  { name: 'Global Logistics Ltd.', initials: 'GL', category: 'Logistics', revenue: '₹12,40,000', commission: '₹1,86,000', orders: 84, growth: '+18.4%', growthUp: true },
+  { name: 'HomeCare Solutions', initials: 'HC', category: 'Services', revenue: '₹8,20,000', commission: '₹1,23,000', orders: 62, growth: '+9.7%', growthUp: true },
+  { name: 'Swift Delivery Co.', initials: 'SD', category: 'Logistics', revenue: '₹6,90,000', commission: '₹1,03,500', orders: 55, growth: '-2.1%', growthUp: false },
+  { name: 'Urban Cleaning Inc.', initials: 'UC', category: 'Cleaning', revenue: '₹4,50,000', commission: '₹67,500', orders: 38, growth: '+6.3%', growthUp: true },
+  { name: 'Pro Electricians', initials: 'PE', category: 'Electrical', revenue: '₹3,20,000', commission: '₹48,000', orders: 29, growth: '+12.8%', growthUp: true },
+];
+
+const categoryBreakdown = [
+  { category: 'Logistics', totalRevenue: '₹19,30,000', commission: '₹2,89,500', partners: 28, orders: 139, share: '42%' },
+  { category: 'Services', totalRevenue: '₹8,20,000', commission: '₹1,23,000', partners: 19, orders: 62, share: '18%' },
+  { category: 'Cleaning', totalRevenue: '₹6,10,000', commission: '₹91,500', partners: 15, orders: 51, share: '13%' },
+  { category: 'Electrical', totalRevenue: '₹5,40,000', commission: '₹81,000', partners: 12, orders: 44, share: '12%' },
+  { category: 'Plumbing', totalRevenue: '₹4,20,000', commission: '₹63,000', partners: 9, orders: 35, share: '9%' },
+  { category: 'Others', totalRevenue: '₹2,80,000', commission: '₹42,000', partners: 8, orders: 22, share: '6%' },
+];
+
+/* ───────────────────── Sub-components ───────────────────── */
+
+function StatCard({ icon: Icon, iconBg, iconColor, value, label, sublabel, trend, trendUp, trendLabel }) {
+  return (
+    <div className="rev-dash-stat-card">
+      <div className="rev-dash-stat-icon" style={{ background: iconBg }}>
+        <Icon size={22} color={iconColor} />
+      </div>
+      <div className="rev-dash-stat-body">
+        <div className="rev-dash-stat-value">{value}</div>
+        <div className="rev-dash-stat-label">{label}</div>
+        {sublabel && <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 400 }}>{sublabel}</div>}
+        {trend && (
+          <div className={`rev-dash-stat-trend ${trendUp ? 'up' : 'down'}`}>
+            {trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+            <span>{trend}</span>
+            <span className="trend-vs">{trendLabel}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TxnStatusBadge({ status }) {
+  const map = {
+    Settled:  { bg: '#dcfce7', color: '#166534' },
+    Pending:  { bg: '#fef3c7', color: '#92400e' },
+    Refunded: { bg: '#fee2e2', color: '#991b1b' },
+  };
+  const s = map[status] || { bg: '#f1f5f9', color: '#475569' };
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 10px', borderRadius: '20px', fontSize: '11.5px', fontWeight: 600, background: s.bg, color: s.color }}>
+      {status}
+    </span>
+  );
+}
+
+function Avatar({ initials }) {
+  return (
+    <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #818cf8)', color: '#fff', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      {initials}
+    </div>
+  );
+}
+
+function CustomTooltip({ active, payload, label }) {
+  if (active && payload && payload.length) {
+    return (
+      <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 14px', color: '#f1f5f9', fontSize: 13 }}>
+        <p style={{ margin: 0, color: '#94a3b8', marginBottom: 4 }}>{label}</p>
+        <p style={{ margin: 0, fontWeight: 600 }}>₹{payload[0].value.toLocaleString()}</p>
+      </div>
+    );
+  }
+  return null;
+}
+
+function DonutLegend({ data }) {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  return (
+    <div className="rev-donut-legend">
+      {data.map(d => (
+        <div key={d.name} className="rev-donut-legend-item">
+          <span className="rev-donut-legend-dot" style={{ background: d.color }} />
+          <span className="rev-donut-legend-name">{d.name}</span>
+          <span className="rev-donut-legend-val">{d.value}</span>
+          <span style={{ color: '#94a3b8', fontSize: '11.5px' }}>({((d.value / total) * 100).toFixed(0)}%)</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ───────────────────── Main Component ───────────────────── */
 
 export default function RevenueDashboard({ activeTab = 'Revenue Management' }) {
-  // Working filter states
-  const [selectedRange, setSelectedRange] = useState('Last 30 Days');
-  const [selectedCity, setSelectedCity] = useState('All Cities');
-  const [showInsight, setShowInsight] = useState(true);
-  
-  // Is state se transactions dynamically filter hongi (Attention Required vs All)
-  const [filterAttentionOnly, setFilterAttentionOnly] = useState(false);
+  const [dateRange, setDateRange] = useState('01 May 2026 - 31 May 2026');
+  const [partnerType, setPartnerType] = useState('All Partners');
+  const [category, setCategory] = useState('All Categories');
+  const [statusFilter, setStatusFilter] = useState('All Status');
+  const [chartFreq, setChartFreq] = useState('Daily');
 
-  // Raw Master Datasets with City mappings
-  const rawTransactions = [
-    { id: "TXN-882910", name: "Global Logistics Ltd.", initials: "GL", gross: 1240.00, comm: 186.00, payout: 1054.00, status: "Settled", date: "May 24, 14:20", city: "New York" },
-    { id: "TXN-882911", name: "HomeCare Solutions", initials: "HC", gross: 450.00, comm: 67.50, payout: 382.50, status: "Pending", date: "May 24, 15:45", city: "Los Angeles" },
-    { id: "TXN-882912", name: "Swift Delivery Co.", initials: "SD", gross: 2800.00, comm: 420.00, payout: 2380.00, status: "Settled", date: "May 23, 10:12", city: "New York" },
-    { id: "TXN-882913", name: "Urban Cleaning Inc.", initials: "UC", gross: 85.00, comm: 12.75, payout: 72.25, status: "Refunded", date: "May 23, 09:30", city: "Los Angeles" }
-  ];
-
-  // Advanced Filter Logic Handler (City + Sliders icon toggle status)
-  const filteredTransactions = rawTransactions.filter(txn => {
-    // 1. City Match Check
-    const cityMatch = selectedCity === 'All Cities' ? true : txn.city === selectedCity;
-    
-    // 2. Filter Button (Attention Required: Pending/Refunded) Match Check
-    const filterMatch = filterAttentionOnly ? (txn.status === 'Pending' || txn.status === 'Refunded') : true;
-    
-    return cityMatch && filterMatch;
-  });
-
-  // Dynamic Multiplier based on Timeframe context
-  const getRangeMultiplier = () => {
-    if (selectedRange === 'Last 7 Days') return 0.23;
-    if (selectedRange === 'This Month') return 0.88;
-    return 1.0; 
-  };
-
-  const m = getRangeMultiplier();
-
-  // Dynamic KPIs calculations
-  const kpis = [
-    { title: "TODAY'S REVENUE", value: `$${(12482.00 * (m * 0.9 + 0.1)).toLocaleString('en-US', { maximumFractionDigits: 0 })}`, trend: "+8.2% from yesterday", positive: true, iconcolor: 'var(--primary)', iconBg: "#f4eff8" },
-    { title: "WEEKLY REVENUE", value: `$${(84210.50 * m).toLocaleString('en-US', { maximumFractionDigits: 0 })}`, trend: "+12.4% from last week", positive: true, iconColor: "#047857", iconBg: "#ecfdf5" },
-    { title: "MONTHLY REVENUE", value: `$${(328000.00 * m).toLocaleString('en-US', { maximumFractionDigits: 0 })}`, trend: "-2.1% from last month", positive: false, iconColor: "#b45309", iconBg: "#fffbeb" },
-    { title: "YEARLY REVENUE", value: "$4.2M", trend: "+15% target completion", positive: true, iconColor: "#1e40af", iconBg: "#eff6ff" }
-  ];
-
-  // Client side native CSV Downloader
-  const handleExportCSV = () => {
-    const headers = ["Transaction ID", "Entity Name", "City", "Gross Amount", "Commission (15%)", "Net Payout", "Status", "Date"];
-    const rows = filteredTransactions.map(t => [
-      `#${t.id}`, t.name, t.city, t.gross, t.comm, t.payout, t.status, t.date
-    ]);
-
-    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `HOZIFY_Revenue_Report.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const totalSellers = sellerTypeData.reduce((s, d) => s + d.value, 0);
 
   return (
     <AdminShell
       activeTab={activeTab}
-      brandText="HOZIFY"
-      brandSubText="Enterprise Admin"
-      headerTitle="Revenue Analytics"
-      searchPlaceholder="Search transactions, partners, or analytics..."
+      pageTitle="Revenue Dashboard"
+      pageSubtitle="Revenue Transactions & Partner Earnings Analytics"
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)', padding: '24px 0', position: 'relative' }}>
-        
-        {/* Title & Filter Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-          <div>
-            <h1 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text)', margin: 0 }}>
-              Revenue Analytics
-            </h1>
-            <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '4px 0 0' }}>
-              Real-time financial performance and commission tracking.
-            </p>
+      <div className="rev-dash-root">
+
+        {/* ── Header Filters ── */}
+        <div className="rev-dash-filters">
+          <div className="rev-filter-group">
+            <label>Date Range</label>
+            <div className="rev-filter-select">
+              <span>{dateRange}</span>
+              <ChevronDown size={14} />
+            </div>
           </div>
-
-          {/* Quick Filters */}
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-            {/* Calendar Selector */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1.5px solid #25108f', background: '#fff', padding: '6px 12px', borderRadius: '6px' }}>
-              <Calendar size={14} style={{ color: 'var(--muted)' }} />
-              <Select
-                value={selectedRange}
-                onChange={(e) => setSelectedRange(e.target.value)}
-                style={{ border: 'none', background: 'transparent', outline: 'none', fontWeight: '700', fontSize: '13px', cursor: 'pointer', color: 'var(--text)' }}
-                aria-label="Timeframe selection"
-                options={[{
-                  label: "Last 30 Days",
-                  value: "Last 30 Days"
-                }, {
-                  label: "Last 7 Days",
-                  value: "Last 7 Days"
-                }, {
-                  label: "This Month",
-                  value: "This Month"
-                }]} />
+          <div className="rev-filter-group">
+            <label>Partner Type</label>
+            <div className="rev-filter-select">
+              <span>{partnerType}</span>
+              <ChevronDown size={14} />
             </div>
-
-            {/* City Dropdown Filter */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1.5px solid #25108f', background: '#fff', padding: '6px 12px', borderRadius: '6px' }}>
-              <MapPin size={14} style={{ color: 'var(--muted)' }} />
-              <Select
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                style={{ border: 'none', background: 'transparent', outline: 'none', fontWeight: '700', fontSize: '13px', cursor: 'pointer', color: 'var(--text)' }}
-                aria-label="City selection"
-                options={[{
-                  label: "All Cities",
-                  value: "All Cities"
-                }, {
-                  label: "New York",
-                  value: "New York"
-                }, {
-                  label: "Los Angeles",
-                  value: "Los Angeles"
-                }]} />
+          </div>
+          <div className="rev-filter-group">
+            <label>Category</label>
+            <div className="rev-filter-select">
+              <span>{category}</span>
+              <ChevronDown size={14} />
             </div>
-
-            {/* CLICKABLE INTERACTIVE FILTER ICON */}
-            <button 
-              type="button"
-              onClick={() => {
-                setSelectedRange('Last 30 Days');
-                setSelectedCity('All Cities');
-                setFilterAttentionOnly(false);
-              }}
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                border: (selectedCity !== 'All Cities' || selectedRange !== 'Last 30 Days' || filterAttentionOnly) ? '1px solid #d32929' : '1.5px solid #25108f', 
-                background: (selectedCity !== 'All Cities' || selectedRange !== 'Last 30 Days' || filterAttentionOnly) ? '#fee2e2' : '#fff', 
-                padding: '8px 12px', 
-                borderRadius: '6px', 
-                color: (selectedCity !== 'All Cities' || selectedRange !== 'Last 30 Days' || filterAttentionOnly) ? '#d32929' : 'var(--text)',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-              title="Reset all filters"
-            >
-              <RotateCcw size={14} />
+          </div>
+          <div className="rev-filter-group">
+            <label>Status</label>
+            <div className="rev-filter-select">
+              <span>{statusFilter}</span>
+              <ChevronDown size={14} />
+            </div>
+          </div>
+          <div className="rev-filter-actions">
+            <button className="rev-filter-btn-refresh">
+              <RefreshCw size={15} /> Refresh
+            </button>
+            <button className="rev-filter-btn-export">
+              <Download size={15} /> Export Report
             </button>
           </div>
         </div>
 
-        {/* 4 KPI Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-          {kpis.map((kpi, idx) => (
-            <div key={idx} className="panel" style={{ padding: 'var(--spacing-section)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  {kpi.title}
-                </span>
-                <div style={{ height: '32px', width: '32px', borderRadius: '50%', background: kpi.iconBg, color: kpi.iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <DollarSign size={16} />
+        {/* ── Stat Cards Row ── */}
+        <div className="rev-dash-stats-grid">
+          <StatCard
+            icon={DollarSign}
+            iconBg="#eff6ff" iconColor="#2563eb"
+            value="₹45,82,000" label="Total Revenue"
+            sublabel="This Month"
+            trend="+14.2%" trendUp={true} trendLabel="vs Apr 2026"
+          />
+          <StatCard
+            icon={CreditCard}
+            iconBg="#f0fdf4" iconColor="#16a34a"
+            value="₹6,87,300" label="Total Commission"
+            sublabel="This Month"
+            trend="+11.8%" trendUp={true} trendLabel="vs Apr 2026"
+          />
+          <StatCard
+            icon={Briefcase}
+            iconBg="#faf5ff" iconColor="#9333ea"
+            value="365" label="Transactions"
+            sublabel="This Month"
+            trend="+8.4%" trendUp={true} trendLabel="vs Apr 2026"
+          />
+          <StatCard
+            icon={Users}
+            iconBg="#fff7ed" iconColor="#ea580c"
+            value="81" label="Active Partners"
+            sublabel="Currently Active"
+            trend="+5.1%" trendUp={true} trendLabel="vs Apr 2026"
+          />
+          <StatCard
+            icon={TrendingUp}
+            iconBg="#f0f9ff" iconColor="#0284c7"
+            value="₹1,25,534" label="Avg. Transaction"
+            sublabel="Per Transaction"
+            trend="+6.3%" trendUp={true} trendLabel="vs Apr 2026"
+          />
+          <StatCard
+            icon={BarChart2}
+            iconBg="#fff1f2" iconColor="#e11d48"
+            value="₹3,42,180" label="Pending Payouts"
+            sublabel="Awaiting Clearance"
+            trend="-9.7%" trendUp={false} trendLabel="vs Apr 2026"
+          />
+        </div>
+
+        {/* ── Charts Row ── */}
+        <div className="rev-dash-charts-row">
+
+          {/* Revenue Line Chart */}
+          <div className="rev-dash-card rev-dash-line-chart">
+            <div className="rev-dash-card-header">
+              <div>
+                <h3>Revenue Growth Trend</h3>
+              </div>
+              <div className="rev-chart-freq">
+                {['Daily', 'Weekly', 'Monthly'].map(f => (
+                  <button
+                    key={f}
+                    className={`rev-chart-freq-btn ${chartFreq === f ? 'active' : ''}`}
+                    onClick={() => setChartFreq(f)}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={revenueChartData} margin={{ top: 8, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <Tooltip content={<CustomTooltip />} />
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#4f46e5"
+                  strokeWidth={2.5}
+                  dot={false}
+                  activeDot={{ r: 5, fill: '#4f46e5' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Seller Type Donut */}
+          <div className="rev-dash-card rev-dash-donut">
+            <div className="rev-dash-card-header">
+              <h3>Partner Type Split</h3>
+            </div>
+            <div className="rev-donut-content">
+              <div className="rev-donut-wrap">
+                <PieChart width={170} height={170}>
+                  <Pie
+                    data={sellerTypeData}
+                    cx={80}
+                    cy={80}
+                    innerRadius={52}
+                    outerRadius={78}
+                    dataKey="value"
+                    startAngle={90}
+                    endAngle={-270}
+                    stroke="none"
+                  >
+                    {sellerTypeData.map((entry, i) => (
+                      <Cell key={i} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+                <div className="rev-donut-center-label">
+                  <span className="rev-donut-center-val">{totalSellers}</span>
+                  <span className="rev-donut-center-txt">Total Partners</span>
                 </div>
               </div>
-              <div>
-                <strong style={{ fontSize: '26px', fontWeight: '850', color: 'var(--text)', display: 'block', letterSpacing: '-0.5px' }}>
-                  {kpi.value}
-                </strong>
-                <span style={{ fontSize: '12px', fontWeight: '750', color: kpi.positive ? '#07956f' : '#d32929', display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                  {kpi.positive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                  {kpi.trend}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Charts Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.7fr 1fr', gap: '20px', alignItems: 'stretch' }}>
-          <div className="panel" style={{ padding: 'var(--spacing-section)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h2 style={{ fontSize: '14px', fontWeight: '850', color: 'var(--text)', margin: 0 }}>Revenue Growth Trend</h2>
-                <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Daily aggregated revenue across sectors ({selectedRange}).</span>
-              </div>
-            </div>
-
-            <div style={{ height: '220px', position: 'relative', borderBottom: '1.5px solid #25108f', display: 'flex', alignItems: 'flex-end', marginTop: '20px' }}>
-              <svg width="100%" height="100%" viewBox="0 0 500 150" preserveAspectRatio="none" style={{ overflow: 'visible' }}>
-                <path d={`M 0 ${140 - (30 * m)} C 80 ${130 - (10 * m)}, 150 ${110 - (20 * m)}, 250 ${90 - (10 * m)} C 350 ${80 - (10 * m)}, 420 30, 500 15`} fill="none" stroke="#25108f" strokeWidth="3" strokeLinecap="round" />
-                <path d={`M 0 ${140 - (30 * m)} C 80 ${130 - (10 * m)}, 150 ${110 - (20 * m)}, 250 ${90 - (10 * m)} C 350 ${80 - (10 * m)}, 420 30, 500 15 L 500 150 L 0 150 Z`} fill="url(#grad)" opacity="0.1" />
-                <defs>
-                  <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#25108f" />
-                    <stop offset="100%" stopColor="#fff" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div style={{ position: 'absolute', bottom: '-24px', left: 0, right: 0, display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--muted)', fontWeight: '750' }}>
-                <span>01 May</span><span>08 May</span><span>15 May</span><span>22 May</span><span>30 May</span>
-              </div>
+              <DonutLegend data={sellerTypeData} />
             </div>
           </div>
 
-          {/* Seller Distribution */}
-          <div className="panel" style={{ padding: 'var(--spacing-section)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <h2 style={{ fontSize: '14px', fontWeight: '850', color: 'var(--text)', margin: 0 }}>Seller Distribution</h2>
-            <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', height: '140px', alignItems: 'center' }}>
-              <div style={{ height: '110px', width: '110px', borderRadius: '50%', border: '14px solid #25108f', borderTopColor: '#c8c0d7', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                <strong style={{ fontSize: '18px', fontWeight: '850', color: 'var(--primary)' }}>82%</strong>
-                <span style={{ fontSize: '9px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase' }}>Top Tier</span>
-              </div>
+          {/* Channel Donut */}
+          <div className="rev-dash-card rev-dash-donut">
+            <div className="rev-dash-card-header">
+              <h3>Revenue by Channel</h3>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '750' }}><span style={{ height: '8px', width: '8px', background: 'var(--primary)', borderRadius: '50%' }} />Enterprise</span>
-                <strong style={{ color: 'var(--text)' }}>${(210 * m).toFixed(0)}K</strong>
+            <div className="rev-donut-content">
+              <div className="rev-donut-wrap">
+                <PieChart width={170} height={170}>
+                  <Pie
+                    data={channelData}
+                    cx={80}
+                    cy={80}
+                    innerRadius={52}
+                    outerRadius={78}
+                    dataKey="value"
+                    startAngle={90}
+                    endAngle={-270}
+                    stroke="none"
+                  >
+                    {channelData.map((entry, i) => (
+                      <Cell key={i} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+                <div className="rev-donut-center-label">
+                  <span className="rev-donut-center-val">100%</span>
+                  <span className="rev-donut-center-txt">All Channels</span>
+                </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '750' }}><span style={{ height: '8px', width: '8px', background: '#a855f7', borderRadius: '50%' }} />Mid-Market</span>
-                <strong style={{ color: 'var(--text)' }}>${(94 * m).toFixed(0)}K</strong>
-              </div>
+              <DonutLegend data={channelData} />
             </div>
           </div>
         </div>
 
-        {/* Transaction Breakdown Table Panel */}
-        <div className="panel" style={{ padding: 'var(--spacing-section)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h2 style={{ fontSize: '14px', fontWeight: '850', color: 'var(--text)', margin: 0 }}>Transaction Breakdown</h2>
-              {(selectedCity !== 'All Cities' || filterAttentionOnly) && (
-                <span style={{ fontSize: '10px', fontWeight: '800', background: filterAttentionOnly ? '#fee2e2' : '#f4eff8', color: filterAttentionOnly ? '#d32929' : '#25108f', padding: '2px 6px', borderRadius: '4px' }}>
-                  {filterAttentionOnly ? "Attention Needed" : ""} {selectedCity !== 'All Cities' ? `(${selectedCity})` : ""}
-                </span>
-              )}
-            </div>
-            
-            <button
-              type="button"
-              onClick={handleExportCSV}
-              style={{ border: '1.5px solid #25108f', background: '#fff', padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text)' }}
-            >
-              <Download size={12} />
-              <span>Export CSV</span>
-            </button>
-          </div>
+        {/* ── Mid Row: Transactions + Top Partners ── */}
+        <div className="rev-dash-mid-row">
 
-          <div className="table-wrap">
-            <div className="table-responsive-wrapper">
-<table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px', textAlign: 'left' }}>
-                <thead>
-                  <tr style={{ background: '#f4eff8', borderBottom: '1.5px solid #25108f' }}>
-                    <th style={{ padding: '10px 12px', color: 'var(--muted)', fontWeight: '800', fontSize: '10px' }}>Transaction ID</th>
-                    <th style={{ padding: '10px 12px', color: 'var(--muted)', fontWeight: '800', fontSize: '10px' }}>Entity Name</th>
-                    <th style={{ padding: '10px 12px', color: 'var(--muted)', fontWeight: '800', fontSize: '10px' }}>City</th>
-                    <th style={{ padding: '10px 12px', color: 'var(--muted)', fontWeight: '800', fontSize: '10px' }}>Gross Amount</th>
-                    <th style={{ padding: '10px 12px', color: 'var(--muted)', fontWeight: '800', fontSize: '10px' }}>Commission</th>
-                    <th style={{ padding: '10px 12px', color: 'var(--muted)', fontWeight: '800', fontSize: '10px' }}>Net Payout</th>
-                    <th style={{ padding: '10px 12px', color: 'var(--muted)', fontWeight: '800', fontSize: '10px' }}>Status</th>
-                    <th style={{ padding: '10px 12px', color: 'var(--muted)', fontWeight: '800', fontSize: '10px', textAlign: 'right' }}>Date</th>
+          {/* Recent Transactions */}
+          <div className="rev-dash-card rev-dash-transactions">
+            <div className="rev-dash-card-header">
+              <h3>Recent Transactions</h3>
+            </div>
+            <table className="rev-dash-table">
+              <thead>
+                <tr>
+                  <th>Txn ID</th>
+                  <th>Partner</th>
+                  <th>Category</th>
+                  <th>Gross</th>
+                  <th>Commission</th>
+                  <th>Status</th>
+                  <th>Date & Time</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentTransactions.map((t, i) => (
+                  <tr key={i}>
+                    <td className="rev-highlight-cell">{t.id}</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Avatar initials={t.initials} />
+                        <span style={{ fontWeight: 500 }}>{t.partner}</span>
+                      </div>
+                    </td>
+                    <td>{t.category}</td>
+                    <td style={{ fontWeight: 600 }}>{t.gross}</td>
+                    <td style={{ fontWeight: 600, color: '#16a34a' }}>{t.commission}</td>
+                    <td><TxnStatusBadge status={t.status} /></td>
+                    <td className="rev-time-cell">{t.date}</td>
+                    <td>
+                      <button className="admin-table-eye-btn"><Eye size={15} /></button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filteredTransactions.length > 0 ? (
-                    filteredTransactions.map((txn, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid var(--lavender)' }}>
-                        <td style={{ padding: '12px', fontWeight: '750', color: 'var(--primary)' }}>#{txn.id}</td>
-                        <td style={{ padding: '12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{ height: '26px', width: '26px', borderRadius: '50%', background: '#f4eff8', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: '850' }}>{txn.initials}</div>
-                            <strong style={{ color: 'var(--text)' }}>{txn.name}</strong>
-                          </div>
-                        </td>
-                        <td style={{ padding: '12px', color: 'var(--muted)', fontWeight: '600' }}>{txn.city}</td>
-                        <td style={{ padding: '12px', fontWeight: '650' }}>${txn.gross.toLocaleString()}</td>
-                        <td style={{ padding: '12px', fontWeight: '850', color: 'var(--primary)' }}>${txn.comm.toLocaleString()}</td>
-                        <td style={{ padding: '12px', fontWeight: '650' }}>${txn.payout.toLocaleString()}</td>
-                        <td style={{ padding: '12px' }}>
-                          <span style={{
-                            fontSize: '9px',
-                            fontWeight: '850',
-                            background: txn.status === 'Settled' ? '#ecfdf5' : txn.status === 'Pending' ? '#fffbeb' : '#fee2e2',
-                            color: txn.status === 'Settled' ? '#07956f' : txn.status === 'Pending' ? '#b45309' : '#d32929',
-                            padding: '2px 6px',
-                            borderRadius: '4px'
-                          }}>{txn.status}</span>
-                        </td>
-                        <td style={{ padding: '12px', textAlign: 'right', color: 'var(--muted)' }}>{txn.date}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={8} style={{ padding: 'var(--spacing-page)', textAlign: 'center', color: 'var(--muted)', fontStyle: 'italic' }}>
-                        No mismatch criteria items found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-</div>
+                ))}
+              </tbody>
+            </table>
+            <div className="rev-dash-view-all">
+              <button>View All Transactions <ChevronRight size={14} /></button>
+            </div>
+          </div>
+
+          {/* Top Partners */}
+          <div className="rev-dash-card rev-dash-partners">
+            <div className="rev-dash-card-header">
+              <h3>Top Earning Partners</h3>
+            </div>
+            <table className="rev-dash-table">
+              <thead>
+                <tr>
+                  <th>Partner</th>
+                  <th>Category</th>
+                  <th>Revenue</th>
+                  <th>Orders</th>
+                  <th>Growth</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topPartners.map((p, i) => (
+                  <tr key={i}>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Avatar initials={p.initials} />
+                        <span style={{ fontWeight: 600 }}>{p.name}</span>
+                      </div>
+                    </td>
+                    <td>{p.category}</td>
+                    <td style={{ fontWeight: 600 }}>{p.revenue}</td>
+                    <td>{p.orders}</td>
+                    <td>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: p.growthUp ? '#16a34a' : '#dc2626' }}>
+                        {p.growthUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                        {p.growth}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="rev-dash-view-all">
+              <button>View All Partners <ChevronRight size={14} /></button>
+            </div>
           </div>
         </div>
 
-        {/* Floating Insight Alert */}
-        {showInsight && (
-          <div style={{ position: 'fixed', bottom: '24px', right: '24px', background: 'linear-gradient(135deg, #1e1b4b 0%, #31108f 100%)', color: '#fff', borderRadius: '8px', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 10px 25px rgba(37, 16, 143, 0.25)', zIndex: 99, maxWidth: '380px' }}>
-            <div style={{ flex: 1 }}>
-              <strong style={{ fontSize: '11px', color: '#c084fc' }}>PERFORMANCE SUMMARY</strong>
-              <span style={{ fontSize: '12.5px', marginTop: '2px', display: 'block' }}>Filters dynamically isolate transaction anomalies instantly.</span>
+        {/* ── Bottom Row: Category Breakdown ── */}
+        <div className="rev-dash-bottom-row" style={{ gridTemplateColumns: '1fr' }}>
+          <div className="rev-dash-card rev-dash-category">
+            <div className="rev-dash-card-header">
+              <h3>Revenue by Category <span className="rev-dash-card-subtitle" style={{ fontSize: 13, color: '#94a3b8', fontWeight: 400 }}>(This Month)</span></h3>
             </div>
-            <button type="button" onClick={() => setShowInsight(false)} style={{ border: 'none', background: 'transparent', color: '#c7d2fe', cursor: 'pointer' }}><X size={14} /></button>
+            <table className="rev-dash-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Total Revenue</th>
+                  <th>Commission Earned</th>
+                  <th>Active Partners</th>
+                  <th>Total Orders</th>
+                  <th>Revenue Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                {categoryBreakdown.map((c, i) => (
+                  <tr key={i}>
+                    <td style={{ fontWeight: 600 }}>{c.category}</td>
+                    <td style={{ fontWeight: 600 }}>{c.totalRevenue}</td>
+                    <td style={{ color: '#16a34a', fontWeight: 600 }}>{c.commission}</td>
+                    <td>{c.partners}</td>
+                    <td>{c.orders}</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ flex: 1, height: 6, background: '#f1f5f9', borderRadius: 3, overflow: 'hidden', minWidth: 60 }}>
+                          <div style={{ width: c.share, height: '100%', background: '#4f46e5', borderRadius: 3 }} />
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#4f46e5', minWidth: 30 }}>{c.share}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="rev-dash-view-all">
+              <button>View Full Report <ChevronRight size={14} /></button>
+            </div>
           </div>
-        )}
+        </div>
+
       </div>
     </AdminShell>
   );
 }
-
-

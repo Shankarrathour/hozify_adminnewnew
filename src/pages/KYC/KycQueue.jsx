@@ -63,6 +63,7 @@ const sections = [
 
 const routeSectionMap = {
   [ROUTES.kyc]: 'Dashboard',
+  [ROUTES.kycDashboard]: 'Dashboard',
   [ROUTES.kycPending]: 'Pending KYC',
   [ROUTES.kycApproved]: 'Approved KYC',
   [ROUTES.kycRejected]: 'Rejected KYC',

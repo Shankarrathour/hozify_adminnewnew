@@ -64,6 +64,7 @@ export const ROUTES = {
   // --- NEW MODULE SUB-ROUTES ---
 
   // Dashboard sub-routes
+  adminDashboard: '/admin-management/dashboard',
   dashboardRevenue: '/dashboard/revenue',
   dashboardBookings: '/dashboard/bookings',
   dashboardUsers: '/dashboard/users-analytics',
@@ -73,6 +74,9 @@ export const ROUTES = {
   dashboardSystemHealth: '/dashboard/system-health',
   dashboardChannelPerformance: '/dashboard/channel-performance',
   dashboardConversionAnalytics: '/dashboard/conversion-analytics',
+  dashboardPayment: '/dashboard/payment',
+  dashboardServices: '/dashboard/services',
+  dashboardGST: '/dashboard/gst',
 
   // User Management sub-routes
   userApprovals: '/users/approvals',
@@ -106,6 +110,7 @@ export const ROUTES = {
   partnerAuditLogs: '/partners/audit-logs',
 
   // KYC Management sub-routes
+  kycDashboard: '/kyc/dashboard',
   kycPending: '/kyc/pending',
   kycApproved: '/kyc/approved',
   kycRejected: '/kyc/rejected',
@@ -244,6 +249,7 @@ export const ROUTES = {
   materialCostOptimization: '/materials/cost-optimization',
 
   // Quotation Management sub-routes
+  quotationDashboard: '/quotations/dashboard',
   quotationSeller: '/quotations/seller',
   quotationCustomer: '/quotations/customer',
   quotationCustomerDetails: '/quotations/customer/details',
@@ -610,6 +616,7 @@ export const ROUTES = {
   menuPermission: '/cms/app-management/menus/permission',
 
   // --- PHASE 2 REORGANIZED AND MISSING MODULES ---
+  orderDashboard: '/orders/dashboard',
   orderManagement: '/orders',
   priceManagement: '/pricing',
   offerManagement: '/offers',

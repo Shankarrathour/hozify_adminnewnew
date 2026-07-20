@@ -31,7 +31,8 @@ import {
   CreditCard,
   Map,
   CheckCircle2,
-  FolderOpen
+  FolderOpen,
+  UserCog
 } from 'lucide-react';
 import { ROUTES } from './routes';
 
@@ -42,14 +43,33 @@ export const sidebarNavigation = [
     children: [
       { label: 'Overview Dashboard', route: ROUTES.dashboard },
       { label: 'Revenue Dashboard', route: ROUTES.dashboardRevenue },
-      { label: 'Booking Analytics', route: ROUTES.dashboardBookings },
-      { label: 'User Analytics', route: ROUTES.dashboardUsers },
-      { label: 'Partner Analytics', route: ROUTES.dashboardPartners },
+      { label: 'Bookings Dashboard', route: ROUTES.dashboardBookings },
+      { label: 'User Dashboard', route: ROUTES.dashboardUsers },
+      { label: 'Partner Dashboard', route: ROUTES.dashboardPartners },
+      { label: 'Payment Dashboard', route: ROUTES.dashboardPayment },
+      { label: 'Services Dashboard', route: ROUTES.dashboardServices },
+      { label: 'GST Dashboard', route: ROUTES.dashboardGST },
       { label: 'Approval Dashboard', route: ROUTES.dashboardApprovals },
       { label: 'Activity Center', route: ROUTES.dashboardActivity },
       { label: 'System Health', route: ROUTES.dashboardSystemHealth },
       { label: 'Channel Performance & ROI', route: ROUTES.dashboardChannelPerformance },
       { label: 'Conversion Analytics', route: ROUTES.dashboardConversionAnalytics }
+    ]
+  },
+  {
+    label: 'Admin Management',
+    icon: UserCog,
+    children: [
+      { label: 'Admin Dashboard', route: ROUTES.adminDashboard },
+      { label: 'All Admins', route: ROUTES.adminDashboard },
+      { label: 'Team Management', route: ROUTES.adminDashboard },
+      { label: 'Role & Permission', route: ROUTES.rolePermissions },
+      { label: 'Module Access', route: ROUTES.moduleAccess },
+      { label: 'Activity Monitoring', route: ROUTES.userAccessLogs },
+      { label: 'Login Monitoring', route: ROUTES.roleAuditLogs },
+      { label: 'System Logs', route: ROUTES.settingsSystemLogs },
+      { label: 'Security Center', route: ROUTES.settingsSecurityGeneral },
+      { label: 'Audit Trail', route: ROUTES.settingsSecurityAudit }
     ]
   },
   {
@@ -135,6 +155,7 @@ export const sidebarNavigation = [
     icon: ShieldCheck,
     route: ROUTES.kyc,
     children: [
+      { label: 'KYC Dashboard', route: ROUTES.kycDashboard },
       { label: 'Pending KYC', route: ROUTES.kycPending },
       { label: 'Approved KYC', route: ROUTES.kycApproved },
       { label: 'Rejected KYC', route: ROUTES.kycRejected },
@@ -339,6 +360,7 @@ export const sidebarNavigation = [
     label: 'Quotation Management',
     icon: FileText,
     children: [
+      { label: 'Quotation Dashboard', route: ROUTES.quotationDashboard },
       { label: 'Seller Quotations', route: ROUTES.quotationSeller },
       { label: 'Customer Quotations', route: ROUTES.quotationCustomer },
       { label: 'RFQ Listing', route: ROUTES.quotationRfq },
@@ -633,7 +655,10 @@ export const sidebarNavigation = [
   {
     label: 'Order Management',
     icon: Layers,
-    route: ROUTES.orderManagement
+    children: [
+      { label: 'Order Dashboard', route: ROUTES.orderDashboard },
+      { label: 'All Orders', route: ROUTES.orderManagement }
+    ]
   },
   {
     label: 'Price Management',
