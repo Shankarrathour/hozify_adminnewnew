@@ -232,11 +232,7 @@ export default function KYCDashboard({ activeTab = 'KYC Management' }) {
     <AdminShell activeTab={activeTab} headerTitle="KYC Dashboard" searchPlaceholder="Search pages, modules...">
       <div style={{ padding:'20px 24px 48px', background:'#f8fafc', minHeight:'100vh', fontFamily:"'Inter',-apple-system,sans-serif" }}>
 
-        {/* ── HEADER ── */}
-        <div style={{ marginBottom:16 }}>
-          <h1 style={{ fontSize:22, fontWeight:800, color:'#0f172a', margin:0 }}>KYC Dashboard</h1>
-          <p style={{ fontSize:12, color:'#94a3b8', margin:'4px 0 0' }}>Know Your Customer analytics for Users & Partners</p>
-        </div>
+        
 
         {/* ── FILTER BAR ── */}
         <div style={{

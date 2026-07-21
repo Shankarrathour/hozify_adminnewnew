@@ -1,26 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ChevronDown, Calendar, MapPin, Building, Wrench, Users } from 'lucide-react';
-
 import Select from "../ui/Select";
+import { useDashboardFilters } from '../../contexts/DashboardFilterContext';
 
-export default function GlobalDashboardFilters({ onFilterChange }) {
-  const [filters, setFilters] = useState({
-    city: 'All Cities',
-    district: 'All Districts',
-    service: 'All Services',
-    partner: 'All Partners',
-    timeframe: 'Daily'
-  });
+export default function GlobalDashboardFilters({ showService = true, showPartner = true }) {
+  const { filters, updateFilter } = useDashboardFilters();
 
-  const updateFilter = (key, value) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    if (onFilterChange) onFilterChange(newFilters);
+  const handleTimeframeChange = (e) => {
+    const newTimeframe = e.target.value;
+    updateFilter('timeframe', newTimeframe);
+    if (newTimeframe !== 'Monthly') updateFilter('month', 'January');
+    if (newTimeframe !== 'Yearly') updateFilter('year', '2026');
   };
 
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 2035 - 2026 + 1 }, (_, i) => 2026 + i);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const years = Array.from({ length: 10 }, (_, i) => String(2026 + i));
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   const selectStyle = {
     padding: '8px 12px',
@@ -43,13 +38,6 @@ export default function GlobalDashboardFilters({ onFilterChange }) {
     alignItems: 'center'
   };
 
-  const iconStyle = {
-    position: 'absolute',
-    right: '10px',
-    color: '#94a3b8',
-    pointerEvents: 'none'
-  };
-  
   const leftIconStyle = {
     position: 'absolute',
     left: '10px',
@@ -85,23 +73,13 @@ export default function GlobalDashboardFilters({ onFilterChange }) {
           style={getSelectStyleWithIcon()}
           value={filters.city}
           onChange={(e) => updateFilter('city', e.target.value)}
-          options={[{
-            label: "All Cities",
-            value: "All Cities"
-          }, {
-            label: "Mumbai",
-            value: "Mumbai"
-          }, {
-            label: "Delhi",
-            value: "Delhi"
-          }, {
-            label: "Bangalore",
-            value: "Bangalore"
-          }, {
-            label: "Hyderabad",
-            value: "Hyderabad"
-          }]} />
-
+          options={[
+            { label: "All Cities", value: "All Cities" },
+            { label: "Mumbai", value: "Mumbai" },
+            { label: "Delhi", value: "Delhi" },
+            { label: "Bangalore", value: "Bangalore" },
+            { label: "Hyderabad", value: "Hyderabad" }
+          ]} />
       </div>
       <div style={wrapperStyle}>
         <Building size={14} style={leftIconStyle} />
@@ -109,76 +87,84 @@ export default function GlobalDashboardFilters({ onFilterChange }) {
           style={getSelectStyleWithIcon()}
           value={filters.district}
           onChange={(e) => updateFilter('district', e.target.value)}
-          options={[{
-            label: "All Districts",
-            value: "All Districts"
-          }, {
-            label: "District 1",
-            value: "District 1"
-          }, {
-            label: "District 2",
-            value: "District 2"
-          }, {
-            label: "District 3",
-            value: "District 3"
-          }]} />
-
-      </div>
-      <div style={wrapperStyle}>
-        <Wrench size={14} style={leftIconStyle} />
-        <Select
-          style={getSelectStyleWithIcon()}
-          value={filters.service}
-          onChange={(e) => updateFilter('service', e.target.value)}
-          options={[{
-            label: "All Services",
-            value: "All Services"
-          }, {
-            label: "AC Repair",
-            value: "AC Repair"
-          }, {
-            label: "Cleaning",
-            value: "Cleaning"
-          }, {
-            label: "Plumbing",
-            value: "Plumbing"
-          }, {
-            label: "Painting",
-            value: "Painting"
-          }]} />
-
-      </div>
-      <div style={wrapperStyle}>
-        <Users size={14} style={leftIconStyle} />
-        <Select
-          style={getSelectStyleWithIcon()}
-          value={filters.partner}
-          onChange={(e) => updateFilter('partner', e.target.value)}
-          options={[{
-            label: "Partner Wise",
-            value: "All Partners"
-          }, {
-            label: "Partner A",
-            value: "Partner A"
-          }, {
-            label: "Partner B",
-            value: "Partner B"
-          }]} />
-
-      </div>
-      <div style={wrapperStyle}>
-        <Calendar size={14} style={leftIconStyle} />
-        <Select
-          style={getSelectStyleWithIcon()}
-          value={filters.timeframe}
-          onChange={(e) => updateFilter('timeframe', e.target.value)}
           options={[
-            { label: "Daily", value: "Daily" },
-            { label: "Weekly", value: "Weekly" },
-            { label: "Monthly", value: "Monthly" },
-            { label: "Yearly", value: "Yearly" }
+            { label: "All Districts", value: "All Districts" },
+            { label: "North District", value: "North" },
+            { label: "South District", value: "South" },
+            { label: "East District", value: "East" },
+            { label: "West District", value: "West" }
           ]} />
+      </div>
+      {showService && (
+        <div style={wrapperStyle}>
+          <Wrench size={14} style={leftIconStyle} />
+          <Select
+            style={getSelectStyleWithIcon()}
+            value={filters.service}
+            onChange={(e) => updateFilter('service', e.target.value)}
+            options={[
+              { label: "All Services", value: "All Services" },
+              { label: "Cleaning", value: "Cleaning" },
+              { label: "Plumbing", value: "Plumbing" },
+              { label: "Electrical", value: "Electrical" },
+              { label: "Carpentry", value: "Carpentry" }
+            ]} />
+        </div>
+      )}
+      
+      {showPartner && (
+        <div style={wrapperStyle}>
+          <Users size={14} style={leftIconStyle} />
+          <Select
+            style={getSelectStyleWithIcon()}
+            value={filters.partner}
+            onChange={(e) => updateFilter('partner', e.target.value)}
+            options={[
+              { label: "All Partners", value: "All Partners" },
+              { label: "Premium Partners", value: "Premium" },
+              { label: "Standard Partners", value: "Standard" }
+            ]} />
+        </div>
+      )}
 
+      {/* Timeframe Toggle Buttons (Joined Pill Style) */}
+      <div className="ref-period-toggle" style={{ marginLeft: '12px', height: '32px' }}>
+        {['Daily', 'Weekly', 'Monthly', 'Yearly'].map(tf => (
+          <button
+            key={tf}
+            onClick={() => handleTimeframeChange({ target: { value: tf } })}
+            className={`ref-period-btn${filters.timeframe === tf ? ' active' : ''}`}
+            style={{ padding: '0 16px', height: '100%' }}
+          >
+            {tf}
+          </button>
+        ))}
+      </div>
+      
+      {filters.timeframe === 'Monthly' && (
+        <div className="ref-select-wrap" style={{ marginLeft: '12px' }}>
+          <Select
+            style={selectStyle}
+            value={filters.month}
+            onChange={(e) => updateFilter('month', e.target.value)}
+            options={months.map(m => ({ label: m.substring(0, 3), value: m }))} />
+        </div>
+      )}
+
+      {filters.timeframe === 'Yearly' && (
+        <div className="ref-select-wrap" style={{ marginLeft: '12px' }}>
+          <Select
+            style={selectStyle}
+            value={filters.year}
+            onChange={(e) => updateFilter('year', e.target.value)}
+            options={years.map(y => ({ label: y, value: y }))} />
+        </div>
+      )}
+
+      {/* Apply and Reset Buttons */}
+      <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
+        <button className="ref-btn-primary">Apply</button>
+        <button className="ref-btn-secondary" onClick={() => updateFilter('timeframe', 'Monthly')}>Reset</button>
       </div>
     </div>
   );

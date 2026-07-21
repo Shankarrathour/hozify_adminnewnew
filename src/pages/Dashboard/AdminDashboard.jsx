@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import {
   Users,
   UserCheck,
@@ -22,6 +23,11 @@ import {
   Server
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
+import ExportReportModal from '../../components/common/ExportReportModal';
+import PremiumTable from '../../components/ui/PremiumTable';
+import StatusBadge from '../../components/common/StatusBadge';
+import Avatar from '../../components/common/Avatar';
+import { useToast } from '../../components/common/ToastNotification';
 import {
   LineChart,
   Line,
@@ -38,7 +44,7 @@ import {
 
 /* ───────────────────── Mock Data ───────────────────── */
 
-const loginChartData = [
+const loginChartDataDaily = [
   { date: '01 May', logins: 620 },
   { date: '05 May', logins: 750 },
   { date: '08 May', logins: 500 },
@@ -52,6 +58,21 @@ const loginChartData = [
   { date: '26 May', logins: 780 },
   { date: '28 May', logins: 850 },
   { date: '31 May', logins: 720 },
+];
+
+const loginChartDataWeekly = [
+  { date: 'Week 1', logins: 4500 },
+  { date: 'Week 2', logins: 5100 },
+  { date: 'Week 3', logins: 4800 },
+  { date: 'Week 4', logins: 5400 },
+];
+
+const loginChartDataMonthly = [
+  { date: 'Jan', logins: 18000 },
+  { date: 'Feb', logins: 19500 },
+  { date: 'Mar', logins: 21000 },
+  { date: 'Apr', logins: 20500 },
+  { date: 'May', logins: 22000 },
 ];
 
 const statusData = [
@@ -106,20 +127,26 @@ const securityAlerts = [
 
 /* ───────────────────── Sub-components ───────────────────── */
 
-function StatCard({ icon: Icon, iconBg, iconColor, value, label, trend, trendUp, trendLabel }) {
+function StatCard({ icon: Icon, iconBg, iconColor, value, label, trend, trendUp, trendLabel, bottomLabel }) {
   return (
-    <div className="admin-dash-stat-card">
-      <div className="admin-dash-stat-icon" style={{ background: iconBg }}>
-        <Icon size={22} color={iconColor} />
+    <div className="admin-dash-stat-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '16px 20px', gap: '0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div className="admin-dash-stat-icon" style={{ background: iconBg, width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Icon size={24} color={iconColor} />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <div className="admin-dash-stat-label" style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>{label}</div>
+          <div className="admin-dash-stat-value" style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px' }}>{value}</div>
+        </div>
       </div>
-      <div className="admin-dash-stat-body">
-        <div className="admin-dash-stat-value">{value}</div>
-        <div className="admin-dash-stat-label">{label}</div>
+      
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+        <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>{bottomLabel}</div>
         {trend && (
-          <div className={`admin-dash-stat-trend ${trendUp ? 'up' : 'down'}`}>
-            {trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+          <div className={`admin-dash-stat-trend ${trendUp ? 'up' : 'down'}`} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600, color: trendUp ? '#16a34a' : '#dc2626' }}>
+            {trendUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
             <span>{trend}</span>
-            <span className="trend-vs">{trendLabel}</span>
+            <span className="trend-vs" style={{ color: '#94a3b8', fontWeight: 500 }}>{trendLabel}</span>
           </div>
         )}
       </div>
@@ -127,35 +154,6 @@ function StatCard({ icon: Icon, iconBg, iconColor, value, label, trend, trendUp,
   );
 }
 
-function ActionBadge({ type }) {
-  const map = {
-    view: { label: 'Viewed', cls: 'badge-view' },
-    update: { label: 'Updated', cls: 'badge-update' },
-    delete: { label: 'Deleted', cls: 'badge-delete' },
-    export: { label: 'Exported', cls: 'badge-export' },
-    create: { label: 'Created', cls: 'badge-create' },
-  };
-  const { label, cls } = map[type] || { label: type, cls: '' };
-  return <span className={`admin-action-badge ${cls}`}>{label}</span>;
-}
-
-function StatusBadge({ status }) {
-  const cls = status === 'Active' ? 'admin-status-active' : 'admin-status-inactive';
-  return <span className={`admin-status-badge ${cls}`}>{status}</span>;
-}
-
-function AlertStatus({ status }) {
-  const cls = status === 'High' ? 'alert-high' : status === 'Medium' ? 'alert-medium' : 'alert-low';
-  return <span className={`admin-alert-status ${cls}`}>{status}</span>;
-}
-
-/* Avatar with initials */
-function Avatar({ name }) {
-  const initials = name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
-  return <div className="admin-activity-avatar">{initials}</div>;
-}
-
-/* ───────────────────── Custom Tooltip ───────────────────── */
 function CustomTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
     return (
@@ -187,13 +185,44 @@ function DonutLegend({ data }) {
 /* ───────────────────── Main Component ───────────────────── */
 
 export default function AdminDashboard() {
+  const { addToast } = useToast();
   const [dateRange, setDateRange] = useState('01 May 2026 - 31 May 2026');
   const [team, setTeam] = useState('All Teams');
   const [role, setRole] = useState('All Roles');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [chartFreq, setChartFreq] = useState('Daily');
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
-  const totalAdmins = statusData.reduce((s, d) => s + d.value, 0);
+  const [filterTrigger, setFilterTrigger] = useState(0);
+
+  const m = dateRange === '01 Jun 2026 - 30 Jun 2026' ? 0.8 : dateRange === '01 Jul 2026 - 31 Jul 2026' ? 1.5 : 1;
+
+  const dynStatusData = useMemo(() => statusData.map(d => ({ ...d, value: Math.floor(d.value * m) })), [m, filterTrigger]);
+  const dynTeamData = useMemo(() => teamData.map(d => ({ ...d, value: Math.floor(d.value * m) })), [m, filterTrigger]);
+  
+  const dynTeamsOverview = useMemo(() => teamsOverview.slice(0, Math.max(2, Math.floor(teamsOverview.length * (m >= 1 ? 1 : m * 1.5)))), [m, filterTrigger]);
+  const dynRecentActivity = useMemo(() => recentActivity.slice(0, Math.max(2, Math.floor(recentActivity.length * (m >= 1 ? 1 : m * 1.5)))), [m, filterTrigger]);
+  const dynModuleAccess = useMemo(() => moduleAccess.map(d => ({ ...d, active: Math.floor(d.active * m), inactive: Math.floor(d.inactive * m) })), [m, filterTrigger]);
+  const dynSecurityAlerts = useMemo(() => securityAlerts.slice(0, Math.max(2, Math.floor(securityAlerts.length * (m >= 1 ? 1 : m * 1.5)))), [m, filterTrigger]);
+
+  const totalAdmins = dynStatusData.reduce((s, d) => s + d.value, 0);
+
+  const renderActions = (row) => (
+    <div className="action-btn-group">
+      <button className="action-icon-btn" title="View Details" onClick={() => toast.success('Viewing Details')}><Eye size={16} /></button>
+    </div>
+  );
+
+  const handleRefresh = () => {
+    setFilterTrigger(prev => prev + 1);
+    toast.success('Dashboard data refreshed successfully.');
+  };
+
+  const getChartData = () => {
+    if (chartFreq === 'Weekly') return loginChartDataWeekly;
+    if (chartFreq === 'Monthly') return loginChartDataMonthly;
+    return loginChartDataDaily;
+  };
 
   return (
     <AdminShell
@@ -207,37 +236,79 @@ export default function AdminDashboard() {
         <div className="admin-dash-filters">
           <div className="admin-filter-group">
             <label>Date Range</label>
-            <div className="admin-filter-select">
-              <span>{dateRange}</span>
-              <ChevronDown size={14} />
+            <div style={{ position: 'relative' }}>
+              <select 
+                className="admin-filter-select" 
+                style={{ appearance: 'none', paddingRight: '28px', width: '100%' }}
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+              >
+                <option>01 May 2026 - 31 May 2026</option>
+                <option>01 Jun 2026 - 30 Jun 2026</option>
+                <option>01 Jul 2026 - 31 Jul 2026</option>
+              </select>
+              <ChevronDown size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
             </div>
           </div>
           <div className="admin-filter-group">
             <label>Team</label>
-            <div className="admin-filter-select">
-              <span>{team}</span>
-              <ChevronDown size={14} />
+            <div style={{ position: 'relative' }}>
+              <select 
+                className="admin-filter-select" 
+                style={{ appearance: 'none', paddingRight: '28px', width: '100%' }}
+                value={team}
+                onChange={(e) => setTeam(e.target.value)}
+              >
+                <option>All Teams</option>
+                <option>Operations Team</option>
+                <option>Support Team</option>
+                <option>Finance Team</option>
+                <option>Analytics Team</option>
+                <option>IT Team</option>
+              </select>
+              <ChevronDown size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
             </div>
           </div>
           <div className="admin-filter-group">
             <label>Role</label>
-            <div className="admin-filter-select">
-              <span>{role}</span>
-              <ChevronDown size={14} />
+            <div style={{ position: 'relative' }}>
+              <select 
+                className="admin-filter-select" 
+                style={{ appearance: 'none', paddingRight: '28px', width: '100%' }}
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              >
+                <option>All Roles</option>
+                <option>Super Admin</option>
+                <option>Manager</option>
+                <option>Analyst</option>
+                <option>Support Staff</option>
+              </select>
+              <ChevronDown size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
             </div>
           </div>
           <div className="admin-filter-group">
             <label>Status</label>
-            <div className="admin-filter-select">
-              <span>{statusFilter}</span>
-              <ChevronDown size={14} />
+            <div style={{ position: 'relative' }}>
+              <select 
+                className="admin-filter-select" 
+                style={{ appearance: 'none', paddingRight: '28px', width: '100%' }}
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option>All Status</option>
+                <option>Active</option>
+                <option>Inactive</option>
+                <option>Suspended</option>
+              </select>
+              <ChevronDown size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
             </div>
           </div>
           <div className="admin-filter-actions">
-            <button className="admin-filter-btn-refresh">
+            <button className="admin-filter-btn-refresh" onClick={handleRefresh}>
               <RefreshCw size={15} /> Refresh
             </button>
-            <button className="admin-filter-btn-export">
+            <button className="admin-filter-btn-export" onClick={() => setIsExportModalOpen(true)}>
               <Download size={15} /> Export Report
             </button>
           </div>
@@ -246,39 +317,35 @@ export default function AdminDashboard() {
         {/* ── Stat Cards Row ── */}
         <div className="admin-dash-stats-grid">
           <StatCard
-            icon={Users}
-            iconBg="#eff6ff" iconColor="#2563eb"
-            value="156" label="Total Admins"
-            trend="+12.4%" trendUp={true} trendLabel="vs Apr 2026"
+            icon={Users} iconBg="#eff6ff" iconColor="#2563eb"
+            value={Math.floor(156 * m)} label="Total Admins"
+            trend="+12%" trendUp={true} trendLabel="vs prev" bottomLabel="All Time"
           />
           <StatCard
-            icon={UserCheck}
-            iconBg="#f0fdf4" iconColor="#16a34a"
-            value="128" label="Active Admins"
-            trend="+9.7%" trendUp={true} trendLabel="vs Apr 2026"
+            icon={UserCheck} iconBg="#f0fdf4" iconColor="#16a34a"
+            value={Math.floor(129 * m)} label="Active Admins"
+            trend="+5%" trendUp={true} trendLabel="vs prev" bottomLabel="Currently Active"
           />
           <StatCard
-            icon={Users}
-            iconBg="#faf5ff" iconColor="#9333ea"
-            value="12" label="Teams"
-            trend="+7.1%" trendUp={true} trendLabel="vs Apr 2026"
+            icon={ShieldAlert} iconBg="#fff1f2" iconColor="#e11d48"
+            value={Math.floor(21 * m)} label="Security Alerts"
+            trend="-3%" trendUp={false} trendLabel="vs prev" bottomLabel="This Month"
           />
           <StatCard
-            icon={Shield}
-            iconBg="#fff7ed" iconColor="#ea580c"
-            value="28" label="Roles"
-            trend="+3.6%" trendUp={true} trendLabel="vs Apr 2026"
+            icon={FileBarChart2} iconBg="#faf5ff" iconColor="#9333ea"
+            value={Math.floor(14 * m)} label="Total Roles"
+            trend="+2" trendUp={true} trendLabel="new roles" bottomLabel="System wide"
           />
           <StatCard
             icon={LogIn}
             iconBg="#f0f9ff" iconColor="#0284c7"
-            value="8,642" label="Total Logins"
+            value="8,642" label="Total Logins" bottomLabel="This Month"
             trend="+18.9%" trendUp={true} trendLabel="vs Apr 2026"
           />
           <StatCard
             icon={ShieldAlert}
             iconBg="#fff1f2" iconColor="#e11d48"
-            value="23" label="Security Alerts"
+            value="23" label="Security Alerts" bottomLabel="This Month"
             trend="-17.3%" trendUp={false} trendLabel="vs Apr 2026"
           />
         </div>
@@ -292,20 +359,21 @@ export default function AdminDashboard() {
               <div>
                 <h3>Admin Logins Over Time</h3>
               </div>
-              <div className="admin-chart-freq">
-                {['Daily', 'Weekly', 'Monthly'].map(f => (
-                  <button
-                    key={f}
-                    className={`admin-chart-freq-btn ${chartFreq === f ? 'active' : ''}`}
-                    onClick={() => setChartFreq(f)}
-                  >
-                    {f}
-                  </button>
-                ))}
+              <div style={{ position: 'relative' }}>
+                <select 
+                  style={{ appearance: 'none', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '6px 28px 6px 12px', fontSize: '12px', fontWeight: 600, color: '#334155', cursor: 'pointer', outline: 'none' }}
+                  value={chartFreq}
+                  onChange={(e) => setChartFreq(e.target.value)}
+                >
+                  <option value="Daily">Daily</option>
+                  <option value="Weekly">Weekly</option>
+                  <option value="Monthly">Monthly</option>
+                </select>
+                <ChevronDown size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#64748b' }} />
               </div>
             </div>
             <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={loginChartData} margin={{ top: 8, right: 10, left: -20, bottom: 0 }}>
+              <LineChart data={getChartData()} margin={{ top: 8, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                 <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
@@ -329,9 +397,9 @@ export default function AdminDashboard() {
             </div>
             <div className="admin-donut-content">
               <div className="admin-donut-wrap">
-                <PieChart width={170} height={170}>
+                <PieChart width={220} height={220}>
                   <Pie
-                    data={statusData}
+                    data={dynStatusData}
                     cx={80}
                     cy={80}
                     innerRadius={52}
@@ -341,7 +409,7 @@ export default function AdminDashboard() {
                     endAngle={-270}
                     stroke="none"
                   >
-                    {statusData.map((entry, i) => (
+                    {dynStatusData.map((entry, i) => (
                       <Cell key={i} fill={entry.color} />
                     ))}
                   </Pie>
@@ -351,7 +419,7 @@ export default function AdminDashboard() {
                   <span className="admin-donut-center-txt">Total Admins</span>
                 </div>
               </div>
-              <DonutLegend data={statusData} />
+              <DonutLegend data={dynStatusData} />
             </div>
           </div>
 
@@ -362,9 +430,9 @@ export default function AdminDashboard() {
             </div>
             <div className="admin-donut-content">
               <div className="admin-donut-wrap">
-                <PieChart width={170} height={170}>
+                <PieChart width={220} height={220}>
                   <Pie
-                    data={teamData}
+                    data={dynTeamData}
                     cx={80}
                     cy={80}
                     innerRadius={52}
@@ -374,7 +442,7 @@ export default function AdminDashboard() {
                     endAngle={-270}
                     stroke="none"
                   >
-                    {teamData.map((entry, i) => (
+                    {dynTeamData.map((entry, i) => (
                       <Cell key={i} fill={entry.color} />
                     ))}
                   </Pie>
@@ -384,7 +452,7 @@ export default function AdminDashboard() {
                   <span className="admin-donut-center-txt">Total Admins</span>
                 </div>
               </div>
-              <DonutLegend data={teamData} />
+              <DonutLegend data={dynTeamData} />
             </div>
           </div>
         </div>
@@ -393,11 +461,12 @@ export default function AdminDashboard() {
         <div className="admin-dash-mid-row">
 
           {/* Teams Overview Table */}
-          <div className="admin-dash-card admin-dash-teams">
+          <div className="admin-dash-card">
             <div className="admin-dash-card-header">
               <h3>Teams Overview</h3>
             </div>
-            <table className="admin-dash-table">
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '600px' }}>
               <thead>
                 <tr>
                   <th>Team Name</th>
@@ -409,31 +478,36 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {teamsOverview.map((t, i) => (
+                {dynTeamsOverview.map((t, i) => (
                   <tr key={i}>
-                    <td className="team-name-cell">{t.name}</td>
-                    <td>{t.lead}</td>
+                    <td className="rev-bold-cell">{t.name}</td>
+                    <td>
+                      <div className="avatar-cell">
+                        <Avatar name={t.lead} size={32} />
+                        <span className="avatar-cell-name">{t.lead}</span>
+                      </div>
+                    </td>
                     <td>{t.members}</td>
                     <td>{t.active}</td>
                     <td><StatusBadge status={t.status} /></td>
-                    <td>
-                      <button className="admin-table-eye-btn"><Eye size={15} /></button>
-                    </td>
+                    <td>{renderActions(t)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div className="admin-dash-view-all">
-              <button>View All Teams <ChevronRight size={14} /></button>
+            </div>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to All Teams')}>View All Teams <ChevronRight size={14} /></button>
             </div>
           </div>
 
           {/* Recent Activity Table */}
-          <div className="admin-dash-card admin-dash-activity">
+          <div className="admin-dash-card">
             <div className="admin-dash-card-header">
               <h3>Recent Admin Activity</h3>
             </div>
-            <table className="admin-dash-table">
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '700px' }}>
               <thead>
                 <tr>
                   <th>Admin Name</th>
@@ -445,25 +519,26 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {recentActivity.map((a, i) => (
+                {dynRecentActivity.map((r, i) => (
                   <tr key={i}>
                     <td>
-                      <div className="admin-activity-name">
-                        <Avatar name={a.name} />
-                        <span>{a.name}</span>
+                      <div className="avatar-cell">
+                        <Avatar name={r.name} size={32} />
+                        <span className="avatar-cell-name">{r.name}</span>
                       </div>
                     </td>
-                    <td>{a.team}</td>
-                    <td><ActionBadge type={a.actionType} /></td>
-                    <td>{a.module}</td>
-                    <td className="ip-cell">{a.ip}</td>
-                    <td className="time-cell">{a.time}</td>
+                    <td>{r.team}</td>
+                    <td><span className="premium-chip premium-chip-indigo">{r.action}</span></td>
+                    <td>{r.module}</td>
+                    <td className="rev-mono-cell">{r.ip}</td>
+                    <td className="rev-time-cell">{r.time}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div className="admin-dash-view-all">
-              <button>View All Activity <ChevronRight size={14} /></button>
+            </div>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to All Activity')}>View All Activity <ChevronRight size={14} /></button>
             </div>
           </div>
         </div>
@@ -472,11 +547,12 @@ export default function AdminDashboard() {
         <div className="admin-dash-bottom-row">
 
           {/* Module Access Table */}
-          <div className="admin-dash-card admin-dash-modules">
+          <div className="admin-dash-card">
             <div className="admin-dash-card-header">
               <h3>Admin Access Summary by Module</h3>
             </div>
-            <table className="admin-dash-table">
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '600px' }}>
               <thead>
                 <tr>
                   <th>Module / Section</th>
@@ -487,41 +563,39 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {moduleAccess.map((m, i) => {
-                  const activePercent = Math.round((m.active / m.totalAdmins) * 100);
-                  const inactivePercent = Math.round((m.inactive / m.totalAdmins) * 100);
-                  return (
-                    <tr key={i}>
-                      <td>
-                        <div className="admin-module-name">
-                          <m.icon size={16} className="admin-module-icon" />
-                          <span>{m.name}</span>
-                        </div>
-                      </td>
-                      <td>{m.totalRoles}</td>
-                      <td>{m.totalAdmins}</td>
-                      <td>
-                        <span className="admin-module-active">{m.active} <span className="pct">({activePercent}%)</span></span>
-                      </td>
-                      <td>
-                        <span className="admin-module-inactive">{m.inactive} <span className="pct">({inactivePercent}%)</span></span>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {dynModuleAccess.map((m, i) => (
+                  <tr key={i}>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <m.icon size={16} color="var(--materio-primary)" />
+                        <span style={{ fontWeight: 500 }}>{m.name}</span>
+                      </div>
+                    </td>
+                    <td>{m.totalRoles}</td>
+                    <td>{m.totalAdmins}</td>
+                    <td>
+                      <span style={{ color: '#16a34a', fontWeight: 600 }}>{m.active} ({Math.round(m.active/m.totalAdmins*100)}%)</span>
+                    </td>
+                    <td>
+                      <span style={{ color: '#94a3b8' }}>{m.inactive} ({Math.round(m.inactive/m.totalAdmins*100)}%)</span>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
-            <div className="admin-dash-view-all">
-              <button>View All Modules <ChevronRight size={14} /></button>
+            </div>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to All Modules')}>View All Modules <ChevronRight size={14} /></button>
             </div>
           </div>
 
           {/* Security Alerts Table */}
-          <div className="admin-dash-card admin-dash-security">
+          <div className="admin-dash-card">
             <div className="admin-dash-card-header">
-              <h3>Security Alerts <span className="admin-dash-card-subtitle">(This Month)</span></h3>
+              <h3>Security Alerts (This Month)</h3>
             </div>
-            <table className="admin-dash-table">
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '550px' }}>
               <thead>
                 <tr>
                   <th>Alert Type</th>
@@ -532,28 +606,36 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {securityAlerts.map((a, i) => (
+                {dynSecurityAlerts.map((s, i) => (
                   <tr key={i}>
                     <td>
-                      <div className="admin-alert-type">
-                        <a.icon size={15} className={`alert-icon-${a.status.toLowerCase()}`} />
-                        <span>{a.type}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: s.status==='High'?'#ef4444':s.status==='Medium'?'#f59e0b':'#3b82f6', fontWeight: 500 }}>
+                        <s.icon size={16} />
+                        {s.type}
                       </div>
                     </td>
-                    <td>{a.desc}</td>
-                    <td>{a.count}</td>
-                    <td><AlertStatus status={a.status} /></td>
-                    <td className="time-cell">{a.time}</td>
+                    <td>{s.desc}</td>
+                    <td className="rev-bold-cell">{s.count}</td>
+                    <td><StatusBadge status={s.status} /></td>
+                    <td className="rev-time-cell">{s.time}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div className="admin-dash-view-all">
-              <button>View All Alerts <ChevronRight size={14} /></button>
+            </div>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to All Alerts')}>View All Alerts <ChevronRight size={14} /></button>
             </div>
           </div>
         </div>
       </div>
+
+      <ExportReportModal 
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        entityName="Admin Report"
+        data={teamsOverview}
+      />
     </AdminShell>
   );
 }

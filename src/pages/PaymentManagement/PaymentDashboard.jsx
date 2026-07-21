@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import {
   CreditCard,
   CheckCircle2,
@@ -15,6 +16,8 @@ import {
   Zap
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
+import StatusBadge from '../../components/common/StatusBadge';
+import Avatar from '../../components/common/Avatar';
 import {
   AreaChart,
   Area,
@@ -111,22 +114,6 @@ function StatCard({ icon: Icon, iconBg, iconColor, value, label, sublabel, trend
   );
 }
 
-function StatusBadge({ status }) {
-  let cls = 'pay-status-default';
-  if (status === 'Successful' || status === 'Approved' || status === 'Optimal' || status === 'Won') cls = 'pay-status-success';
-  if (status === 'Pending' || status === 'Processing' || status === 'Degraded' || status === 'Disputed') cls = 'pay-status-warning';
-  if (status === 'Failed' || status === 'Rejected' || status === 'Lost') cls = 'pay-status-danger';
-  return <span className={`pay-dash-status-badge ${cls}`}>{status}</span>;
-}
-
-function Avatar({ initials }) {
-  return (
-    <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #818cf8)', color: '#fff', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-      {initials}
-    </div>
-  );
-}
-
 function CustomTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
     return (
@@ -162,6 +149,87 @@ export default function PaymentDashboard() {
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [gateway, setGateway] = useState('All Gateways');
   const [activeGatewayTab, setActiveGatewayTab] = useState('All');
+  const [filterTrigger, setFilterTrigger] = useState(0);
+
+  const m = dateRange === 'This Year' ? 12 : dateRange === 'Last 7 Days' ? 0.25 : dateRange === 'Today' ? 0.03 : 1;
+
+  const dynPaymentVolumeData = useMemo(() => paymentVolumeData.map(d => ({ ...d, volume: Math.floor(d.volume * m) })), [m, filterTrigger]);
+  const dynMethodData = useMemo(() => methodData.map(d => ({ ...d, value: parseFloat((d.value).toFixed(1)) })), [m, filterTrigger]);
+  const dynStatusData = useMemo(() => statusData.map(d => ({ ...d, value: parseFloat((d.value).toFixed(1)) })), [m, filterTrigger]);
+  const dynRecentTransactions = useMemo(() => recentTransactions.slice(0, Math.max(1, Math.floor(recentTransactions.length * (m >= 1 ? 1 : m * 2)))), [m, filterTrigger]);
+  const dynGatewayPerformance = useMemo(() => gatewayPerformance.slice(0, Math.max(1, Math.floor(gatewayPerformance.length * (m >= 1 ? 1 : m * 2)))), [m, filterTrigger]);
+  const dynRefundRequests = useMemo(() => refundRequests.slice(0, Math.max(1, Math.floor(refundRequests.length * (m >= 1 ? 1 : m * 2)))), [m, filterTrigger]);
+  const dynChargebackSummary = useMemo(() => chargebackSummary.slice(0, Math.max(1, Math.floor(chargebackSummary.length * (m >= 1 ? 1 : m * 2)))), [m, filterTrigger]);
+
+  const txnColumns = [
+    { header: 'Txn ID', accessor: 'id', render: (row) => <span style={{fontWeight: 600, color: '#4f46e5'}}>{row.id}</span> },
+    { header: 'User', accessor: 'user', render: (row) => (
+      <div className="avatar-cell">
+        <Avatar name={row.user} size={32} />
+        <span className="avatar-cell-name">{row.user}</span>
+      </div>
+    ) },
+    { header: 'Amount', accessor: 'amount', render: (row) => <span style={{fontWeight: 600}}>{row.amount}</span> },
+    { header: 'Method', accessor: 'method', render: (row) => <span className="premium-chip premium-chip-indigo">{row.method}</span> },
+    { header: 'Gateway', accessor: 'gateway' },
+    { header: 'Status', accessor: 'status', render: (row) => <StatusBadge status={row.status} /> },
+    { header: 'Date & Time', accessor: 'date' }
+  ];
+
+  const gatewayColumns = [
+    { header: 'Gateway', accessor: 'name', render: (row) => (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ width: 28, height: 28, borderRadius: 6, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Zap size={14} color="#4f46e5" />
+        </div>
+        <span style={{ fontWeight: 600 }}>{row.name}</span>
+      </div>
+    ) },
+    { header: 'Success Rate', accessor: 'successRate', render: (row) => <span style={{fontWeight: 600, color: '#16a34a'}}>{row.successRate}</span> },
+    { header: 'Avg Response', accessor: 'avgTime' },
+    { header: 'Total Vol', accessor: 'totalVol', render: (row) => <span style={{fontWeight: 600}}>{row.totalVol}</span> },
+    { header: 'Status', accessor: 'status', render: (row) => <StatusBadge status={row.status} /> }
+  ];
+
+  const refundColumns = [
+    { header: 'Refund ID', accessor: 'id', render: (row) => <span style={{fontWeight: 600, color: '#4f46e5'}}>{row.id}</span> },
+    { header: 'Orig Txn', accessor: 'origTxn', render: (row) => <span style={{color: '#64748b'}}>{row.origTxn}</span> },
+    { header: 'Amount', accessor: 'amount', render: (row) => <span style={{fontWeight: 600}}>{row.amount}</span> },
+    { header: 'User', accessor: 'user', render: (row) => <span style={{fontWeight: 500}}>{row.user}</span> },
+    { header: 'Reason', accessor: 'reason' },
+    { header: 'Status', accessor: 'status', render: (row) => <StatusBadge status={row.status} /> }
+  ];
+
+  const cbColumns = [
+    { header: 'CB ID', accessor: 'id', render: (row) => <span style={{fontWeight: 600, color: '#4f46e5'}}>{row.id}</span> },
+    { header: 'Orig Txn', accessor: 'origTxn', render: (row) => <span style={{color: '#64748b'}}>{row.origTxn}</span> },
+    { header: 'Amount', accessor: 'amount', render: (row) => <span style={{fontWeight: 600}}>{row.amount}</span> },
+    { header: 'User', accessor: 'user', render: (row) => <span style={{fontWeight: 500}}>{row.user}</span> },
+    { header: 'Gateway', accessor: 'gateway' },
+    { header: 'Status', accessor: 'status', render: (row) => <StatusBadge status={row.status} /> }
+  ];
+
+  const renderActions = (row) => (
+    <div className="action-btn-group">
+      <button className="action-icon-btn" title="View Details" onClick={() => toast.success('Viewing Details')}><Eye size={16} /></button>
+    </div>
+  );
+
+  const handleApply = () => {
+    setFilterTrigger(prev => prev + 1);
+    toast.success('Filters applied successfully');
+  };
+
+  const handleReset = () => {
+    setDateRange('01 May 2026 - 31 May 2026');
+    setMethod('All Methods');
+    setStatusFilter('All Status');
+    setGateway('All Gateways');
+    setFilterTrigger(0);
+    toast.success('Filters reset to default');
+  };
+
+  const fmtCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   return (
     <AdminShell
@@ -173,39 +241,63 @@ export default function PaymentDashboard() {
 
         {/* ── Header Filters ── */}
         <div className="pay-dash-filters">
-          <div className="pay-filter-group">
+          <div className="pay-filter-group" style={{ position: 'relative' }}>
             <label>Date Range</label>
-            <div className="pay-filter-select">
-              <span>{dateRange}</span>
-              <ChevronDown size={14} />
+            <div style={{ position: 'relative' }}>
+              <select className="pay-filter-select" style={{ appearance: 'none', background: 'transparent', cursor: 'pointer', paddingRight: '24px' }} value={dateRange} onChange={e => setDateRange(e.target.value)}>
+                <option>01 May 2026 - 31 May 2026</option>
+                <option>Today</option>
+                <option>Last 7 Days</option>
+                <option>This Year</option>
+              </select>
+              <ChevronDown size={14} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
             </div>
           </div>
-          <div className="pay-filter-group">
+          <div className="pay-filter-group" style={{ position: 'relative' }}>
             <label>Payment Method</label>
-            <div className="pay-filter-select">
-              <span>{method}</span>
-              <ChevronDown size={14} />
+            <div style={{ position: 'relative' }}>
+              <select className="pay-filter-select" style={{ appearance: 'none', background: 'transparent', cursor: 'pointer', paddingRight: '24px' }} value={method} onChange={e => setMethod(e.target.value)}>
+                <option>All Methods</option>
+                <option>UPI</option>
+                <option>Credit Card</option>
+                <option>Wallet</option>
+                <option>NetBanking</option>
+              </select>
+              <ChevronDown size={14} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
             </div>
           </div>
-          <div className="pay-filter-group">
+          <div className="pay-filter-group" style={{ position: 'relative' }}>
             <label>Status</label>
-            <div className="pay-filter-select">
-              <span>{statusFilter}</span>
-              <ChevronDown size={14} />
+            <div style={{ position: 'relative' }}>
+              <select className="pay-filter-select" style={{ appearance: 'none', background: 'transparent', cursor: 'pointer', paddingRight: '24px' }} value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+                <option>All Status</option>
+                <option>Successful</option>
+                <option>Pending</option>
+                <option>Failed</option>
+              </select>
+              <ChevronDown size={14} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
             </div>
           </div>
-          <div className="pay-filter-group">
+          <div className="pay-filter-group" style={{ position: 'relative' }}>
             <label>Gateway</label>
-            <div className="pay-filter-select">
-              <span>{gateway}</span>
-              <ChevronDown size={14} />
+            <div style={{ position: 'relative' }}>
+              <select className="pay-filter-select" style={{ appearance: 'none', background: 'transparent', cursor: 'pointer', paddingRight: '24px' }} value={gateway} onChange={e => setGateway(e.target.value)}>
+                <option>All Gateways</option>
+                <option>Razorpay</option>
+                <option>Paytm</option>
+                <option>Stripe</option>
+              </select>
+              <ChevronDown size={14} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
             </div>
           </div>
           <div className="pay-filter-actions">
-            <button className="pay-filter-btn-refresh">
-              <RefreshCw size={15} /> Refresh
+            <button className="pay-filter-btn-refresh" onClick={handleReset} style={{ color: '#4f46e5', background: '#eef2ff' }}>
+              <RotateCcw size={15} /> Reset
             </button>
-            <button className="pay-filter-btn-export">
+            <button className="pay-filter-btn-refresh" onClick={handleApply}>
+              <RefreshCw size={15} /> Apply
+            </button>
+            <button className="pay-filter-btn-export" onClick={() => toast.success('Report exporting started')}>
               <Download size={15} /> Export Report
             </button>
           </div>
@@ -216,44 +308,44 @@ export default function PaymentDashboard() {
           <StatCard
             icon={CreditCard}
             iconBg="#eff6ff" iconColor="#2563eb"
-            value="₹62,14,820" label="Total Payments"
-            sublabel="This Month"
-            trend="+21.3%" trendUp={true} trendLabel="vs Apr 2026"
+            value={fmtCurrency(Math.floor(6214820 * m))} label="Total Payments"
+            sublabel="This Range"
+            trend="+21.3%" trendUp={true} trendLabel="vs prev"
           />
           <StatCard
             icon={CheckCircle2}
             iconBg="#f0fdf4" iconColor="#16a34a"
-            value="18,420" label="Successful Payments"
-            sublabel="This Month"
-            trend="+15.8%" trendUp={true} trendLabel="vs Apr 2026"
+            value={(Math.floor(18420 * m)).toLocaleString()} label="Successful Payments"
+            sublabel="This Range"
+            trend="+15.8%" trendUp={true} trendLabel="vs prev"
           />
           <StatCard
             icon={XCircle}
             iconBg="#fff1f2" iconColor="#e11d48"
-            value="342" label="Failed Payments"
-            sublabel="This Month"
-            trend="-28.4%" trendUp={false} trendLabel="vs Apr 2026"
+            value={(Math.floor(342 * m)).toLocaleString()} label="Failed Payments"
+            sublabel="This Range"
+            trend="-28.4%" trendUp={false} trendLabel="vs prev"
           />
           <StatCard
             icon={RotateCcw}
             iconBg="#fff7ed" iconColor="#ea580c"
-            value="₹1,24,500" label="Refunds Processed"
-            sublabel="This Month"
-            trend="+4.2%" trendUp={true} trendLabel="vs Apr 2026"
+            value={fmtCurrency(Math.floor(124500 * m))} label="Refunds Processed"
+            sublabel="This Range"
+            trend="+4.2%" trendUp={true} trendLabel="vs prev"
           />
           <StatCard
             icon={TrendingUp}
             iconBg="#faf5ff" iconColor="#9333ea"
-            value="₹3,374" label="Avg Transaction"
+            value={fmtCurrency(Math.floor(3374 * (m > 1 ? 1 : Math.max(0.7, m))))} label="Avg Transaction"
             sublabel="Per Transaction"
-            trend="+5.6%" trendUp={true} trendLabel="vs Apr 2026"
+            trend="+5.6%" trendUp={true} trendLabel="vs prev"
           />
           <StatCard
             icon={Clock}
             iconBg="#fefce8" iconColor="#ca8a04"
-            value="₹8,42,180" label="Pending Settlements"
+            value={fmtCurrency(Math.floor(842180 * m))} label="Pending Settlements"
             sublabel="Awaiting Clearance"
-            trend="-12.1%" trendUp={false} trendLabel="vs Apr 2026"
+            trend="-12.1%" trendUp={false} trendLabel="vs prev"
           />
         </div>
 
@@ -279,7 +371,7 @@ export default function PaymentDashboard() {
               </div>
             </div>
             <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={paymentVolumeData} margin={{ top: 8, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={dynPaymentVolumeData} margin={{ top: 8, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="payAreaGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3} />
@@ -311,8 +403,8 @@ export default function PaymentDashboard() {
             <div className="pay-donut-content">
               <div className="pay-donut-wrap">
                 <PieChart width={160} height={160}>
-                  <Pie data={methodData} cx={75} cy={75} innerRadius={50} outerRadius={72} dataKey="value" startAngle={90} endAngle={-270} stroke="none">
-                    {methodData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                  <Pie data={dynMethodData} cx={75} cy={75} innerRadius={50} outerRadius={72} dataKey="value" startAngle={90} endAngle={-270} stroke="none">
+                    {dynMethodData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                   </Pie>
                 </PieChart>
                 <div style={{ position: 'absolute', textAlign: 'center', pointerEvents: 'none' }}>
@@ -320,7 +412,7 @@ export default function PaymentDashboard() {
                   <span style={{ display: 'block', fontSize: '10px', color: '#64748b', fontWeight: 600 }}>Methods</span>
                 </div>
               </div>
-              <DonutLegend data={methodData} />
+              <DonutLegend data={dynMethodData} />
             </div>
           </div>
 
@@ -332,8 +424,8 @@ export default function PaymentDashboard() {
             <div className="pay-donut-content">
               <div className="pay-donut-wrap">
                 <PieChart width={160} height={160}>
-                  <Pie data={statusData} cx={75} cy={75} innerRadius={50} outerRadius={72} dataKey="value" startAngle={90} endAngle={-270} stroke="none">
-                    {statusData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                  <Pie data={dynStatusData} cx={75} cy={75} innerRadius={50} outerRadius={72} dataKey="value" startAngle={90} endAngle={-270} stroke="none">
+                    {dynStatusData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                   </Pie>
                 </PieChart>
                 <div style={{ position: 'absolute', textAlign: 'center', pointerEvents: 'none' }}>
@@ -341,7 +433,7 @@ export default function PaymentDashboard() {
                   <span style={{ display: 'block', fontSize: '10px', color: '#64748b', fontWeight: 600 }}>Success</span>
                 </div>
               </div>
-              <DonutLegend data={statusData} />
+              <DonutLegend data={dynStatusData} />
             </div>
           </div>
         </div>
@@ -350,90 +442,88 @@ export default function PaymentDashboard() {
         <div className="pay-dash-mid-row">
 
           {/* Recent Transactions Table */}
-          <div className="pay-dash-card pay-dash-transactions">
-            <div className="pay-dash-card-header">
+          <div className="admin-dash-card">
+            <div className="admin-dash-card-header">
               <h3>Recent Transactions</h3>
             </div>
-            <div style={{ overflowX: 'auto', padding: '0 18px' }}>
-              <table className="pay-dash-table">
-                <thead>
-                  <tr>
-                    <th>Txn ID</th>
-                    <th>User</th>
-                    <th>Amount</th>
-                    <th>Method</th>
-                    <th>Gateway</th>
-                    <th>Status</th>
-                    <th>Date & Time</th>
-                    <th>Action</th>
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '800px' }}>
+              <thead>
+                <tr>
+                  <th>Txn ID</th>
+                  <th>User</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Gateway</th>
+                  <th>Status</th>
+                  <th>Date & Time</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dynRecentTransactions.map((t, i) => (
+                  <tr key={i}>
+                    <td><span style={{fontWeight: 600, color: '#4f46e5'}}>{t.id}</span></td>
+                    <td>
+                      <div className="avatar-cell">
+                        <Avatar name={t.user} size={32} />
+                        <span className="avatar-cell-name">{t.user}</span>
+                      </div>
+                    </td>
+                    <td><span style={{fontWeight: 600}}>{t.amount}</span></td>
+                    <td><span className="premium-chip premium-chip-indigo">{t.method}</span></td>
+                    <td>{t.gateway}</td>
+                    <td><StatusBadge status={t.status} /></td>
+                    <td>{t.date}</td>
+                    <td>{renderActions(t)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {recentTransactions.map((t, i) => (
-                    <tr key={i}>
-                      <td className="pay-id-cell">{t.id}</td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <Avatar initials={t.initials} />
-                          <span style={{ fontWeight: 500 }}>{t.user}</span>
-                        </div>
-                      </td>
-                      <td className="pay-amount-cell">{t.amount}</td>
-                      <td>{t.method}</td>
-                      <td>{t.gateway}</td>
-                      <td><StatusBadge status={t.status} /></td>
-                      <td className="pay-time-cell">{t.date}</td>
-                      <td>
-                        <button className="pay-table-eye-btn"><Eye size={15} /></button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))}
+              </tbody>
+            </table>
             </div>
-            <div className="pay-dash-view-all">
-              <button>View All Transactions <ChevronRight size={14} /></button>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to All Transactions')}>View All Transactions <ChevronRight size={14} /></button>
             </div>
           </div>
 
           {/* Gateway Performance Table */}
-          <div className="pay-dash-card pay-dash-gateway-perf">
-            <div className="pay-dash-card-header">
+          <div className="admin-dash-card">
+            <div className="admin-dash-card-header">
               <h3>Gateway Performance</h3>
             </div>
-            <div style={{ padding: '0 18px' }}>
-              <table className="pay-dash-table">
-                <thead>
-                  <tr>
-                    <th>Gateway</th>
-                    <th>Success Rate</th>
-                    <th>Avg Response</th>
-                    <th>Total Vol</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {gatewayPerformance.map((g, i) => (
-                    <tr key={i}>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <div style={{ width: 28, height: 28, borderRadius: 6, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Zap size={14} color="#4f46e5" />
-                          </div>
-                          <span style={{ fontWeight: 600 }}>{g.name}</span>
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '600px' }}>
+              <thead>
+                <tr>
+                  <th>Gateway</th>
+                  <th>Success Rate</th>
+                  <th>Avg Response</th>
+                  <th>Total Vol</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dynGatewayPerformance.map((g, i) => (
+                  <tr key={i}>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: 28, height: 28, borderRadius: 6, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Zap size={14} color="#4f46e5" />
                         </div>
-                      </td>
-                      <td style={{ fontWeight: 600, color: '#16a34a' }}>{g.successRate}</td>
-                      <td>{g.avgTime}</td>
-                      <td style={{ fontWeight: 600 }}>{g.totalVol}</td>
-                      <td><StatusBadge status={g.status} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        <span style={{ fontWeight: 600 }}>{g.name}</span>
+                      </div>
+                    </td>
+                    <td><span style={{fontWeight: 600, color: '#16a34a'}}>{g.successRate}</span></td>
+                    <td>{g.avgTime}</td>
+                    <td><span style={{fontWeight: 600}}>{g.totalVol}</span></td>
+                    <td><StatusBadge status={g.status} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
             </div>
-            <div className="pay-dash-view-all">
-              <button>View Full Analytics <ChevronRight size={14} /></button>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to Gateway Performance')}>View Full Performance <ChevronRight size={14} /></button>
             </div>
           </div>
         </div>
@@ -442,74 +532,74 @@ export default function PaymentDashboard() {
         <div className="pay-dash-bottom-row">
 
           {/* Refund Requests Table */}
-          <div className="pay-dash-card pay-dash-refunds">
-            <div className="pay-dash-card-header">
+          <div className="admin-dash-card">
+            <div className="admin-dash-card-header">
               <h3>Refund Requests</h3>
             </div>
-            <div style={{ padding: '0 18px' }}>
-              <table className="pay-dash-table">
-                <thead>
-                  <tr>
-                    <th>Refund ID</th>
-                    <th>Orig Txn</th>
-                    <th>Amount</th>
-                    <th>User</th>
-                    <th>Reason</th>
-                    <th>Status</th>
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '600px' }}>
+              <thead>
+                <tr>
+                  <th>Refund ID</th>
+                  <th>Orig Txn</th>
+                  <th>Amount</th>
+                  <th>User</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dynRefundRequests.map((r, i) => (
+                  <tr key={i}>
+                    <td><span style={{fontWeight: 600, color: '#4f46e5'}}>{r.id}</span></td>
+                    <td><span style={{color: '#64748b'}}>{r.origTxn}</span></td>
+                    <td><span style={{fontWeight: 600}}>{r.amount}</span></td>
+                    <td><span style={{fontWeight: 500}}>{r.user}</span></td>
+                    <td>{r.reason}</td>
+                    <td><StatusBadge status={r.status} /></td>
                   </tr>
-                </thead>
-                <tbody>
-                  {refundRequests.map((r, i) => (
-                    <tr key={i}>
-                      <td className="pay-id-cell">{r.id}</td>
-                      <td className="pay-muted-cell">{r.origTxn}</td>
-                      <td className="pay-amount-cell">{r.amount}</td>
-                      <td style={{ fontWeight: 500 }}>{r.user}</td>
-                      <td>{r.reason}</td>
-                      <td><StatusBadge status={r.status} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))}
+              </tbody>
+            </table>
             </div>
-            <div className="pay-dash-view-all">
-              <button>View All Refunds <ChevronRight size={14} /></button>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to All Refunds')}>View All Refunds <ChevronRight size={14} /></button>
             </div>
           </div>
 
           {/* Chargeback Summary Table */}
-          <div className="pay-dash-card pay-dash-chargebacks">
-            <div className="pay-dash-card-header">
+          <div className="admin-dash-card">
+            <div className="admin-dash-card-header">
               <h3>Chargeback Summary</h3>
             </div>
-            <div style={{ padding: '0 18px' }}>
-              <table className="pay-dash-table">
-                <thead>
-                  <tr>
-                    <th>CB ID</th>
-                    <th>Orig Txn</th>
-                    <th>Amount</th>
-                    <th>User</th>
-                    <th>Gateway</th>
-                    <th>Status</th>
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '600px' }}>
+              <thead>
+                <tr>
+                  <th>CB ID</th>
+                  <th>Orig Txn</th>
+                  <th>Amount</th>
+                  <th>User</th>
+                  <th>Gateway</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dynChargebackSummary.map((c, i) => (
+                  <tr key={i}>
+                    <td><span style={{fontWeight: 600, color: '#4f46e5'}}>{c.id}</span></td>
+                    <td><span style={{color: '#64748b'}}>{c.origTxn}</span></td>
+                    <td><span style={{fontWeight: 600}}>{c.amount}</span></td>
+                    <td><span style={{fontWeight: 500}}>{c.user}</span></td>
+                    <td>{c.gateway}</td>
+                    <td><StatusBadge status={c.status} /></td>
                   </tr>
-                </thead>
-                <tbody>
-                  {chargebackSummary.map((c, i) => (
-                    <tr key={i}>
-                      <td className="pay-id-cell">{c.id}</td>
-                      <td className="pay-muted-cell">{c.origTxn}</td>
-                      <td className="pay-amount-cell">{c.amount}</td>
-                      <td style={{ fontWeight: 500 }}>{c.user}</td>
-                      <td>{c.gateway}</td>
-                      <td><StatusBadge status={c.status} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))}
+              </tbody>
+            </table>
             </div>
-            <div className="pay-dash-view-all">
-              <button>View All Chargebacks <ChevronRight size={14} /></button>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to Chargebacks')}>View All Chargebacks <ChevronRight size={14} /></button>
             </div>
           </div>
         </div>

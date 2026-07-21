@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import {
   FileText,
   DivideCircle,
@@ -26,6 +27,8 @@ import {
   Cell
 } from 'recharts';
 import AdminShell from '../../components/layouts/AdminShell';
+import StatusBadge from '../../components/common/StatusBadge';
+import Avatar from '../../components/common/Avatar';
 
 /* ───────────────────── Mock Data ───────────────────── */
 
@@ -112,27 +115,6 @@ function StatCard({ icon: Icon, iconBg, iconColor, value, label, sublabel, trend
   );
 }
 
-function StatusBadge({ status }) {
-  let cls = 'gst-status-default';
-  if (status === 'Filed' || status === 'Filed on Time') cls = 'gst-status-success';
-  if (status === 'Pending') cls = 'gst-status-danger';
-  if (status === 'Late Filed' || status === 'Filed Late') cls = 'gst-status-warning';
-  return <span className={`gst-status-badge ${cls}`}>{status}</span>;
-}
-
-function PriorityBadge({ priority }) {
-  const cls = priority === 'High' ? 'alert-high' : priority === 'Medium' ? 'alert-medium' : 'alert-low';
-  return <span className={`gst-priority-badge ${cls}`}>{priority}</span>;
-}
-
-function Avatar({ initials }) {
-  return (
-    <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #818cf8)', color: '#fff', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-      {initials}
-    </div>
-  );
-}
-
 function CustomTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
     return (
@@ -173,6 +155,87 @@ export default function GSTDashboard() {
 
   const totalGST = gstCollectionTrend.reduce((s, d) => s + d.cgst + d.sgst, 0);
 
+  const rateSlabsColumns = [
+    { header: 'HSN Code', accessor: 'hsn', render: (row) => <span style={{fontFamily: 'monospace', fontWeight: 600, color: '#4f46e5'}}>{row.hsn}</span> },
+    { header: 'Category', accessor: 'category', render: (row) => <span style={{fontWeight: 500}}>{row.category}</span> },
+    { header: 'Rate', accessor: 'rate', render: (row) => <span className="premium-chip">{row.rate}</span> },
+    { header: 'CGST', accessor: 'cgst' },
+    { header: 'SGST', accessor: 'sgst' },
+    { header: 'Taxable Value', accessor: 'taxable' },
+    { header: 'GST Amount', accessor: 'amount', render: (row) => <span style={{fontWeight: 600}}>{row.amount}</span> }
+  ];
+
+  const filingsColumns = [
+    { header: 'GSTIN', accessor: 'gstin', render: (row) => <span style={{fontWeight: 600, color: '#4f46e5'}}>{row.gstin.substring(0, 12)}...</span> },
+    { header: 'Partner', accessor: 'partner', render: (row) => <span style={{fontWeight: 500}}>{row.partner}</span> },
+    { header: 'Type', accessor: 'returnType', render: (row) => <span className="premium-chip premium-chip-indigo">{row.returnType}</span> },
+    { header: 'Period', accessor: 'period' },
+    { header: 'Date', accessor: 'date' },
+    { header: 'Status', accessor: 'status', render: (row) => <StatusBadge status={row.status} /> }
+  ];
+
+  const collectionColumns = [
+    { header: 'Partner Name', accessor: 'partner', render: (row) => (
+      <div className="avatar-cell">
+        <Avatar name={row.partner} size={32} />
+        <span className="avatar-cell-name">{row.partner}</span>
+      </div>
+    ) },
+    { header: 'Category', accessor: 'category', render: (row) => <span className="premium-chip">{row.category}</span> },
+    { header: 'Taxable Value', accessor: 'taxable', render: (row) => <span style={{fontWeight: 600}}>{row.taxable}</span> },
+    { header: 'CGST', accessor: 'cgst', render: (row) => <span style={{color: '#4f46e5', fontWeight: 600}}>{row.cgst}</span> },
+    { header: 'SGST', accessor: 'sgst', render: (row) => <span style={{color: '#9333ea', fontWeight: 600}}>{row.sgst}</span> },
+    { header: 'Total GST', accessor: 'total', render: (row) => <span style={{fontWeight: 600}}>{row.total}</span> }
+  ];
+
+  const reconciliationColumns = [
+    { header: 'Invoice No.', accessor: 'invoice', render: (row) => <span style={{fontWeight: 600, color: '#4f46e5'}}>{row.invoice}</span> },
+    { header: 'Partner', accessor: 'partner', render: (row) => <span style={{fontWeight: 500}}>{row.partner}</span> },
+    { header: 'Mismatch Type', accessor: 'mismatch', render: (row) => <span style={{color: '#64748b', fontSize: '12px'}}>{row.mismatch}</span> },
+    { header: 'Diff Amount', accessor: 'diffAmount', render: (row) => <span style={{fontWeight: 600}}>{row.diffAmount}</span> },
+    { header: 'Priority', accessor: 'priority', render: (row) => <StatusBadge status={row.priority} /> }
+  ];
+
+  const [filterTrigger, setFilterTrigger] = useState(0);
+
+  const m = month === 'Apr 2026' ? 0.8 : month === 'Mar 2026' ? 1.2 : 1;
+
+  const dynRateSlabs = useMemo(() => gstRateSlabs.slice(0, Math.max(2, Math.floor(gstRateSlabs.length * (m >= 1 ? 1 : m * 1.5)))), [m, filterTrigger]);
+  
+  const dynRecentFilings = useMemo(() => {
+    let filtered = recentFilings.filter(t => {
+      if (filingStatus !== 'All Statuses' && t.status !== filingStatus) return false;
+      return true;
+    });
+    return filtered.slice(0, Math.max(2, Math.floor(filtered.length * (m >= 1 ? 1 : m * 1.5))));
+  }, [m, filterTrigger, filingStatus]);
+
+  const dynPartnerCollection = useMemo(() => {
+    let filtered = partnerCollection.filter(t => {
+      if (category !== 'All Categories' && t.category !== category) return false;
+      return true;
+    });
+    return filtered.slice(0, Math.max(2, Math.floor(filtered.length * (m >= 1 ? 1 : m * 1.5))));
+  }, [m, filterTrigger, category]);
+
+  const dynReconciliationIssues = useMemo(() => reconciliationIssues.slice(0, Math.max(2, Math.floor(reconciliationIssues.length * (m >= 1 ? 1 : m * 1.5)))), [m, filterTrigger]);
+
+  const renderActions = (row) => (
+    <div className="action-btn-group">
+      <button className="action-icon-btn" title="View Details" onClick={() => toast.success('Viewing Details')}><Eye size={16} /></button>
+    </div>
+  );
+
+  const handleRefresh = () => {
+    setFilterTrigger(prev => prev + 1);
+    toast.success('Dashboard data refreshed successfully.');
+  };
+
+  const handleExport = () => {
+    toast.success('GST report exported successfully!');
+  };
+
+
   return (
     <AdminShell
       activeTab="GST Management"
@@ -185,37 +248,59 @@ export default function GSTDashboard() {
         <div className="gst-dash-filters">
           <div className="gst-filter-group">
             <label>Financial Year</label>
-            <div className="gst-filter-select">
+            <div className="gst-filter-select" style={{ position: 'relative' }}>
+              <select value={fy} onChange={e => setFy(e.target.value)} style={{ appearance: 'none', width: '100%', height: '100%', position: 'absolute', opacity: 0, cursor: 'pointer', left: 0, top: 0 }}>
+                <option>FY 2025-26</option>
+                <option>FY 2024-25</option>
+              </select>
               <span>{fy}</span>
               <ChevronDown size={14} />
             </div>
           </div>
           <div className="gst-filter-group">
             <label>Month</label>
-            <div className="gst-filter-select">
+            <div className="gst-filter-select" style={{ position: 'relative' }}>
+              <select value={month} onChange={e => setMonth(e.target.value)} style={{ appearance: 'none', width: '100%', height: '100%', position: 'absolute', opacity: 0, cursor: 'pointer', left: 0, top: 0 }}>
+                <option>May 2026</option>
+                <option>Apr 2026</option>
+                <option>Mar 2026</option>
+              </select>
               <span>{month}</span>
               <ChevronDown size={14} />
             </div>
           </div>
           <div className="gst-filter-group">
             <label>GST Category</label>
-            <div className="gst-filter-select">
+            <div className="gst-filter-select" style={{ position: 'relative' }}>
+              <select value={category} onChange={e => setCategory(e.target.value)} style={{ appearance: 'none', width: '100%', height: '100%', position: 'absolute', opacity: 0, cursor: 'pointer', left: 0, top: 0 }}>
+                <option>All Categories</option>
+                <option>AC Services</option>
+                <option>Plumbing</option>
+                <option>Electrical</option>
+                <option>Cleaning</option>
+              </select>
               <span>{category}</span>
               <ChevronDown size={14} />
             </div>
           </div>
           <div className="gst-filter-group">
             <label>Filing Status</label>
-            <div className="gst-filter-select">
+            <div className="gst-filter-select" style={{ position: 'relative' }}>
+              <select value={filingStatus} onChange={e => setFilingStatus(e.target.value)} style={{ appearance: 'none', width: '100%', height: '100%', position: 'absolute', opacity: 0, cursor: 'pointer', left: 0, top: 0 }}>
+                <option>All Statuses</option>
+                <option>Filed</option>
+                <option>Pending</option>
+                <option>Late Filed</option>
+              </select>
               <span>{filingStatus}</span>
               <ChevronDown size={14} />
             </div>
           </div>
           <div className="gst-filter-actions">
-            <button className="gst-filter-btn-refresh">
+            <button className="gst-filter-btn-refresh" onClick={handleRefresh}>
               <RefreshCw size={15} /> Refresh
             </button>
-            <button className="gst-filter-btn-export">
+            <button className="gst-filter-btn-export" onClick={handleExport}>
               <Download size={15} /> Export Report
             </button>
           </div>
@@ -230,28 +315,23 @@ export default function GSTDashboard() {
           />
           <StatCard
             icon={DivideCircle} iconBg="#eef2ff" iconColor="#4f46e5"
-            value="₹6,42,260" label="CGST Collected" sublabel="This Month"
-            trend="+14.2%" trendUp={true} trendLabel="vs Apr 2026"
+            value={`₹${(1.24 * m).toFixed(2)}Cr`} label="Total GST Collected" sublabel="This Month"
+            trend="+12%" trendUp={true} trendLabel="vs prev month"
           />
           <StatCard
-            icon={DivideCircle} iconBg="#faf5ff" iconColor="#9333ea"
-            value="₹6,42,260" label="SGST Collected" sublabel="This Month"
-            trend="+14.2%" trendUp={true} trendLabel="vs Apr 2026"
-          />
-          <StatCard
-            icon={AlertTriangle} iconBg="#fff7ed" iconColor="#ea580c"
-            value="14" label="GST Filings Due" sublabel="Upcoming"
-            trend="-6" trendUp={false} trendLabel="vs Apr 2026"
+            icon={DivideCircle} iconBg="#f0fdf4" iconColor="#16a34a"
+            value="89%" label="Filing Compliance" sublabel="Partners filed on time"
+            trend="+5%" trendUp={true} trendLabel="vs prev month"
           />
           <StatCard
             icon={AlertTriangle} iconBg="#fff1f2" iconColor="#e11d48"
-            value="₹2,14,180" label="Pending Reconciliation" sublabel="Unresolved"
-            trend="-18.4%" trendUp={false} trendLabel="vs Apr 2026"
+            value={Math.floor(14 * m)} label="Mismatches Found" sublabel="GSTR-1 vs 3B"
+            trend="-3" trendUp={false} trendLabel="vs prev month"
           />
           <StatCard
-            icon={ShieldCheck} iconBg="#f0fdf4" iconColor="#16a34a"
-            value="96.8%" label="Compliance Rate" sublabel="This Quarter"
-            trend="+1.2%" trendUp={true} trendLabel="vs Apr 2026"
+            icon={ShieldCheck} iconBg="#faf5ff" iconColor="#9333ea"
+            value={`₹${(18.5 * m).toFixed(1)}L`} label="Eligible ITC" sublabel="Input Tax Credit"
+            trend="+8%" trendUp={true} trendLabel="vs prev month"
           />
         </div>
 
@@ -330,13 +410,12 @@ export default function GSTDashboard() {
 
         {/* ── Mid Row ── */}
         <div className="gst-dash-mid-row">
-
-          {/* Rate Slabs Table */}
-          <div className="gst-dash-card">
-            <div className="gst-dash-card-header">
+          <div className="admin-dash-card">
+            <div className="admin-dash-card-header">
               <h3>GST Rate Slabs Overview</h3>
             </div>
-            <table className="gst-dash-table">
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '700px' }}>
               <thead>
                 <tr>
                   <th>HSN Code</th>
@@ -349,32 +428,31 @@ export default function GSTDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {gstRateSlabs.map((row, i) => (
+                {dynRateSlabs.map((r, i) => (
                   <tr key={i}>
-                    <td style={{ fontFamily: 'monospace', fontWeight: 600, color: '#4f46e5' }}>{row.hsn}</td>
-                    <td style={{ fontWeight: 500 }}>{row.category}</td>
-                    <td><span className="gst-rate-badge">{row.rate}</span></td>
-                    <td>{row.cgst}</td>
-                    <td>{row.sgst}</td>
-                    <td>{row.taxable}</td>
-                    <td className="gst-amount-cell">{row.amount}</td>
+                    <td><span style={{fontFamily: 'monospace', fontWeight: 600, color: '#4f46e5'}}>{r.hsn}</span></td>
+                    <td><span style={{fontWeight: 500}}>{r.category}</span></td>
+                    <td><span className="premium-chip">{r.rate}</span></td>
+                    <td>{r.cgst}</td>
+                    <td>{r.sgst}</td>
+                    <td>{r.taxable}</td>
+                    <td><span style={{fontWeight: 600}}>{r.amount}</span></td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div style={{ padding: '12px 16px', borderTop: '1px solid #f1f5f9' }}>
-              <button style={{ background: 'none', border: 'none', color: '#4f46e5', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                View All Slabs <ChevronRight size={14} />
-              </button>
+            </div>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to Rate Slabs')}>View All Rate Slabs <ChevronRight size={14} /></button>
             </div>
           </div>
 
-          {/* Recent Filings Table */}
-          <div className="gst-dash-card">
-            <div className="gst-dash-card-header">
+          <div className="admin-dash-card">
+            <div className="admin-dash-card-header">
               <h3>Recent GST Filings</h3>
             </div>
-            <table className="gst-dash-table">
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '600px' }}>
               <thead>
                 <tr>
                   <th>GSTIN</th>
@@ -386,24 +464,21 @@ export default function GSTDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {recentFilings.map((row, i) => (
+                {dynRecentFilings.map((f, i) => (
                   <tr key={i}>
-                    <td className="gstin-cell">{row.gstin.substring(0, 12)}...</td>
-                    <td style={{ fontWeight: 500 }}>{row.partner}</td>
-                    <td>
-                      <span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 600, color: '#6366f1' }}>{row.returnType}</span>
-                    </td>
-                    <td>{row.period}</td>
-                    <td style={{ color: '#64748b', fontSize: 12 }}>{row.date}</td>
-                    <td><StatusBadge status={row.status} /></td>
+                    <td><span style={{fontWeight: 600, color: '#4f46e5'}}>{f.gstin.substring(0, 12)}...</span></td>
+                    <td><span style={{fontWeight: 500}}>{f.partner}</span></td>
+                    <td><span className="premium-chip premium-chip-indigo">{f.returnType}</span></td>
+                    <td>{f.period}</td>
+                    <td>{f.date}</td>
+                    <td><StatusBadge status={f.status} /></td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div style={{ padding: '12px 16px', borderTop: '1px solid #f1f5f9' }}>
-              <button style={{ background: 'none', border: 'none', color: '#4f46e5', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                View All Filings <ChevronRight size={14} />
-              </button>
+            </div>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to Filings')}>View All Filings <ChevronRight size={14} /></button>
             </div>
           </div>
         </div>
@@ -411,12 +486,12 @@ export default function GSTDashboard() {
         {/* ── Bottom Row ── */}
         <div className="gst-dash-bottom-row">
 
-          {/* Partner Collection Table */}
-          <div className="gst-dash-card">
-            <div className="gst-dash-card-header">
-              <h3>Partner-wise GST Collection</h3>
+          <div className="admin-dash-card">
+            <div className="admin-dash-card-header">
+              <h3>Partner Wise GST Collection</h3>
             </div>
-            <table className="gst-dash-table">
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '800px' }}>
               <thead>
                 <tr>
                   <th>Partner Name</th>
@@ -428,36 +503,35 @@ export default function GSTDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {partnerCollection.map((row, i) => (
+                {dynPartnerCollection.map((p, i) => (
                   <tr key={i}>
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <Avatar initials={row.initials} />
-                        <span style={{ fontWeight: 600 }}>{row.partner}</span>
+                      <div className="avatar-cell">
+                        <Avatar name={p.partner} size={32} />
+                        <span className="avatar-cell-name">{p.partner}</span>
                       </div>
                     </td>
-                    <td>{row.category}</td>
-                    <td style={{ fontWeight: 600 }}>{row.taxable}</td>
-                    <td style={{ color: '#4f46e5', fontWeight: 600 }}>{row.cgst}</td>
-                    <td style={{ color: '#9333ea', fontWeight: 600 }}>{row.sgst}</td>
-                    <td className="gst-amount-cell">{row.total}</td>
+                    <td><span className="premium-chip">{p.category}</span></td>
+                    <td><span style={{fontWeight: 600}}>{p.taxable}</span></td>
+                    <td><span style={{color: '#4f46e5', fontWeight: 600}}>{p.cgst}</span></td>
+                    <td><span style={{color: '#9333ea', fontWeight: 600}}>{p.sgst}</span></td>
+                    <td><span style={{fontWeight: 600}}>{p.total}</span></td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div style={{ padding: '12px 16px', borderTop: '1px solid #f1f5f9' }}>
-              <button style={{ background: 'none', border: 'none', color: '#4f46e5', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                View All Partners <ChevronRight size={14} />
-              </button>
+            </div>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to Collections')}>View All Collections <ChevronRight size={14} /></button>
             </div>
           </div>
 
-          {/* Reconciliation Issues Table */}
-          <div className="gst-dash-card">
-            <div className="gst-dash-card-header">
-              <h3>GST Reconciliation Issues</h3>
+          <div className="admin-dash-card">
+            <div className="admin-dash-card-header">
+              <h3>ITC Reconciliation Issues</h3>
             </div>
-            <table className="gst-dash-table">
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '600px' }}>
               <thead>
                 <tr>
                   <th>Invoice No.</th>
@@ -468,21 +542,20 @@ export default function GSTDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {reconciliationIssues.map((row, i) => (
+                {dynReconciliationIssues.map((r, i) => (
                   <tr key={i}>
-                    <td className="invoice-cell">{row.invoice}</td>
-                    <td style={{ fontWeight: 500 }}>{row.partner}</td>
-                    <td style={{ color: '#64748b', fontSize: 12 }}>{row.mismatch}</td>
-                    <td className="gst-amount-cell">{row.diffAmount}</td>
-                    <td><PriorityBadge priority={row.priority} /></td>
+                    <td><span style={{fontWeight: 600, color: '#4f46e5'}}>{r.invoice}</span></td>
+                    <td><span style={{fontWeight: 500}}>{r.partner}</span></td>
+                    <td><span style={{color: '#64748b', fontSize: '12px'}}>{r.mismatch}</span></td>
+                    <td><span style={{fontWeight: 600}}>{r.diffAmount}</span></td>
+                    <td><StatusBadge status={r.priority} /></td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div style={{ padding: '12px 16px', borderTop: '1px solid #f1f5f9' }}>
-              <button style={{ background: 'none', border: 'none', color: '#4f46e5', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                View All Alerts <ChevronRight size={14} />
-              </button>
+            </div>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to ITC Issues')}>View All Issues <ChevronRight size={14} /></button>
             </div>
           </div>
         </div>

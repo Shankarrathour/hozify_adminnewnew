@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import {
   DollarSign,
   CreditCard,
@@ -14,6 +15,8 @@ import {
   BarChart2
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
+import StatusBadge from '../../components/common/StatusBadge';
+import Avatar from '../../components/common/Avatar';
 import {
   LineChart,
   Line,
@@ -29,7 +32,7 @@ import {
 
 /* ───────────────────── Mock Data ───────────────────── */
 
-const revenueChartData = [
+const chartDataDaily = [
   { date: '01 May', revenue: 62000 },
   { date: '05 May', revenue: 75000 },
   { date: '08 May', revenue: 50000 },
@@ -43,6 +46,21 @@ const revenueChartData = [
   { date: '26 May', revenue: 78000 },
   { date: '28 May', revenue: 85000 },
   { date: '31 May', revenue: 72000 },
+];
+
+const chartDataWeekly = [
+  { date: 'Week 1', revenue: 268000 },
+  { date: 'Week 2', revenue: 309000 },
+  { date: 'Week 3', revenue: 312000 },
+  { date: 'Week 4', revenue: 331000 },
+];
+
+const chartDataMonthly = [
+  { date: 'Jan', revenue: 950000 },
+  { date: 'Feb', revenue: 1020000 },
+  { date: 'Mar', revenue: 1150000 },
+  { date: 'Apr', revenue: 1210000 },
+  { date: 'May', revenue: 1220000 },
 ];
 
 const sellerTypeData = [
@@ -108,28 +126,6 @@ function StatCard({ icon: Icon, iconBg, iconColor, value, label, sublabel, trend
   );
 }
 
-function TxnStatusBadge({ status }) {
-  const map = {
-    Settled:  { bg: '#dcfce7', color: '#166534' },
-    Pending:  { bg: '#fef3c7', color: '#92400e' },
-    Refunded: { bg: '#fee2e2', color: '#991b1b' },
-  };
-  const s = map[status] || { bg: '#f1f5f9', color: '#475569' };
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 10px', borderRadius: '20px', fontSize: '11.5px', fontWeight: 600, background: s.bg, color: s.color }}>
-      {status}
-    </span>
-  );
-}
-
-function Avatar({ initials }) {
-  return (
-    <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #818cf8)', color: '#fff', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-      {initials}
-    </div>
-  );
-}
-
 function CustomTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
     return (
@@ -166,14 +162,99 @@ export default function RevenueDashboard({ activeTab = 'Revenue Management' }) {
   const [category, setCategory] = useState('All Categories');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [chartFreq, setChartFreq] = useState('Daily');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const totalSellers = sellerTypeData.reduce((s, d) => s + d.value, 0);
+
+  const txnColumns = [
+    { header: 'Txn ID', accessor: 'id', render: (row) => <span style={{fontWeight: 600, color: '#4f46e5'}}>{row.id}</span> },
+    { header: 'Partner', accessor: 'partner', render: (row) => (
+      <div className="avatar-cell">
+        <Avatar name={row.partner} size={32} />
+        <span className="avatar-cell-name">{row.partner}</span>
+      </div>
+    ) },
+    { header: 'Category', accessor: 'category', render: (row) => <span className="premium-chip">{row.category}</span> },
+    { header: 'Gross', accessor: 'gross', render: (row) => <span style={{fontWeight: 600}}>{row.gross}</span> },
+    { header: 'Commission', accessor: 'commission', render: (row) => <span style={{fontWeight: 600, color: '#16a34a'}}>{row.commission}</span> },
+    { header: 'Status', accessor: 'status', render: (row) => <StatusBadge status={row.status} /> },
+    { header: 'Date & Time', accessor: 'date' }
+  ];
+
+  const partnerColumns = [
+    { header: 'Partner', accessor: 'name', render: (row) => (
+      <div className="avatar-cell">
+        <Avatar name={row.name} size={32} />
+        <span className="avatar-cell-name">{row.name}</span>
+      </div>
+    ) },
+    { header: 'Category', accessor: 'category', render: (row) => <span className="premium-chip">{row.category}</span> },
+    { header: 'Revenue', accessor: 'revenue', render: (row) => <span style={{fontWeight: 600}}>{row.revenue}</span> },
+    { header: 'Orders', accessor: 'orders' },
+    { header: 'Growth', accessor: 'growth', render: (row) => (
+      <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600, color: row.growthUp ? '#16a34a' : '#dc2626' }}>
+        {row.growthUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+        {row.growth}
+      </span>
+    ) }
+  ];
+
+  const categoryColumns = [
+    { header: 'Category', accessor: 'category', render: (row) => <span className="premium-chip premium-chip-indigo">{row.category}</span> },
+    { header: 'Total Revenue', accessor: 'totalRevenue', render: (row) => <span style={{fontWeight: 600}}>{row.totalRevenue}</span> },
+    { header: 'Commission Earned', accessor: 'commission', render: (row) => <span style={{color: '#16a34a', fontWeight: 600}}>{row.commission}</span> },
+    { header: 'Active Partners', accessor: 'partners' },
+    { header: 'Total Orders', accessor: 'orders' },
+    { header: 'Revenue Share', accessor: 'share', render: (row) => (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ flex: 1, height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden', minWidth: '60px' }}>
+          <div style={{ width: row.share, height: '100%', background: '#4f46e5', borderRadius: '3px' }} />
+        </div>
+        <span style={{ fontSize: '12px', fontWeight: 600, color: '#4f46e5', minWidth: '30px' }}>{row.share}</span>
+      </div>
+    ) }
+  ];
+
+  const renderActions = (row) => (
+    <div className="action-btn-group">
+      <button className="action-icon-btn" title="View Details"><Eye size={16} /></button>
+    </div>
+  );
+
+
+  const [filterTrigger, setFilterTrigger] = useState(0);
+
+  const m = dateRange === 'Last 7 Days' ? 0.25 : dateRange === 'Last 30 Days' ? 1.5 : 1;
+
+  const dynFilteredTransactions = useMemo(() => {
+    let filtered = recentTransactions.filter(t => {
+      if (category !== 'All Categories' && t.category !== category) return false;
+      if (statusFilter !== 'All Status' && t.status !== statusFilter) return false;
+      return true;
+    });
+    return filtered.slice(0, Math.max(2, Math.floor(filtered.length * (m >= 1 ? 1 : m * 1.5))));
+  }, [m, filterTrigger, category, statusFilter]);
+
+  const dynTopPartners = useMemo(() => topPartners.slice(0, Math.max(2, Math.floor(topPartners.length * (m >= 1 ? 1 : m * 1.5)))), [m, filterTrigger]);
+  const dynCategoryBreakdown = useMemo(() => categoryBreakdown.slice(0, Math.max(2, Math.floor(categoryBreakdown.length * (m >= 1 ? 1 : m * 1.5)))), [m, filterTrigger]);
+  
+  const dynChartData = useMemo(() => {
+    const baseData = chartFreq === 'Weekly' ? chartDataWeekly : chartFreq === 'Monthly' ? chartDataMonthly : chartDataDaily;
+    return baseData.map(d => ({ ...d, revenue: Math.floor(d.revenue * m) }));
+  }, [chartFreq, m, filterTrigger]);
+
+  const handleRefresh = () => {
+    setFilterTrigger(prev => prev + 1);
+    toast.success('Dashboard data refreshed successfully.');
+  };
+
+  const handleExport = () => {
+    toast.success('Revenue report exported successfully!');
+  };
 
   return (
     <AdminShell
       activeTab={activeTab}
-      pageTitle="Revenue Dashboard"
-      pageSubtitle="Revenue Transactions & Partner Earnings Analytics"
     >
       <div className="rev-dash-root">
 
@@ -181,37 +262,80 @@ export default function RevenueDashboard({ activeTab = 'Revenue Management' }) {
         <div className="rev-dash-filters">
           <div className="rev-filter-group">
             <label>Date Range</label>
-            <div className="rev-filter-select">
+            <div className="rev-filter-select" style={{ position: 'relative' }}>
+              <select 
+                value={dateRange} 
+                onChange={e => setDateRange(e.target.value)}
+                style={{ appearance: 'none', width: '100%', height: '100%', position: 'absolute', opacity: 0, cursor: 'pointer', left: 0, top: 0 }}
+              >
+                <option value="01 May 2026 - 31 May 2026">01 May 2026 - 31 May 2026</option>
+                <option value="Last 7 Days">Last 7 Days</option>
+                <option value="Last 30 Days">Last 30 Days</option>
+              </select>
               <span>{dateRange}</span>
               <ChevronDown size={14} />
             </div>
           </div>
           <div className="rev-filter-group">
             <label>Partner Type</label>
-            <div className="rev-filter-select">
+            <div className="rev-filter-select" style={{ position: 'relative' }}>
+              <select 
+                value={partnerType} 
+                onChange={e => setPartnerType(e.target.value)}
+                style={{ appearance: 'none', width: '100%', height: '100%', position: 'absolute', opacity: 0, cursor: 'pointer', left: 0, top: 0 }}
+              >
+                <option value="All Partners">All Partners</option>
+                <option value="Enterprise">Enterprise</option>
+                <option value="Mid-Market">Mid-Market</option>
+                <option value="Small Biz">Small Biz</option>
+                <option value="Freelance">Freelance</option>
+              </select>
               <span>{partnerType}</span>
               <ChevronDown size={14} />
             </div>
           </div>
           <div className="rev-filter-group">
             <label>Category</label>
-            <div className="rev-filter-select">
+            <div className="rev-filter-select" style={{ position: 'relative' }}>
+              <select 
+                value={category} 
+                onChange={e => setCategory(e.target.value)}
+                style={{ appearance: 'none', width: '100%', height: '100%', position: 'absolute', opacity: 0, cursor: 'pointer', left: 0, top: 0 }}
+              >
+                <option value="All Categories">All Categories</option>
+                <option value="Logistics">Logistics</option>
+                <option value="Services">Services</option>
+                <option value="Cleaning">Cleaning</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Plumbing">Plumbing</option>
+                <option value="Others">Others</option>
+              </select>
               <span>{category}</span>
               <ChevronDown size={14} />
             </div>
           </div>
           <div className="rev-filter-group">
             <label>Status</label>
-            <div className="rev-filter-select">
+            <div className="rev-filter-select" style={{ position: 'relative' }}>
+              <select 
+                value={statusFilter} 
+                onChange={e => setStatusFilter(e.target.value)}
+                style={{ appearance: 'none', width: '100%', height: '100%', position: 'absolute', opacity: 0, cursor: 'pointer', left: 0, top: 0 }}
+              >
+                <option value="All Status">All Status</option>
+                <option value="Settled">Settled</option>
+                <option value="Pending">Pending</option>
+                <option value="Refunded">Refunded</option>
+              </select>
               <span>{statusFilter}</span>
               <ChevronDown size={14} />
             </div>
           </div>
           <div className="rev-filter-actions">
-            <button className="rev-filter-btn-refresh">
-              <RefreshCw size={15} /> Refresh
+            <button className="rev-filter-btn-refresh" onClick={handleRefresh} disabled={isRefreshing} style={{ opacity: isRefreshing ? 0.7 : 1 }}>
+              <RefreshCw size={15} style={{ animation: isRefreshing ? 'spin 1s linear infinite' : 'none' }} /> {isRefreshing ? 'Refreshing...' : 'Refresh'}
             </button>
-            <button className="rev-filter-btn-export">
+            <button className="rev-filter-btn-export" onClick={handleExport}>
               <Download size={15} /> Export Report
             </button>
           </div>
@@ -285,7 +409,7 @@ export default function RevenueDashboard({ activeTab = 'Revenue Management' }) {
               </div>
             </div>
             <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={revenueChartData} margin={{ top: 8, right: 10, left: -20, bottom: 0 }}>
+              <LineChart data={dynChartData} margin={{ top: 8, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                 <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
@@ -373,11 +497,12 @@ export default function RevenueDashboard({ activeTab = 'Revenue Management' }) {
         <div className="rev-dash-mid-row">
 
           {/* Recent Transactions */}
-          <div className="rev-dash-card rev-dash-transactions">
-            <div className="rev-dash-card-header">
+          <div className="admin-dash-card">
+            <div className="admin-dash-card-header">
               <h3>Recent Transactions</h3>
             </div>
-            <table className="rev-dash-table">
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '800px' }}>
               <thead>
                 <tr>
                   <th>Txn ID</th>
@@ -387,42 +512,42 @@ export default function RevenueDashboard({ activeTab = 'Revenue Management' }) {
                   <th>Commission</th>
                   <th>Status</th>
                   <th>Date & Time</th>
-                  <th>Action</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {recentTransactions.map((t, i) => (
+                {dynFilteredTransactions.map((t, i) => (
                   <tr key={i}>
-                    <td className="rev-highlight-cell">{t.id}</td>
+                    <td><span style={{fontWeight: 600, color: '#4f46e5'}}>{t.id}</span></td>
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <Avatar initials={t.initials} />
-                        <span style={{ fontWeight: 500 }}>{t.partner}</span>
+                      <div className="avatar-cell">
+                        <Avatar name={t.partner} size={32} />
+                        <span className="avatar-cell-name">{t.partner}</span>
                       </div>
                     </td>
-                    <td>{t.category}</td>
-                    <td style={{ fontWeight: 600 }}>{t.gross}</td>
-                    <td style={{ fontWeight: 600, color: '#16a34a' }}>{t.commission}</td>
-                    <td><TxnStatusBadge status={t.status} /></td>
-                    <td className="rev-time-cell">{t.date}</td>
-                    <td>
-                      <button className="admin-table-eye-btn"><Eye size={15} /></button>
-                    </td>
+                    <td><span className="premium-chip">{t.category}</span></td>
+                    <td><span style={{fontWeight: 600}}>{t.gross}</span></td>
+                    <td><span style={{fontWeight: 600, color: '#16a34a'}}>{t.commission}</span></td>
+                    <td><StatusBadge status={t.status} /></td>
+                    <td>{t.date}</td>
+                    <td>{renderActions(t)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div className="rev-dash-view-all">
-              <button>View All Transactions <ChevronRight size={14} /></button>
+            </div>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to All Transactions')}>View All Transactions <ChevronRight size={14} /></button>
             </div>
           </div>
 
           {/* Top Partners */}
-          <div className="rev-dash-card rev-dash-partners">
-            <div className="rev-dash-card-header">
+          <div className="admin-dash-card">
+            <div className="admin-dash-card-header">
               <h3>Top Earning Partners</h3>
             </div>
-            <table className="rev-dash-table">
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '700px' }}>
               <thead>
                 <tr>
                   <th>Partner</th>
@@ -433,19 +558,19 @@ export default function RevenueDashboard({ activeTab = 'Revenue Management' }) {
                 </tr>
               </thead>
               <tbody>
-                {topPartners.map((p, i) => (
+                {dynTopPartners.map((p, i) => (
                   <tr key={i}>
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <Avatar initials={p.initials} />
-                        <span style={{ fontWeight: 600 }}>{p.name}</span>
+                      <div className="avatar-cell">
+                        <Avatar name={p.name} size={32} />
+                        <span className="avatar-cell-name">{p.name}</span>
                       </div>
                     </td>
-                    <td>{p.category}</td>
-                    <td style={{ fontWeight: 600 }}>{p.revenue}</td>
+                    <td><span className="premium-chip">{p.category}</span></td>
+                    <td><span style={{fontWeight: 600}}>{p.revenue}</span></td>
                     <td>{p.orders}</td>
                     <td>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: p.growthUp ? '#16a34a' : '#dc2626' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600, color: p.growthUp ? '#16a34a' : '#dc2626' }}>
                         {p.growthUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                         {p.growth}
                       </span>
@@ -454,19 +579,21 @@ export default function RevenueDashboard({ activeTab = 'Revenue Management' }) {
                 ))}
               </tbody>
             </table>
-            <div className="rev-dash-view-all">
-              <button>View All Partners <ChevronRight size={14} /></button>
+            </div>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to All Partners')}>View All Partners <ChevronRight size={14} /></button>
             </div>
           </div>
         </div>
 
         {/* ── Bottom Row: Category Breakdown ── */}
         <div className="rev-dash-bottom-row" style={{ gridTemplateColumns: '1fr' }}>
-          <div className="rev-dash-card rev-dash-category">
-            <div className="rev-dash-card-header">
-              <h3>Revenue by Category <span className="rev-dash-card-subtitle" style={{ fontSize: 13, color: '#94a3b8', fontWeight: 400 }}>(This Month)</span></h3>
+          <div className="admin-dash-card">
+            <div className="admin-dash-card-header">
+              <h3>Revenue by Category (This Month)</h3>
             </div>
-            <table className="rev-dash-table">
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '800px' }}>
               <thead>
                 <tr>
                   <th>Category</th>
@@ -478,27 +605,28 @@ export default function RevenueDashboard({ activeTab = 'Revenue Management' }) {
                 </tr>
               </thead>
               <tbody>
-                {categoryBreakdown.map((c, i) => (
+                {dynCategoryBreakdown.map((c, i) => (
                   <tr key={i}>
-                    <td style={{ fontWeight: 600 }}>{c.category}</td>
-                    <td style={{ fontWeight: 600 }}>{c.totalRevenue}</td>
-                    <td style={{ color: '#16a34a', fontWeight: 600 }}>{c.commission}</td>
+                    <td><span className="premium-chip premium-chip-indigo">{c.category}</span></td>
+                    <td><span style={{fontWeight: 600}}>{c.totalRevenue}</span></td>
+                    <td><span style={{color: '#16a34a', fontWeight: 600}}>{c.commission}</span></td>
                     <td>{c.partners}</td>
                     <td>{c.orders}</td>
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ flex: 1, height: 6, background: '#f1f5f9', borderRadius: 3, overflow: 'hidden', minWidth: 60 }}>
-                          <div style={{ width: c.share, height: '100%', background: '#4f46e5', borderRadius: 3 }} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ flex: 1, height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden', minWidth: '60px' }}>
+                          <div style={{ width: c.share, height: '100%', background: '#4f46e5', borderRadius: '3px' }} />
                         </div>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: '#4f46e5', minWidth: 30 }}>{c.share}</span>
+                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#4f46e5', minWidth: '30px' }}>{c.share}</span>
                       </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div className="rev-dash-view-all">
-              <button>View Full Report <ChevronRight size={14} /></button>
+            </div>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to Categories')}>View All Categories <ChevronRight size={14} /></button>
             </div>
           </div>
         </div>

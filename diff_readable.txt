@@ -1,0 +1,247 @@
+﻿diff --git a/src/pages/Users/index.jsx b/src/pages/Users/index.jsx
+index a2d02ae..cb572c3 100644
+--- a/src/pages/Users/index.jsx
++++ b/src/pages/Users/index.jsx
+@@ -25,6 +25,10 @@ import UserEditModal from './UserEditModal';
+ import UserSubTabs from "../../components/users/UserSubTabs";
+ import Select from "../../components/ui/Select";
+ import GlobalDashboardFilters from '../../components/common/GlobalDashboardFilters';
++import ExportReportModal from '../../components/common/ExportReportModal';
++import { useDashboardFilters } from '../../contexts/DashboardFilterContext';
++import { applyFilterToNumber } from '../../utils/filterEngine';
++import { Download } from 'lucide-react';
+ 
+ const statusOptions = ['All', 'Active', 'Suspended', 'Blocked', 'Deleted'];
+ 
+@@ -56,9 +60,11 @@ export default function Users() {
+     status: 'All'
+   });
+   
++  const { filters: globalFilters } = useDashboardFilters();
+   const [drawerUser, setDrawerUser] = useState(null);
+   const [editingUser, setEditingUser] = useState(null);
+   const [feedback, setFeedback] = useState('');
++  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+ 
+   useEffect(() => {
+     setFilters((current) => ({
+@@ -68,14 +74,15 @@ export default function Users() {
+   }, [route]);
+ 
+   const summary = useMemo(() => ({
+-    total: users.length,
+-    active: users.filter((user) => user.status === 'Active').length,
+-    suspended: users.filter((user) => user.status === 'Suspended').length,
+-    blocked: users.filter((user) => user.status === 'Blocked').length
+-  }), [users]);
++    total: applyFilterToNumber(users.length, globalFilters),
++    active: applyFilterToNumber(users.filter((user) => user.status === 'Active').length, globalFilters),
++    suspended: applyFilterToNumber(users.filter((user) => user.status === 'Suspended').length, globalFilters),
++    blocked: applyFilterToNumber(users.filter((user) => user.status === 'Blocked').length, globalFilters)
++  }), [users, globalFilters]);
+ 
+   const filteredUsers = useMemo(() => {
+     const query = normalize(filters.search);
++    const selectedCity = globalFilters.city !== 'All Cities' ? normalize(globalFilters.city) : '';
+ 
+     return users.filter((user) => {
+       const matchesSearch = !query || 
+@@ -83,10 +90,12 @@ export default function Users() {
+         normalize(user.email).includes(query) || 
+         normalize(user.mobile).includes(query);
+       const matchesStatus = filters.status === 'All' || user.status === filters.status;
++      
++      const matchesCity = !selectedCity || user.addresses?.some(addr => normalize(addr).includes(selectedCity));
+ 
+-      return matchesSearch && matchesStatus;
++      return matchesSearch && matchesStatus && matchesCity;
+     });
+-  }, [filters, users]);
++  }, [filters, users, globalFilters.city]);
+ 
+   const showFeedback = (message) => {
+     addToast(message, 'success');
+@@ -233,6 +242,13 @@ export default function Users() {
+                   background: 'var(--materio-surface)'
+                 }}
+               />
++              <button 
++                onClick={() => setIsExportModalOpen(true)}
++                className="btn-materio btn-materio-primary"
++                style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}
++              >
++                <Download size={16} /> Export
++              </button>
+             </div>
+           </div>
+ 
+@@ -468,7 +484,168 @@ export default function Users() {
+         )}
+       </div>
+ 
+-      <UserEditModal user={editingUser} onClose={() => setEditingUser(null)} onSave={saveEditedUser} />
++      <div style={{ padding: '16px 24px', borderTop: '1px solid var(--materio-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
++            <span style={{ fontSize: '13px', color: 'var(--materio-text-muted)' }}>
++              Showing {filteredUsers.length} of {users.length} entries
++            </span>
++            {/* Simple pagination placeholder styling */}
++            <div style={{ display: 'flex', gap: '4px' }}>
++              <button onClick={() => addToast('Pagination: Previous page loaded', 'success')} style={{ border: '1px solid var(--materio-border)', background: 'transparent', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer' }}>Prev</button>
++              <button onClick={() => addToast('Pagination: Page 1 active', 'success')} style={{ border: 'none', background: 'var(--materio-primary)', color: '#fff', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>1</button>
++              <button onClick={() => addToast('Pagination: Next page loaded', 'success')} style={{ border: '1px solid var(--materio-border)', background: 'transparent', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer' }}>Next</button>
++            </div>
++          </div>
++        </div>
++      </div>
++
++      {/* Right Drawer for Profile Details */}
++      <div className={`materio-drawer-overlay ${drawerUser ? 'open' : ''}`} onClick={() => setDrawerUser(null)}></div>
++      <div className={`materio-drawer ${drawerUser ? 'open' : ''}`}>
++        <div className="materio-drawer-header">
++          <h2>Customer Profile</h2>
++          <button className="btn-materio btn-materio-icon" onClick={() => setDrawerUser(null)}>
++            <X size={20} />
++          </button>
++        </div>
++        
++        {drawerUser && (
++          <div className="materio-drawer-content">
++            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px' }}>
++              <img src={drawerUser.avatar} alt={drawerUser.name} style={{ width: '100px', height: '100px', borderRadius: '50%', marginBottom: '12px', objectFit: 'cover' }} />
++              <h3 style={{ margin: '0 0 4px 0', fontSize: '20px' }}>{drawerUser.name}</h3>
++              <span className={`materio-badge ${drawerUser.status === 'Active' ? 'success' : drawerUser.status === 'Suspended' ? 'warning' : 'danger'}`}>
++                {drawerUser.status}
++              </span>
++            </div>
++
++            <div style={{ marginBottom: '24px' }}>
++              <h4 style={{ fontSize: '13px', color: 'var(--materio-text-muted)', textTransform: 'uppercase', marginBottom: '12px', borderBottom: '1px solid var(--materio-border)', paddingBottom: '8px' }}>Personal Details</h4>
++              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
++                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
++                  <span style={{ color: 'var(--materio-text-muted)' }}>ID</span>
++                  <strong style={{ color: 'var(--materio-text-main)' }}>{drawerUser.id}</strong>
++                </div>
++                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
++                  <span style={{ color: 'var(--materio-text-muted)' }}>Email</span>
++                  <strong style={{ color: 'var(--materio-text-main)' }}>{drawerUser.email}</strong>
++                </div>
++                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
++                  <span style={{ color: 'var(--materio-text-muted)' }}>Phone</span>
++                  <strong style={{ color: 'var(--materio-text-main)' }}>{drawerUser.mobile}</strong>
++                </div>
++                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
++                  <span style={{ color: 'var(--materio-text-muted)' }}>Address</span>
++                  <strong style={{ color: 'var(--materio-text-main)', textAlign: 'right', maxWidth: '200px' }}>{drawerUser.address || 'Not Provided'}</strong>
++                </div>
++                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
++                  <span style={{ color: 'var(--materio-text-muted)' }}>Joined</span>
++                  <strong style={{ color: 'var(--materio-text-main)' }}>{drawerUser.registrationDate}</strong>
++                </div>
++              </div>
++            </div>
++
++            <div style={{ marginBottom: '24px' }}>
++              <h4 style={{ fontSize: '13px', color: 'var(--materio-text-muted)', textTransform: 'uppercase', marginBottom: '12px', borderBottom: '1px solid var(--materio-border)', paddingBottom: '8px' }}>Activity & Wallet</h4>
++              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
++                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
++                  <span style={{ color: 'var(--materio-text-muted)' }}>Wallet Balance</span>
++                  <strong style={{ color: 'var(--materio-text-main)' }}>Γé╣{(drawerUser.wallet?.balance || 0).toFixed(2)}</strong>
++                </div>
++                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
++                  <span style={{ color: 'var(--materio-text-muted)' }}>Referral Earnings</span>
++                  <strong style={{ color: 'var(--materio-text-main)' }}>Γé╣{(drawerUser.referralEarnings || 0).toFixed(2)}</strong>
++                </div>
++                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
++                  <span style={{ color: 'var(--materio-text-muted)' }}>Total Bookings</span>
++                  <strong style={{ color: 'var(--materio-text-main)' }}>{drawerUser.bookingHistory?.length || 0}</strong>
++                </div>
++                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
++                  <span style={{ color: 'var(--materio-text-muted)' }}>Rating</span>
++                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
++                    <Star size={14} fill="#FFAB00" color="#FFAB00" />
++                    {getRating(drawerUser.id)}
++                  </div>
++                </div>
++                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
++                  <span style={{ color: 'var(--materio-text-muted)' }}>Audit Logs</span>
++                  <button 
++                    type="button" 
++                    onClick={() => {
++                      navigate(ROUTES.userAuditLogs);
++                      setDrawerUser(null);
++                      addToast(`Navigating to Audit Logs for ${drawerUser.name}`, 'success');
++                    }}
++                    style={{ background: 'transparent', border: 'none', color: 'var(--materio-primary)', fontWeight: 600, cursor: 'pointer', padding: 0 }}
++                  >
++                    View Logs ({drawerUser.auditLogsCount || 12})
++                  </button>
++                </div>
++              </div>
++            </div>
++            
++            <div style={{ marginBottom: '24px' }}>
++              <h4 style={{ fontSize: '13px', color: 'var(--materio-text-muted)', textTransform: 'uppercase', marginBottom: '12px', borderBottom: '1px solid var(--materio-border)', paddingBottom: '8px' }}>Recent Bookings</h4>
++              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
++                {drawerUser.bookingHistory && drawerUser.bookingHistory.length > 0 ? (
++                  drawerUser.bookingHistory.map(bk => (
++                    <div key={bk.id} style={{ padding: '12px', border: '1px solid var(--materio-border)', borderRadius: '6px', fontSize: '13px' }}>
++                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
++                        <strong>{bk.serviceName}</strong>
++                        <span>Γé╣{bk.amount}</span>
++                      </div>
++                      <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--materio-text-muted)' }}>
++                        <span>{bk.date}</span>
++                        <span>{bk.status}</span>
++                      </div>
++                    </div>
++                  ))
++                ) : (
++                  <span style={{ color: 'var(--materio-text-muted)', fontSize: '13px' }}>No recent bookings</span>
++                )}
++              </div>
++            </div>
++          </div>
++        )}
++
++        {drawerUser && (
++          <div className="materio-drawer-footer">
++            <button className="btn-materio btn-materio-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setEditingUser(drawerUser)}>
++              <Edit3 size={16} /> Edit Profile
++            </button>
++            {drawerUser.status !== 'Blocked' && (
++              <button 
++                className="btn-materio btn-materio-outline" 
++                style={{ flex: 1, justifyContent: 'center', borderColor: '#FF3E1D', color: '#FF3E1D' }}
++                onClick={() => updateUserStatus(drawerUser, 'Blocked')}
++              >
++                <Ban size={16} /> Block
++              </button>
++            )}
++            {drawerUser.status === 'Blocked' && (
++              <button 
++                className="btn-materio btn-materio-outline" 
++                style={{ flex: 1, justifyContent: 'center', borderColor: '#71DD37', color: '#71DD37' }}
++                onClick={() => updateUserStatus(drawerUser, 'Active')}
++              >
++                <CheckCircle2 size={16} /> Activate
++              </button>
++            )}
++          </div>
++        )}
++      </div>
++
++      <UserEditModal 
++        user={editingUser} 
++        onClose={() => setEditingUser(null)} 
++        onSave={saveEditedUser} 
++      />
++
++      <ExportReportModal 
++        isOpen={isExportModalOpen} 
++        onClose={() => setIsExportModalOpen(false)} 
++        entityName="Customers" 
++        data={filteredUsers} 
++      />
+     </AdminShell>
+   );
+ }

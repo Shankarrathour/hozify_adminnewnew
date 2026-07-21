@@ -160,54 +160,180 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
   ];
 
   const subKpis = [
-    { label:'Users Generated', value:1245, sub:'48.5% of total', unused:312, unusedPct:'25.1%', color:'#3b82f6', bg:'#eff6ff', icon:User },
-    { label:'Partners Generated', value:892, sub:'34.7% of total', unused:213, unusedPct:'23.9%', color:'#8b5cf6', bg:'#f5f3ff', icon:Briefcase },
-    { label:'Influencers Generated', value:431, sub:'16.8% of total', unused:97, unusedPct:'22.5%', color:'#f59e0b', bg:'#fffbeb', icon:Star },
+    { label:'Direct Quotes', value:1245, sub:'48.5% of total', unused:312, unusedPct:'25.1%', color:'#3b82f6', bg:'#eff6ff', icon:User },
+    { label:'Partner Quotes', value:892, sub:'34.7% of total', unused:213, unusedPct:'23.9%', color:'#8b5cf6', bg:'#f5f3ff', icon:Briefcase },
+    { label:'Corporate Quotes', value:431, sub:'16.8% of total', unused:97, unusedPct:'22.5%', color:'#f59e0b', bg:'#fffbeb', icon:Star },
   ];
+
+  const [filterTrigger, setFilterTrigger] = useState(0);
+  const periodMultiplier = period === 'Yearly' ? 12 : period === 'Weekly' ? 0.25 : period === 'Daily' ? 0.03 : 1;
+  const filterMultiplier = filterTrigger === 0 ? 1 : 1 + ((filterTrigger % 5) * 0.15);
+  const m = periodMultiplier * filterMultiplier;
+
+  const dynTopKpis = topKpis.map(k => ({ ...k, value: k.isCustom ? k.value : Math.floor(k.value * m) }));
+  const dynSubKpis = subKpis.map(k => ({ ...k, value: Math.floor(k.value * m), unused: Math.floor(k.unused * m) }));
+  
+  const dynReferralOverTime = referralOverTime.map(d => ({ ...d, total: Math.floor(d.total * m), users: Math.floor(d.users * m), partners: Math.floor(d.partners * m) }));
+  const dynGenByDist = genByDist.map(d => ({ ...d, value: Math.floor(d.value * m) }));
+  const dynUsedByDist = usedByDist.map(d => ({ ...d, value: Math.floor(d.value * m) }));
+  const dynStatusDist = statusDist.map(d => ({ ...d, value: Math.floor(d.value * m) }));
+  const dynRewardDist = rewardDist.map(d => ({ ...d, value: Math.floor(d.value * m) }));
+  const dynRewardPerformance = rewardPerformance.map(d => ({ ...d, total: Math.floor(d.total * m), used: Math.floor(d.used * m), usage: Math.floor(d.usage * m) }));
 
   return (
     <AdminShell activeTab={activeTab} headerTitle="Quotation Dashboard" searchPlaceholder="Search pages, modules...">
       <div style={{ padding:'20px 24px 48px', background:'#f8fafc', minHeight:'100vh', fontFamily:"'Inter',-apple-system,sans-serif" }}>
 
-        {/* ── HEADER ── */}
-        <div style={{ marginBottom:16 }}>
-          <h1 style={{ fontSize:22, fontWeight:800, color:'#0f172a', margin:0 }}>Quotation Dashboard</h1>
-          <p style={{ fontSize:12, color:'#94a3b8', margin:'4px 0 0' }}>High-level overview of quotation performance and ecosystem health</p>
-        </div>
+        
 
-        {/* ── FILTER BAR 1 ── */}
-        <div style={{
-          marginBottom:14,
-          display:'flex', alignItems:'center', flexWrap:'wrap', gap:12,
-        }}>
-          <FilterSelect label="City" options={['All Cities','Mumbai','Bengaluru']} />
-          <FilterSelect label="District" options={['All Districts','Andheri','Koramangala']} />
-          <FilterSelect label="Service" options={['All Services','Cleaning','Repair']} />
-          <FilterSelect label="Partner Vise" options={['All Partners','Partner A','Partner B']} />
-          
-          <div style={{ display:'flex', border:'1px solid #dde3ea', borderRadius:6, overflow:'hidden', marginTop:14 }}>
-            {['Daily','Weekly','Monthly','Yearly'].map((p, i) => (
-              <button key={p} onClick={() => setPeriod(p)} style={{
-                padding:'6px 12px', border:'none', borderLeft:i>0?'1px solid #dde3ea':'none',
-                fontSize:11.5, fontWeight:600, cursor:'pointer', transition:'all 0.15s',
-                background: period===p ? '#0f172a' : '#fff',
-                color: period===p ? '#fff' : '#64748b',
-              }}>{p}</button>
-            ))}
+        {/* ── Filter Bar (Combined Card) ── */}
+        <div className="ref-filter-bar">
+          {/* ╌ Row 1: Location + Period + Month/Year + Apply/Reset ╌ */}
+          <div className="ref-filter-row">
+            {/* Location dropdowns */}
+            <div className="ref-filter-group">
+              <label>State</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select" style={{ minWidth: '110px' }}>
+                  <option>All States</option>
+                  <option>Maharashtra</option>
+                  <option>Karnataka</option>
+                  <option>Tamil Nadu</option>
+                  <option>Delhi</option>
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            <div className="ref-filter-group">
+              <label>City</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select" style={{ minWidth: '110px' }}>
+                  <option>All Cities</option>
+                  <option>Mumbai</option>
+                  <option>Bengaluru</option>
+                  <option>Chennai</option>
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            <div className="ref-filter-group">
+              <label>District</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select" style={{ minWidth: '110px' }}>
+                  <option>All Districts</option>
+                  <option>Andheri</option>
+                  <option>Koramangala</option>
+                  <option>T. Nagar</option>
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="ref-filter-divider" />
+
+            {/* Period Toggle */}
+            <div className="ref-period-toggle" style={{ alignSelf: 'flex-end' }}>
+              {['Daily', 'Weekly', 'Monthly', 'Yearly'].map(p => (
+                <button
+                  key={p}
+                  className={`ref-period-btn${period === p ? ' active' : ''}`}
+                  onClick={() => setPeriod(p)}
+                >{p}</button>
+              ))}
+            </div>
+
+            {/* Month dropdown */}
+            <div className="ref-filter-group" style={{ minWidth: '90px' }}>
+              <label>Month</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select ref-select-sm">
+                  {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map(m => (
+                    <option key={m}>{m}</option>
+                  ))}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            {/* Year dropdown */}
+            <div className="ref-filter-group" style={{ minWidth: '90px' }}>
+              <label>Year</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select ref-select-sm">
+                  {['2026','2027','2028','2029','2030','2031','2032','2033','2034','2035'].map(y => (
+                    <option key={y}>{y}</option>
+                  ))}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            {/* Apply + Reset pushed right */}
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignSelf: 'flex-end' }}>
+              <button
+                className="ref-btn-primary"
+                onClick={() => { setFilterTrigger(prev => prev + 1); addToast('Filters applied', 'success'); }}
+              >Apply</button>
+              <button
+                className="ref-btn-secondary"
+                onClick={() => { setPeriod('Monthly'); setFilterTrigger(0); addToast('Filters reset', 'info'); }}
+              >Reset</button>
+            </div>
           </div>
 
-          <FilterSelect label="" options={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']} />
-          <FilterSelect label="" options={['2026', '2027', '2028', '2029', '2030', '2031', '2032', '2033', '2034', '2035']} />
+          {/* ╌ Row 2: Referral code filters ╌ */}
+          <div className="ref-filter-row">
+            <div className="ref-filter-group ref-filter-group-wide">
+              <label>Quotation Generated by</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select">
+                  {['All','User','Partner','Influencer'].map(o => <option key={o}>{o}</option>)}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
 
-          <div style={{ display:'flex', gap:8, marginTop:14 }}>
-            <button onClick={() => addToast('Filters applied','success')} style={{ padding:'7px 20px', borderRadius:6, border:'none', background:'#0f172a', color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer' }}>Apply</button>
-            <button onClick={() => { setPeriod('Monthly'); addToast('Filters reset','info'); }} style={{ padding:'7px 14px', borderRadius:6, border:'1px solid #dde3ea', background:'#fff', color:'#334155', fontSize:12, fontWeight:600, cursor:'pointer' }}>Reset</button>
+            <div className="ref-filter-group ref-filter-group-wide">
+              <label>Quotation used by</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select">
+                  {['All','User','Partner'].map(o => <option key={o}>{o}</option>)}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            <div className="ref-filter-divider" />
+
+            <div className="ref-filter-group ref-filter-group-wide">
+              <label>Reward Type</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select">
+                  {['All','Reward1','Reward2','Reward3','Reward4'].map(o => <option key={o}>{o}</option>)}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            <div className="ref-filter-group ref-filter-group-wide">
+              <label>Quotation Status</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select">
+                  {['All','Active','Inactive','Going to Expire'].map(o => <option key={o}>{o}</option>)}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
           </div>
+
         </div>
 
         {/* ── 8 KPI CARDS ── */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(8,1fr)', gap:8, marginBottom:14 }}>
-          {topKpis.map((k, i) => {
+          {dynTopKpis.map((k, i) => {
             const Icon = k.icon;
             return (
               <div key={i} style={{
@@ -224,7 +350,7 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
                 {!k.isCustom ? (
                   <>
                     <div style={{ fontSize:18, fontWeight:800, color:'#0f172a' }}>{fmtNum(k.value)}</div>
-                    <div style={{ fontSize:9, color: k.sub.includes('↑') ? '#16a34a' : k.sub.includes('↓') ? '#dc2626' : '#64748b', fontWeight:600 }}>{k.sub}</div>
+                    <div style={{ fontSize:9, color: k.sub.includes('↑') ? '#16a34a' : k.sub.includes('↓') ? '#dc2626' : '#64748b', fontWeight:600, color:'#0f172a' }}>{k.sub}</div>
                   </>
                 ) : (
                   <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
@@ -247,7 +373,7 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1.5fr', gap:12, marginBottom:14 }}>
           {/* Sub KPIs (Left side) */}
           <div style={{ display:'flex', gap:10 }}>
-            {subKpis.map((k,i) => {
+            {dynSubKpis.map((k,i) => {
               const Icon = k.icon;
               return (
                 <div key={i} style={{ flex:1, background:'#fff', borderRadius:10, padding:'14px', boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2', display:'flex' }}>
@@ -261,7 +387,7 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
                       </div>
                     </div>
                     <div style={{ fontSize:18, fontWeight:800, color:'#0f172a' }}>{fmtNum(k.value)}</div>
-                    <div style={{ fontSize:9, color:'#64748b', fontWeight:600 }}>{k.sub}</div>
+                    <div style={{ fontSize:9, color:'#64748b', fontWeight:600, color:'#0f172a' }}>{k.sub}</div>
                   </div>
                   
                   <div style={{ width:1, background:'#e8edf2', margin:'0 10px' }} />
@@ -271,7 +397,7 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
                       Unused<br/>Codes
                     </div>
                     <div style={{ fontSize:16, fontWeight:800, color:'#0f172a' }}>{k.unused}</div>
-                    <div style={{ fontSize:9, color:'#64748b', fontWeight:600 }}>({k.unusedPct} of total)</div>
+                    <div style={{ fontSize:9, color:'#64748b', fontWeight:600, color:'#0f172a' }}>({k.unusedPct} of total)</div>
                   </div>
                 </div>
               )
@@ -285,23 +411,23 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
               {/* Table 1 */}
               <div>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-                  <div style={{ fontSize:11, fontWeight:800, color:'#0f172a', display:'flex', alignItems:'center', gap:4 }}><User size={12} color="#22c55e" /> Top Referred Users</div>
-                  <a href="#" style={{ fontSize:9, color:'#3b82f6', textDecoration:'none', fontWeight:600 }}>View All</a>
+                  <div style={{ fontSize:11, fontWeight:800, color:'#0f172a', display:'flex', alignItems:'center', gap:4 }}><User size={12} color="#22c55e" /> Top Quoting Customers</div>
+                  <a href="#" style={{ fontSize:9, color:'#3b82f6', textDecoration:'none', fontWeight:600, color:'#0f172a' }}>View All</a>
                 </div>
-                <table style={{ width:'100%', fontSize:9.5, borderCollapse:'collapse' }}>
+                <table style={{ width:'100%', fontSize:'11px', borderCollapse:'collapse' }}>
                   <thead>
-                    <tr style={{ background:'#1e1b4b', color:'#fff' }}>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>RANK</th>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>USER NAME</th>
-                      <th style={{ textAlign:'right', padding:'6px 8px', fontWeight:700 }}>USERS REFERRED</th>
+                    <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <th style={{ textAlign:'left', padding:'8px 4px 8px 0', color:'#1e3a8a', fontWeight:700, fontSize:'11px' }}>Rank</th>
+                      <th style={{ textAlign:'left', padding:'8px 4px 8px 0', color:'#1e3a8a', fontWeight:700, fontSize:'11px' }}>Customer Name</th>
+                      <th style={{ textAlign:'right', padding:'8px 4px 8px 0', color:'#1e3a8a', fontWeight:700, fontSize:'11px' }}>Total Quotes</th>
                     </tr>
                   </thead>
                   <tbody>
                     {topPerformerUsers.map(u => (
                       <tr key={u.rank} style={{ borderBottom:'1px solid #e8edf2' }}>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.rank}</td>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.name}</td>
-                        <td style={{ padding:'6px 8px', textAlign:'right', fontWeight:700 }}>{u.referred}</td>
+                        <td style={{ padding:'8px 4px 8px 0', whiteSpace:'nowrap', fontWeight:600, color:'#0f172a' }}>{u.rank}</td>
+                        <td style={{ padding:'8px 4px 8px 0', whiteSpace:'nowrap', fontWeight:600, color:'#0f172a' }}>{u.name}</td>
+                        <td style={{ padding:'8px 4px 8px 0', whiteSpace:'nowrap', textAlign:'right', fontWeight:700 }}>{u.referred}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -311,23 +437,23 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
               {/* Table 2 */}
               <div>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-                  <div style={{ fontSize:11, fontWeight:800, color:'#0f172a', display:'flex', alignItems:'center', gap:4 }}><Briefcase size={12} color="#8b5cf6" /> Top Referred Partners</div>
-                  <a href="#" style={{ fontSize:9, color:'#3b82f6', textDecoration:'none', fontWeight:600 }}>View All</a>
+                  <div style={{ fontSize:11, fontWeight:800, color:'#0f172a', display:'flex', alignItems:'center', gap:4 }}><Briefcase size={12} color="#8b5cf6" /> Top Quoting Partners</div>
+                  <a href="#" style={{ fontSize:9, color:'#3b82f6', textDecoration:'none', fontWeight:600, color:'#0f172a' }}>View All</a>
                 </div>
-                <table style={{ width:'100%', fontSize:9.5, borderCollapse:'collapse' }}>
+                <table style={{ width:'100%', fontSize:'11px', borderCollapse:'collapse' }}>
                   <thead>
-                    <tr style={{ background:'#1e1b4b', color:'#fff' }}>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>RANK</th>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>PARTNER NAME</th>
-                      <th style={{ textAlign:'right', padding:'6px 8px', fontWeight:700 }}>PARTNERS REFERRED</th>
+                    <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <th style={{ textAlign:'left', padding:'8px 4px 8px 0', color:'#1e3a8a', fontWeight:700, fontSize:'11px' }}>Rank</th>
+                      <th style={{ textAlign:'left', padding:'8px 4px 8px 0', color:'#1e3a8a', fontWeight:700, fontSize:'11px' }}>Partner Name</th>
+                      <th style={{ textAlign:'right', padding:'8px 4px 8px 0', color:'#1e3a8a', fontWeight:700, fontSize:'11px' }}>Total Quotes</th>
                     </tr>
                   </thead>
                   <tbody>
                     {topPerformerPartners.map(u => (
                       <tr key={u.rank} style={{ borderBottom:'1px solid #e8edf2' }}>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.rank}</td>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.name}</td>
-                        <td style={{ padding:'6px 8px', textAlign:'right', fontWeight:700 }}>{u.referred}</td>
+                        <td style={{ padding:'8px 4px 8px 0', whiteSpace:'nowrap', fontWeight:600, color:'#0f172a' }}>{u.rank}</td>
+                        <td style={{ padding:'8px 4px 8px 0', whiteSpace:'nowrap', fontWeight:600, color:'#0f172a' }}>{u.name}</td>
+                        <td style={{ padding:'8px 4px 8px 0', whiteSpace:'nowrap', textAlign:'right', fontWeight:700 }}>{u.referred}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -337,23 +463,23 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
               {/* Table 3 */}
               <div>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-                  <div style={{ fontSize:11, fontWeight:800, color:'#0f172a', display:'flex', alignItems:'center', gap:4 }}><Star size={12} color="#f59e0b" /> Top Referred Influencers</div>
-                  <a href="#" style={{ fontSize:9, color:'#3b82f6', textDecoration:'none', fontWeight:600 }}>View All</a>
+                  <div style={{ fontSize:11, fontWeight:800, color:'#0f172a', display:'flex', alignItems:'center', gap:4 }}><Star size={12} color="#f59e0b" /> Top Performing Regions</div>
+                  <a href="#" style={{ fontSize:9, color:'#3b82f6', textDecoration:'none', fontWeight:600, color:'#0f172a' }}>View All</a>
                 </div>
-                <table style={{ width:'100%', fontSize:9.5, borderCollapse:'collapse' }}>
+                <table style={{ width:'100%', fontSize:'11px', borderCollapse:'collapse' }}>
                   <thead>
-                    <tr style={{ background:'#1e1b4b', color:'#fff' }}>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>RANK</th>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>INFLUENCER NAME</th>
-                      <th style={{ textAlign:'right', padding:'6px 8px', fontWeight:700 }}>TOTAL REFERRED</th>
+                    <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <th style={{ textAlign:'left', padding:'8px 4px 8px 0', color:'#1e3a8a', fontWeight:700, fontSize:'11px' }}>Rank</th>
+                      <th style={{ textAlign:'left', padding:'8px 4px 8px 0', color:'#1e3a8a', fontWeight:700, fontSize:'11px' }}>Region Name</th>
+                      <th style={{ textAlign:'right', padding:'8px 4px 8px 0', color:'#1e3a8a', fontWeight:700, fontSize:'11px' }}>Total Volume</th>
                     </tr>
                   </thead>
                   <tbody>
                     {topPerformerInfluencers.map(u => (
                       <tr key={u.rank} style={{ borderBottom:'1px solid #e8edf2' }}>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.rank}</td>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.name}</td>
-                        <td style={{ padding:'6px 8px', textAlign:'right', fontWeight:700 }}>{u.tRef}</td>
+                        <td style={{ padding:'8px 4px 8px 0', whiteSpace:'nowrap', fontWeight:600, color:'#0f172a' }}>{u.rank}</td>
+                        <td style={{ padding:'8px 4px 8px 0', whiteSpace:'nowrap', fontWeight:600, color:'#0f172a' }}>{u.name}</td>
+                        <td style={{ padding:'8px 4px 8px 0', whiteSpace:'nowrap', textAlign:'right', fontWeight:700 }}>{u.tRef}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -370,18 +496,18 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
             <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 8px' }}>Referral Codes Generated by</h2>
             <div style={{ display:'flex', alignItems:'center', gap:14 }}>
               <PieChart width={140} height={140}>
-                <Pie data={genByDist} cx={70} cy={70} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
-                  {genByDist.map((e,i) => <Cell key={i} fill={e.color} />)}
-                  <DonutCenter viewBox={{ cx:70, cy:70 }} value="2,568" label="Total Codes" />
+                <Pie data={dynGenByDist} cx={70} cy={70} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
+                  {dynGenByDist.map((e,i) => <Cell key={i} fill={e.color} />)}
+                  <DonutCenter viewBox={{ cx:70, cy:70 }} value={fmtNum(dynGenByDist.reduce((acc,curr)=>acc+curr.value,0))} label="Total Codes" />
                 </Pie>
                 <Tooltip formatter={v => fmtNum(v)} />
               </PieChart>
               <div style={{ flex:1, display:'flex', flexDirection:'column', gap:6 }}>
-                {genByDist.map((item,i) => (
+                {dynGenByDist.map((item,i) => (
                   <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:10.5 }}>
                     <div style={{ display:'flex', alignItems:'center', gap:5 }}>
                       <span style={{ width:7, height:7, borderRadius:'50%', background:item.color, flexShrink:0, display:'inline-block' }} />
-                      <span style={{ color:'#475569', fontWeight:600 }}>{item.name}</span>
+                      <span style={{ color:'#475569', fontWeight:600, color:'#0f172a' }}>{item.name}</span>
                     </div>
                     <div style={{ display:'flex', gap:4, alignItems:'center' }}>
                       <span style={{ fontWeight:800, color:'#0f172a' }}>{fmtNum(item.value)}</span>
@@ -397,18 +523,18 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
             <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 8px' }}>Referral Codes Used by</h2>
             <div style={{ display:'flex', alignItems:'center', gap:14 }}>
               <PieChart width={140} height={140}>
-                <Pie data={usedByDist} cx={70} cy={70} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
-                  {usedByDist.map((e,i) => <Cell key={i} fill={e.color} />)}
-                  <DonutCenter viewBox={{ cx:70, cy:70 }} value="8,642" label="Total Members" />
+                <Pie data={dynUsedByDist} cx={70} cy={70} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
+                  {dynUsedByDist.map((e,i) => <Cell key={i} fill={e.color} />)}
+                  <DonutCenter viewBox={{ cx:70, cy:70 }} value={fmtNum(dynUsedByDist.reduce((acc,curr)=>acc+curr.value,0))} label="Total Members" />
                 </Pie>
                 <Tooltip formatter={v => fmtNum(v)} />
               </PieChart>
               <div style={{ flex:1, display:'flex', flexDirection:'column', gap:6 }}>
-                {usedByDist.map((item,i) => (
+                {dynUsedByDist.map((item,i) => (
                   <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:10.5 }}>
                     <div style={{ display:'flex', alignItems:'center', gap:5 }}>
                       <span style={{ width:7, height:7, borderRadius:'50%', background:item.color, flexShrink:0, display:'inline-block' }} />
-                      <span style={{ color:'#475569', fontWeight:600 }}>{item.name}</span>
+                      <span style={{ color:'#475569', fontWeight:600, color:'#0f172a' }}>{item.name}</span>
                     </div>
                     <div style={{ display:'flex', gap:4, alignItems:'center' }}>
                       <span style={{ fontWeight:800, color:'#0f172a' }}>{fmtNum(item.value)}</span>
@@ -424,18 +550,18 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
             <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 8px' }}>Referral Code Status</h2>
             <div style={{ display:'flex', alignItems:'center', gap:14 }}>
               <PieChart width={140} height={140}>
-                <Pie data={statusDist} cx={70} cy={70} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
-                  {statusDist.map((e,i) => <Cell key={i} fill={e.color} />)}
-                  <DonutCenter viewBox={{ cx:70, cy:70 }} value="2,568" label="Total Codes" />
+                <Pie data={dynStatusDist} cx={70} cy={70} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
+                  {dynStatusDist.map((e,i) => <Cell key={i} fill={e.color} />)}
+                  <DonutCenter viewBox={{ cx:70, cy:70 }} value={fmtNum(dynStatusDist.reduce((acc,curr)=>acc+curr.value,0))} label="Total Codes" />
                 </Pie>
                 <Tooltip formatter={v => fmtNum(v)} />
               </PieChart>
               <div style={{ flex:1, display:'flex', flexDirection:'column', gap:6 }}>
-                {statusDist.map((item,i) => (
+                {dynStatusDist.map((item,i) => (
                   <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:10.5 }}>
                     <div style={{ display:'flex', alignItems:'center', gap:5 }}>
                       <span style={{ width:7, height:7, borderRadius:'50%', background:item.color, flexShrink:0, display:'inline-block' }} />
-                      <span style={{ color:'#475569', fontWeight:600 }}>{item.name}</span>
+                      <span style={{ color:'#475569', fontWeight:600, color:'#0f172a' }}>{item.name}</span>
                     </div>
                     <div style={{ display:'flex', gap:4, alignItems:'center' }}>
                       <span style={{ fontWeight:800, color:'#0f172a' }}>{fmtNum(item.value)}</span>
@@ -450,15 +576,15 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
           <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
               <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:0 }}>Codes Going to Expire</h2>
-              <a href="#" style={{ fontSize:10, color:'#3b82f6', textDecoration:'none', fontWeight:600 }}>View All</a>
+              <a href="#" style={{ fontSize:10, color:'#3b82f6', textDecoration:'none', fontWeight:600, color:'#0f172a' }}>View All</a>
             </div>
             <table style={{ width:'100%', fontSize:10.5 }}>
               <thead>
                 <tr>
-                  <th style={{ textAlign:'left', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Referral Code</th>
-                  <th style={{ textAlign:'left', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Expires On</th>
-                  <th style={{ textAlign:'left', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Generated By</th>
-                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Days Left</th>
+                  <th style={{ textAlign:'left', color:'#94a3b8', paddingBottom:6, fontWeight:600, color:'#0f172a' }}>Referral Code</th>
+                  <th style={{ textAlign:'left', color:'#94a3b8', paddingBottom:6, fontWeight:600, color:'#0f172a' }}>Expires On</th>
+                  <th style={{ textAlign:'left', color:'#94a3b8', paddingBottom:6, fontWeight:600, color:'#0f172a' }}>Generated By</th>
+                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600, color:'#0f172a' }}>Days Left</th>
                 </tr>
               </thead>
               <tbody>
@@ -484,12 +610,12 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
               <FilterSelect options={['Daily','Weekly','Monthly']} />
             </div>
             <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={referralOverTime} margin={{ top:4, right:4, left:-20, bottom:0 }}>
+              <LineChart data={dynReferralOverTime} margin={{ top:4, right:4, left:-20, bottom:0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="day" tick={{ fontSize:10, fill:'#94a3b8', fontWeight:600 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize:10, fill:'#94a3b8', fontWeight:600 }} axisLine={false} tickLine={false} tickFormatter={v => v>=1000?(v/1000)+'K':v} />
+                <XAxis dataKey="day" tick={{ fontSize:10, fill:'#94a3b8', fontWeight:600, color:'#0f172a' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize:10, fill:'#94a3b8', fontWeight:600, color:'#0f172a' }} axisLine={false} tickLine={false} tickFormatter={v => v>=1000?(v/1000)+'K':v} />
                 <Tooltip content={<LineTooltip />} />
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize:11, paddingTop:6, fontWeight:600 }} />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize:11, paddingTop:6, fontWeight:600, color:'#0f172a' }} />
                 <Line type="monotone" dataKey="total"  name="Total Members"  stroke="#3b82f6" strokeWidth={3} dot={false} />
                 <Line type="monotone" dataKey="users"   name="Users"   stroke="#22c55e" strokeWidth={3} dot={false} />
                 <Line type="monotone" dataKey="partners"  name="Partners"  stroke="#8b5cf6" strokeWidth={3} dot={false} />
@@ -501,18 +627,18 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
             <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 12px' }}>Top Reward Types</h2>
             <div style={{ display:'flex', alignItems:'center', gap:14 }}>
               <PieChart width={140} height={140}>
-                <Pie data={rewardDist} cx={70} cy={70} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
-                  {rewardDist.map((e,i) => <Cell key={i} fill={e.color} />)}
-                  <DonutCenter viewBox={{ cx:70, cy:70 }} value="8,642" label="Total Usage" />
+                <Pie data={dynRewardDist} cx={70} cy={70} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
+                  {dynRewardDist.map((e,i) => <Cell key={i} fill={e.color} />)}
+                  <DonutCenter viewBox={{ cx:70, cy:70 }} value={fmtNum(dynRewardDist.reduce((acc,curr)=>acc+curr.value,0))} label="Total Usage" />
                 </Pie>
                 <Tooltip formatter={v => fmtNum(v)} />
               </PieChart>
               <div style={{ flex:1, display:'flex', flexDirection:'column', gap:8 }}>
-                {rewardDist.map((item,i) => (
+                {dynRewardDist.map((item,i) => (
                   <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:10.5 }}>
                     <div style={{ display:'flex', alignItems:'center', gap:5 }}>
                       <span style={{ width:7, height:7, borderRadius:'50%', background:item.color, flexShrink:0, display:'inline-block' }} />
-                      <span style={{ color:'#475569', fontWeight:600 }}>{item.name}</span>
+                      <span style={{ color:'#475569', fontWeight:600, color:'#0f172a' }}>{item.name}</span>
                     </div>
                     <div style={{ display:'flex', gap:4, alignItems:'center' }}>
                       <span style={{ fontWeight:800, color:'#0f172a' }}>{fmtNum(item.value)}</span>
@@ -529,15 +655,15 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
             <table style={{ width:'100%', fontSize:10.5 }}>
               <thead>
                 <tr style={{ borderBottom:'1px solid #f1f5f9' }}>
-                  <th style={{ textAlign:'left', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Reward Type</th>
-                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Total Codes</th>
-                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Used Codes</th>
-                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Total Usage</th>
-                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>% Usage</th>
+                  <th style={{ textAlign:'left', color:'#94a3b8', paddingBottom:6, fontWeight:600, color:'#0f172a' }}>Reward Type</th>
+                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600, color:'#0f172a' }}>Total Codes</th>
+                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600, color:'#0f172a' }}>Used Codes</th>
+                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600, color:'#0f172a' }}>Total Usage</th>
+                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600, color:'#0f172a' }}>% Usage</th>
                 </tr>
               </thead>
               <tbody>
-                {rewardPerformance.map(r => (
+                {dynRewardPerformance.map(r => (
                   <tr key={r.type}>
                     <td style={{ padding:'8px 0', fontWeight:700, color:'#0f172a' }}>{r.type}</td>
                     <td style={{ padding:'8px 0', textAlign:'right', fontWeight:600, color:'#475569' }}>{r.total}</td>
@@ -609,11 +735,11 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
             </tbody>
           </table>
           <div style={{ display:'flex', justifyContent:'flex-end', marginTop:12, gap:6, alignItems:'center' }}>
-            <span style={{ fontSize:10, color:'#64748b', fontWeight:600 }}>Page 1 of 257</span>
+            <span style={{ fontSize:10, color:'#64748b', fontWeight:600, color:'#0f172a' }}>Page 1 of 257</span>
             <button style={{ border:'1px solid #dde3ea', background:'#fff', padding:'4px 8px', borderRadius:4, cursor:'pointer' }}>{'<'}</button>
-            <button style={{ border:'none', background:'#2563eb', color:'#fff', padding:'4px 10px', borderRadius:4, cursor:'pointer', fontWeight:600 }}>1</button>
-            <button style={{ border:'none', background:'transparent', color:'#475569', padding:'4px 10px', borderRadius:4, cursor:'pointer', fontWeight:600 }}>2</button>
-            <button style={{ border:'none', background:'transparent', color:'#475569', padding:'4px 10px', borderRadius:4, cursor:'pointer', fontWeight:600 }}>3</button>
+            <button style={{ border:'none', background:'#2563eb', color:'#fff', padding:'4px 10px', borderRadius:4, cursor:'pointer', fontWeight:600, color:'#0f172a' }}>1</button>
+            <button style={{ border:'none', background:'transparent', color:'#475569', padding:'4px 10px', borderRadius:4, cursor:'pointer', fontWeight:600, color:'#0f172a' }}>2</button>
+            <button style={{ border:'none', background:'transparent', color:'#475569', padding:'4px 10px', borderRadius:4, cursor:'pointer', fontWeight:600, color:'#0f172a' }}>3</button>
             <button style={{ border:'1px solid #dde3ea', background:'#fff', padding:'4px 8px', borderRadius:4, cursor:'pointer' }}>{'>'}</button>
           </div>
         </div>

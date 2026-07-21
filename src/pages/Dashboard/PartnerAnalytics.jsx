@@ -224,11 +224,7 @@ export default function PartnerAnalytics({ activeTab = 'Dashboard' }) {
     <AdminShell activeTab={activeTab} headerTitle="Partner Dashboard" searchPlaceholder="Search pages, modules...">
       <div style={{ padding:'20px 24px 48px', background:'#f8fafc', minHeight:'100vh', fontFamily:"'Inter',-apple-system,sans-serif" }}>
 
-        {/* ── PAGE HEADER ── */}
-        <div style={{ marginBottom:18 }}>
-          <h1 style={{ fontSize:22, fontWeight:800, color:'#0f172a', margin:0 }}>Partner Dashboard</h1>
-          <p style={{ fontSize:12, color:'#94a3b8', margin:'4px 0 0' }}>Comprehensive partner analytics and performance metrics</p>
-        </div>
+        
 
         {/* ── FILTER BAR ── */}
         <div style={{

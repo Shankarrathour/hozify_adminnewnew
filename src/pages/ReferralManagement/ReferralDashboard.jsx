@@ -1,97 +1,99 @@
 import React, { useState } from 'react';
 import {
   Link, CheckCircle, XCircle, Clock, Users, User, Briefcase, Star,
-  Download, ChevronDown, Eye, RefreshCcw
+  Eye, ChevronDown, RefreshCw, Download, ChevronRight, ChevronLeft
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
 import { useToast } from '../../components/common/ToastNotification';
 import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 
-// ─── MOCK DATA ────────────────────────────────────────────────────────────────
+/* ─────────────────── Mock Data ─────────────────── */
 
 const referralOverTime = [
-  { day:'01 May', total:1200, users:800, partners:400 },
-  { day:'05 May', total:1500, users:1000, partners:500 },
-  { day:'10 May', total:2100, users:1400, partners:700 },
-  { day:'15 May', total:2400, users:1600, partners:800 },
-  { day:'20 May', total:2800, users:1900, partners:900 },
-  { day:'25 May', total:3200, users:2100, partners:1100 },
-  { day:'31 May', total:3600, users:2500, partners:1100 },
+  { day: '01 May', total: 1200, users: 800, partners: 400 },
+  { day: '05 May', total: 1500, users: 1000, partners: 500 },
+  { day: '10 May', total: 2100, users: 1400, partners: 700 },
+  { day: '15 May', total: 2400, users: 1600, partners: 800 },
+  { day: '20 May', total: 2800, users: 1900, partners: 900 },
+  { day: '25 May', total: 3200, users: 2100, partners: 1100 },
+  { day: '31 May', total: 3600, users: 2500, partners: 1100 },
 ];
 
 const genByDist = [
-  { name:'Users',        value:1245, color:'#22c55e', pct:'48.5%' },
-  { name:'Partners',     value:892,  color:'#3b82f6', pct:'34.7%' },
-  { name:'Influencers',  value:431,  color:'#8b5cf6', pct:'16.8%' },
+  { name: 'Users',       value: 1245, color: '#22c55e', pct: '48.5%' },
+  { name: 'Partners',    value: 892,  color: '#3b82f6', pct: '34.7%' },
+  { name: 'Influencers', value: 431,  color: '#8b5cf6', pct: '16.8%' },
 ];
 
 const usedByDist = [
-  { name:'Users',    value:6125, color:'#3b82f6', pct:'70.8%' },
-  { name:'Partners', value:2517, color:'#22c55e', pct:'29.1%' },
+  { name: 'Users',    value: 6125, color: '#3b82f6', pct: '70.8%' },
+  { name: 'Partners', value: 2517, color: '#22c55e', pct: '29.1%' },
 ];
 
 const statusDist = [
-  { name:'Active',           value:1842, color:'#22c55e', pct:'71.7%' },
-  { name:'Inactive',         value:562,  color:'#ef4444', pct:'21.9%' },
-  { name:'Going to Expire',  value:164,  color:'#f59e0b', pct:'6.4%'  },
+  { name: 'Active',          value: 1842, color: '#22c55e', pct: '71.7%' },
+  { name: 'Inactive',        value: 562,  color: '#ef4444', pct: '21.9%' },
+  { name: 'Going to Expire', value: 164,  color: '#f59e0b', pct: '6.4%'  },
 ];
 
 const rewardDist = [
-  { name:'Reward1', value:4125, color:'#3b82f6', pct:'47.7%' },
-  { name:'Reward2', value:2653, color:'#22c55e', pct:'30.7%' },
-  { name:'Reward3', value:1256, color:'#f59e0b', pct:'14.5%' },
-  { name:'Reward4', value:608,  color:'#8b5cf6', pct:'7.0%'  },
+  { name: 'Reward1', value: 4125, color: '#3b82f6', pct: '47.7%' },
+  { name: 'Reward2', value: 2653, color: '#22c55e', pct: '30.7%' },
+  { name: 'Reward3', value: 1256, color: '#8b5cf6', pct: '14.5%' },
+  { name: 'Reward4', value: 608,  color: '#f59e0b', pct: '7.0%'  },
 ];
 
 const expiringCodes = [
-  { code:'HOZ98462', expires:'05 Jun 2026', generatedBy:'User',        daysLeft:3 },
-  { code:'HOZ75663', expires:'06 Jun 2026', generatedBy:'Partner',     daysLeft:4 },
-  { code:'HOZ14487', expires:'07 Jun 2026', generatedBy:'Influencer',  daysLeft:5 },
-  { code:'HOZ16219', expires:'08 Jun 2026', generatedBy:'User',        daysLeft:6 },
-  { code:'HOZ18351', expires:'09 Jun 2026', generatedBy:'Partner',     daysLeft:7 },
+  { code: 'HOZ98462', expires: '05 Jun 2026', generatedBy: 'User',       daysLeft: 3, danger: true },
+  { code: 'HOZ75663', expires: '06 Jun 2026', generatedBy: 'Partner',    daysLeft: 4, danger: true },
+  { code: 'HOZ14487', expires: '07 Jun 2026', generatedBy: 'Influencer', daysLeft: 5, danger: false },
+  { code: 'HOZ16219', expires: '08 Jun 2026', generatedBy: 'User',       daysLeft: 6, danger: false },
+  { code: 'HOZ18351', expires: '09 Jun 2026', generatedBy: 'Partner',    daysLeft: 7, danger: false },
 ];
 
 const topPerformerUsers = [
-  { rank:1, name:'Ramesh Kumar', referred:142 },
-  { rank:2, name:'Suresh Babu', referred:98 },
-  { rank:3, name:'Priya Sharma', referred:75 },
-  { rank:4, name:'Anil Kumar', referred:64 },
-  { rank:5, name:'Kavitha Reddy', referred:52 },
+  { rank: 1, name: 'Ramesh Kumar',  referred: 142 },
+  { rank: 2, name: 'Suresh Babu',   referred: 98  },
+  { rank: 3, name: 'Priya Sharma',  referred: 75  },
+  { rank: 4, name: 'Anil Kumar',    referred: 64  },
+  { rank: 5, name: 'Kavitha Reddy', referred: 52  },
 ];
+
 const topPerformerPartners = [
-  { rank:1, name:'Tech Revive Solutions', referred:68 },
-  { rank:2, name:'QuickFix Services', referred:47 },
-  { rank:3, name:'Home Care Pro', referred:39 },
-  { rank:4, name:'Service Hub India', referred:31 },
-  { rank:5, name:'Bright Services', referred:27 },
+  { rank: 1, name: 'Tech Revive Solutions', referred: 68 },
+  { rank: 2, name: 'QuickFix Services',     referred: 47 },
+  { rank: 3, name: 'Home Care Pro',         referred: 39 },
+  { rank: 4, name: 'Service Hub India',     referred: 31 },
+  { rank: 5, name: 'Bright Services',       referred: 27 },
 ];
+
 const topPerformerInfluencers = [
-  { rank:1, name:'Tech Talk India', uRef:218, pRef:108, tRef:326 },
-  { rank:2, name:'Home Service Guide', uRef:164, pRef:77, tRef:241 },
-  { rank:3, name:'Smart Life Channel', uRef:131, pRef:58, tRef:189 },
-  { rank:4, name:'Fix It With Us', uRef:104, pRef:49, tRef:153 },
-  { rank:5, name:'Daily Deals', uRef:86, pRef:41, tRef:127 },
+  { rank: 1, name: 'Tech Talk India',       uRef: 218, pRef: 108, tRef: 326 },
+  { rank: 2, name: 'Home Service Guide',    uRef: 164, pRef: 77,  tRef: 241 },
+  { rank: 3, name: 'Smart Life Channel',    uRef: 131, pRef: 58,  tRef: 189 },
+  { rank: 4, name: 'Fix It With Us',        uRef: 104, pRef: 49,  tRef: 153 },
+  { rank: 5, name: 'Daily Deals',           uRef: 86,  pRef: 41,  tRef: 127 },
 ];
 
 const rewardPerformance = [
-  { type:'Reward1', total:856, used:732, usage:4125, pct:47.7, color:'#3b82f6' },
-  { type:'Reward2', total:642, used:521, usage:2653, pct:30.7, color:'#22c55e' },
-  { type:'Reward3', total:412, used:298, usage:1256, pct:14.5, color:'#f59e0b' },
-  { type:'Reward4', total:218, used:144, usage:608,  pct:7.0,  color:'#8b5cf6' },
+  { type: 'Reward1', total: 856, used: 732, usage: 4125, pct: 47.7, color: '#3b82f6' },
+  { type: 'Reward2', total: 642, used: 521, usage: 2653, pct: 30.7, color: '#22c55e' },
+  { type: 'Reward3', total: 412, used: 298, usage: 1256, pct: 14.5, color: '#8b5cf6' },
+  { type: 'Reward4', total: 218, used: 144, usage: 608,  pct: 7.0,  color: '#f59e0b' },
 ];
 
 const codesPerformance = [
-  { code:'HOZ98462', genBy:'User', name:'Ramesh Kumar', type:'User', status:'Active', users:18, partners:7, total:25, reward:'Reward1', earned:'₹250.00', expires:'05 Jun 2026', created:'05 May 2026' },
-  { code:'HOZ75663', genBy:'Partner', name:'Suresh Electricals', type:'Partner', status:'Active', users:32, partners:13, total:45, reward:'Reward2', earned:'₹450.00', expires:'06 Jun 2026', created:'06 May 2026' },
-  { code:'HOZ14487', genBy:'Influencer', name:'Tech Review Hub', type:'Influencer', status:'Going to Expire', users:60, partners:18, total:78, reward:'Reward1', earned:'₹780.00', expires:'07 Jun 2026', created:'07 May 2026' },
-  { code:'HOZ16219', genBy:'User', name:'Priya Sharma', type:'User', status:'Inactive', users:9, partners:1, total:10, reward:'Reward3', earned:'₹100.00', expires:'08 Jun 2026', created:'08 May 2026' },
-  { code:'HOZ18351', genBy:'Partner', name:'QuickFix Services', type:'Partner', status:'Active', users:24, partners:12, total:36, reward:'Reward4', earned:'₹360.00', expires:'09 Jun 2026', created:'09 May 2026' },
+  { code: 'HOZ98462', genBy: 'User',       name: 'Ramesh Kumar',       type: 'User',       status: 'Active',          users: 18, partners: 7,  total: 25, reward: 'Reward1', earned: '₹250.00', expires: '05 Jun 2026', created: '05 May 2026' },
+  { code: 'HOZ75663', genBy: 'Partner',    name: 'Suresh Electricals', type: 'Partner',    status: 'Active',          users: 32, partners: 13, total: 45, reward: 'Reward2', earned: '₹450.00', expires: '06 Jun 2026', created: '06 May 2026' },
+  { code: 'HOZ14487', genBy: 'Influencer', name: 'Tech Review Hub',    type: 'Influencer', status: 'Going to Expire', users: 60, partners: 18, total: 78, reward: 'Reward1', earned: '₹780.00', expires: '07 Jun 2026', created: '07 May 2026' },
+  { code: 'HOZ16219', genBy: 'User',       name: 'Priya Sharma',       type: 'User',       status: 'Inactive',        users: 9,  partners: 1,  total: 10, reward: 'Reward3', earned: '₹100.00', expires: '08 Jun 2026', created: '08 May 2026' },
+  { code: 'HOZ18351', genBy: 'Partner',    name: 'QuickFix Services',  type: 'Partner',    status: 'Active',          users: 24, partners: 12, total: 36, reward: 'Reward4', earned: '₹360.00', expires: '09 Jun 2026', created: '09 May 2026' },
 ];
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
+/* ─────────────────── Helpers ─────────────────── */
 
 function fmtNum(n) {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
@@ -99,152 +101,330 @@ function fmtNum(n) {
   return String(n);
 }
 
-function DonutCenter({ viewBox, value, label }) {
+function StatusBadge({ status }) {
+  const map = {
+    'Active':          { bg: '#f0fdf4', color: '#16a34a' },
+    'Inactive':        { bg: '#fff1f2', color: '#dc2626' },
+    'Going to Expire': { bg: '#fffbeb', color: '#d97706' },
+  };
+  const s = map[status] || { bg: '#f1f5f9', color: '#64748b' };
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center',
+      padding: '2px 8px', borderRadius: 20,
+      fontSize: 10.5, fontWeight: 700,
+      background: s.bg, color: s.color,
+    }}>{status}</span>
+  );
+}
+
+
+function LineTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{ background: '#1e293b', borderRadius: 10, padding: '10px 14px', fontSize: 11 }}>
+      <div style={{ color: '#94a3b8', fontWeight: 700, marginBottom: 6 }}>{label}</div>
+      {payload.map(p => (
+        <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: p.color, display: 'inline-block' }} />
+          <span style={{ color: '#cbd5e1' }}>{p.name}:</span>
+          <strong style={{ color: '#fff' }}>{fmtNum(p.value)}</strong>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DonutCenterLabel({ viewBox, value, label }) {
   const { cx, cy } = viewBox;
   return (
     <g>
-      <text x={cx} y={cy - 7} textAnchor="middle" fill="#0f172a" fontSize={15} fontWeight={800}>{value}</text>
+      <text x={cx} y={cy - 6} textAnchor="middle" fill="#0f172a" fontSize={14} fontWeight={800}>{value}</text>
       <text x={cx} y={cy + 9}  textAnchor="middle" fill="#94a3b8" fontSize={8}  fontWeight={600}>{label}</text>
     </g>
   );
 }
 
-const LineTooltip = ({ active, payload, label }) => {
-  if (!active || !payload?.length) return null;
+function DonutCard({ title, data, centerValue, centerLabel }) {
   return (
-    <div style={{ background:'#1e293b', borderRadius:10, padding:'10px 14px', fontSize:11 }}>
-      <div style={{ color:'#94a3b8', fontWeight:700, marginBottom:6 }}>{label}</div>
-      {payload.map(p => (
-        <div key={p.name} style={{ display:'flex', alignItems:'center', gap:6, marginBottom:3 }}>
-          <span style={{ width:7, height:7, borderRadius:'50%', background:p.color, display:'inline-block' }} />
-          <span style={{ color:'#cbd5e1' }}>{p.name}:</span>
-          <strong style={{ color:'#fff' }}>{fmtNum(p.value)}</strong>
+    <div className="ref-card ref-donut-card">
+      <div className="ref-card-header">
+        <h3 className="ref-card-title">{title}</h3>
+      </div>
+      <div className="ref-donut-body">
+        <PieChart width={130} height={130}>
+          <Pie
+            data={data} cx={65} cy={65}
+            innerRadius={38} outerRadius={60}
+            paddingAngle={2} dataKey="value"
+            startAngle={90} endAngle={-270}
+          >
+            {data.map((e, i) => <Cell key={i} fill={e.color} />)}
+            <DonutCenterLabel viewBox={{ cx: 65, cy: 65 }} value={centerValue} label={centerLabel} />
+          </Pie>
+          <Tooltip formatter={v => fmtNum(v)} />
+        </PieChart>
+        <div className="ref-donut-legend">
+          {data.map((item, i) => (
+            <div key={i} className="ref-donut-legend-row">
+              <span className="ref-donut-dot" style={{ background: item.color }} />
+              <span className="ref-donut-name">{item.name}</span>
+              <span className="ref-donut-val">{fmtNum(item.value)}</span>
+              <span className="ref-donut-pct">({item.pct})</span>
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
-  );
-};
-
-function FilterSelect({ label, options }) {
-  return (
-    <div style={{ display:'flex', flexDirection:'column', gap:3, flex:1, minWidth:110 }}>
-      {label && <label style={{ fontSize:10, fontWeight:600, color:'#0f172a', letterSpacing:0.3 }}>{label}</label>}
-      <div style={{ position:'relative' }}>
-        <select style={{
-          appearance:'none', background:'#fff', border:'1px solid #dde3ea',
-          borderRadius:6, padding:'6px 26px 6px 10px', fontSize:11.5,
-          fontWeight:500, color:'#334155', cursor:'pointer', outline:'none', width:'100%',
-        }}>
-          {options.map(o => <option key={o}>{o}</option>)}
-        </select>
-        <ChevronDown size={11} style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', color:'#94a3b8', pointerEvents:'none' }} />
       </div>
     </div>
   );
 }
 
-// ─── MAIN ────────────────────────────────────────────────────────────────────
+/* ─────────────────── Main Component ─────────────────── */
+
 export default function ReferralDashboard({ activeTab = 'Referral Dashboard' }) {
   const { addToast } = useToast();
-  const [period, setPeriod] = useState('Monthly');
+  const [period, setPeriod]     = useState('Monthly');
+  const [chartFreq, setChartFreq] = useState('Daily');
+  const [viewAllModal, setViewAllModal] = useState(null);
+  const [filterTrigger, setFilterTrigger] = useState(0);
 
-  const topKpis = [
-    { label:'Total Referral Codes Generated', value:2568, sub:'↑ 18.6% vs Apr 2026', color:'#8b5cf6', bg:'#f5f3ff', icon:Link },
-    { label:'Active Referral Codes', value:1842, sub:'71.7% of total ↑ 12.5%', color:'#22c55e', bg:'#f0fdf4', icon:CheckCircle },
-    { label:'Inactive Referral Codes', value:562, sub:'21.9% of total ↓ 5.8%', color:'#ef4444', bg:'#fff1f2', icon:XCircle },
-    { label:'Going to Expire', value:164, sub:'6.4% of total', color:'#f59e0b', bg:'#fffbeb', icon:Clock },
-    { label:'Total Members Referred', value:8642, sub:'↑ 22.4% vs Apr 2026', color:'#3b82f6', bg:'#eff6ff', icon:Users },
-    { label:'Users Referred', value:6125, sub:'70.8% of total', color:'#22c55e', bg:'#f0fdf4', icon:User },
-    { label:'Partners Referred', value:2517, sub:'29.1% of total', color:'#8b5cf6', bg:'#f5f3ff', icon:Briefcase },
-    { label:'Influencers Referred', value:0, isCustom:true, color:'#f59e0b', bg:'#fffbeb', icon:Star },
+  const m = filterTrigger === 0 ? 1 : 1 + ((filterTrigger % 5) * 0.15); // cycle modifiers
+
+  const dynTopKpis = [
+    { label: 'Total Referral Codes Generated', value: Math.floor(2568 * m), sub: '↑ 18.6% vs Apr 2026', trend: 'up', icon: Link,        iconColor: '#8b5cf6', iconBg: '#f5f3ff' },
+    { label: 'Active Referral Codes',           value: Math.floor(1842 * m), sub: '71.7% of total ↑ 12.5%', trend: 'up', icon: CheckCircle, iconColor: '#22c55e', iconBg: '#f0fdf4' },
+    { label: 'Inactive Referral Codes',         value: Math.floor(562 * m),  sub: '21.9% of total ↓ 5.8%',  trend: 'down', icon: XCircle,   iconColor: '#ef4444', iconBg: '#fff1f2' },
+    { label: 'Going to Expire',                 value: Math.floor(164 * m),  sub: '6.4% of total',           trend: 'neutral', icon: Clock,  iconColor: '#f59e0b', iconBg: '#fffbeb' },
+    { label: 'Total Members Referred',          value: Math.floor(8642 * m), sub: '↑ 22.4% vs Apr 2026',    trend: 'up', icon: Users,       iconColor: '#3b82f6', iconBg: '#eff6ff' },
+    { label: 'Users Referred',                  value: Math.floor(6125 * m), sub: '70.8% of total',          trend: 'neutral', icon: User,  iconColor: '#22c55e', iconBg: '#f0fdf4' },
+    { label: 'Partners Referred',               value: Math.floor(2517 * m), sub: '29.1% of total',          trend: 'neutral', icon: Briefcase, iconColor: '#8b5cf6', iconBg: '#f5f3ff' },
+    { label: 'Influencers Referred', isCustom: true, icon: Star, iconColor: '#f59e0b', iconBg: '#fffbeb' },
   ];
 
-  const subKpis = [
-    { label:'Users Generated', value:1245, sub:'48.5% of total', unused:312, unusedPct:'25.1%', color:'#3b82f6', bg:'#eff6ff', icon:User },
-    { label:'Partners Generated', value:892, sub:'34.7% of total', unused:213, unusedPct:'23.9%', color:'#8b5cf6', bg:'#f5f3ff', icon:Briefcase },
-    { label:'Influencers Generated', value:431, sub:'16.8% of total', unused:97, unusedPct:'22.5%', color:'#f59e0b', bg:'#fffbeb', icon:Star },
+  const dynSubKpis = [
+    { label: 'Users Generated',      value: Math.floor(1245 * m), sub: '48.5% of total', unused: Math.floor(312 * m), unusedPct: '25.1%', icon: User,      iconColor: '#3b82f6', iconBg: '#eff6ff' },
+    { label: 'Partners Generated',   value: Math.floor(892 * m),  sub: '34.7% of total', unused: Math.floor(213 * m), unusedPct: '23.9%', icon: Briefcase, iconColor: '#8b5cf6', iconBg: '#f5f3ff' },
+    { label: 'Influencers Generated', value: Math.floor(431 * m), sub: '16.8% of total', unused: Math.floor(97 * m),  unusedPct: '22.5%', icon: Star,      iconColor: '#f59e0b', iconBg: '#fffbeb' },
   ];
+
+  const dynGenByDist = genByDist.map(k => ({ ...k, value: Math.floor(k.value * m) }));
+  const dynUsedByDist = usedByDist.map(k => ({ ...k, value: Math.floor(k.value * m) }));
+  const dynStatusDist = statusDist.map(k => ({ ...k, value: Math.floor(k.value * m) }));
+  const dynRewardDist = rewardDist.map(k => ({ ...k, value: Math.floor(k.value * m) }));
+  const dynRewardPerf = rewardPerformance.map(r => ({ ...r, total: Math.floor(r.total * m), used: Math.floor(r.used * m), usage: Math.floor(r.usage * m) }));
+  const dynCodesPerf = codesPerformance.map(c => ({
+    ...c,
+    users: Math.floor(c.users * m),
+    partners: Math.floor(c.partners * m),
+    total: Math.floor(c.total * m),
+    earned: '₹' + (parseFloat(c.earned.replace('₹', '')) * m).toFixed(2)
+  }));
+  
+  const dynTopUsers = topPerformerUsers.map(u => ({ ...u, referred: Math.floor(u.referred * m) }));
+  const dynTopPartners = topPerformerPartners.map(u => ({ ...u, referred: Math.floor(u.referred * m) }));
+  const dynTopInfluencers = topPerformerInfluencers.map(u => ({ ...u, uRef: Math.floor(u.uRef * m), pRef: Math.floor(u.pRef * m), tRef: Math.floor(u.tRef * m) }));
+
+  const chartDataWeekly = [
+    { day: 'Week 1', total: 8400, users: 5600, partners: 2800 },
+    { day: 'Week 2', total: 10500, users: 7000, partners: 3500 },
+    { day: 'Week 3', total: 14700, users: 9800, partners: 4900 },
+    { day: 'Week 4', total: 16800, users: 11200, partners: 5600 },
+  ];
+  const chartDataMonthly = [
+    { day: 'Jan', total: 40000, users: 30000, partners: 10000 },
+    { day: 'Feb', total: 45000, users: 32000, partners: 13000 },
+    { day: 'Mar', total: 52000, users: 38000, partners: 14000 },
+    { day: 'Apr', total: 61000, users: 45000, partners: 16000 },
+    { day: 'May', total: 86420, users: 61250, partners: 25170 },
+  ];
+  
+  const dynChartData = (chartFreq === 'Weekly' ? chartDataWeekly : chartFreq === 'Monthly' ? chartDataMonthly : referralOverTime).map(d => ({
+    ...d,
+    total: Math.floor(d.total * m),
+    users: Math.floor(d.users * m),
+    partners: Math.floor(d.partners * m)
+  }));
+
+
 
   return (
     <AdminShell activeTab={activeTab} headerTitle="Referral Dashboard" searchPlaceholder="Search pages, modules...">
-      <div style={{ padding:'20px 24px 48px', background:'#f8fafc', minHeight:'100vh', fontFamily:"'Inter',-apple-system,sans-serif" }}>
+      <div className="ref-dash-root">
 
-        {/* ── HEADER ── */}
-        <div style={{ marginBottom:16 }}>
-          <h1 style={{ fontSize:22, fontWeight:800, color:'#0f172a', margin:0 }}>Referral Dashboard</h1>
-          <p style={{ fontSize:12, color:'#94a3b8', margin:'4px 0 0' }}>High-level overview of referral performance and ecosystem health</p>
-        </div>
+        {/* ── Filter Bar (Combined Card) ── */}
+        <div className="ref-filter-bar">
 
-        {/* ── FILTER BAR 1 ── */}
-        <div style={{
-          marginBottom:14,
-          display:'flex', alignItems:'center', flexWrap:'wrap', gap:12,
-        }}>
-          <FilterSelect label="State" options={['All States','Maharashtra','Karnataka']} />
-          <FilterSelect label="City" options={['All Cities','Mumbai','Bengaluru']} />
-          <FilterSelect label="District" options={['All Districts','Andheri','Koramangala']} />
-          
-          <div style={{ display:'flex', border:'1px solid #dde3ea', borderRadius:6, overflow:'hidden', marginTop:14 }}>
-            {['Daily','Weekly','Monthly','Yearly'].map((p, i) => (
-              <button key={p} onClick={() => setPeriod(p)} style={{
-                padding:'6px 12px', border:'none', borderLeft:i>0?'1px solid #dde3ea':'none',
-                fontSize:11.5, fontWeight:600, cursor:'pointer', transition:'all 0.15s',
-                background: period===p ? '#0f172a' : '#fff',
-                color: period===p ? '#fff' : '#64748b',
-              }}>{p}</button>
-            ))}
+          {/* ╌ Row 1: Location + Period + Month/Year + Apply/Reset ╌ */}
+          <div className="ref-filter-row">
+            {/* Location dropdowns */}
+            <div className="ref-filter-group">
+              <label>State</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select" style={{ minWidth: '110px' }}>
+                  <option>All States</option>
+                  <option>Maharashtra</option>
+                  <option>Karnataka</option>
+                  <option>Tamil Nadu</option>
+                  <option>Delhi</option>
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            <div className="ref-filter-group">
+              <label>City</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select" style={{ minWidth: '110px' }}>
+                  <option>All Cities</option>
+                  <option>Mumbai</option>
+                  <option>Bengaluru</option>
+                  <option>Chennai</option>
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            <div className="ref-filter-group">
+              <label>District</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select" style={{ minWidth: '110px' }}>
+                  <option>All Districts</option>
+                  <option>Andheri</option>
+                  <option>Koramangala</option>
+                  <option>T. Nagar</option>
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="ref-filter-divider" />
+
+            {/* Period Toggle */}
+            <div className="ref-period-toggle" style={{ alignSelf: 'flex-end' }}>
+              {['Daily', 'Weekly', 'Monthly', 'Yearly'].map(p => (
+                <button
+                  key={p}
+                  className={`ref-period-btn${period === p ? ' active' : ''}`}
+                  onClick={() => setPeriod(p)}
+                >{p}</button>
+              ))}
+            </div>
+
+            {/* Month dropdown */}
+            <div className="ref-filter-group" style={{ minWidth: '90px' }}>
+              <label>Month</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select ref-select-sm">
+                  {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map(m => (
+                    <option key={m}>{m}</option>
+                  ))}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            {/* Year dropdown */}
+            <div className="ref-filter-group" style={{ minWidth: '90px' }}>
+              <label>Year</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select ref-select-sm">
+                  {['2026','2027','2028','2029','2030','2031','2032','2033','2034','2035'].map(y => (
+                    <option key={y}>{y}</option>
+                  ))}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            {/* Apply + Reset pushed right */}
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignSelf: 'flex-end' }}>
+              <button
+                className="ref-btn-primary"
+                onClick={() => { setFilterTrigger(prev => prev + 1); addToast('Filters applied', 'success'); }}
+              >Apply</button>
+              <button
+                className="ref-btn-secondary"
+                onClick={() => { setPeriod('Monthly'); setFilterTrigger(0); addToast('Filters reset', 'info'); }}
+              >Reset</button>
+            </div>
           </div>
 
-          <FilterSelect label="" options={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']} />
-          <FilterSelect label="" options={['2026', '2027', '2028', '2029', '2030', '2031', '2032', '2033', '2034', '2035']} />
+          {/* ╌ Row 2: Referral code filters ╌ */}
+          <div className="ref-filter-row">
+            <div className="ref-filter-group ref-filter-group-wide">
+              <label>Referral Code Generated by</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select">
+                  {['All','User','Partner','Influencer'].map(o => <option key={o}>{o}</option>)}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
 
-          <div style={{ display:'flex', gap:8, marginTop:14 }}>
-            <button onClick={() => addToast('Filters applied','success')} style={{ padding:'7px 20px', borderRadius:6, border:'none', background:'#0f172a', color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer' }}>Apply</button>
-            <button onClick={() => { setPeriod('Monthly'); addToast('Filters reset','info'); }} style={{ padding:'7px 14px', borderRadius:6, border:'1px solid #dde3ea', background:'#fff', color:'#334155', fontSize:12, fontWeight:600, cursor:'pointer' }}>Reset</button>
+            <div className="ref-filter-group ref-filter-group-wide">
+              <label>Referral Code used by</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select">
+                  {['All','User','Partner'].map(o => <option key={o}>{o}</option>)}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            <div className="ref-filter-divider" />
+
+            <div className="ref-filter-group ref-filter-group-wide">
+              <label>Reward Type</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select">
+                  {['All','Reward1','Reward2','Reward3','Reward4'].map(o => <option key={o}>{o}</option>)}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            <div className="ref-filter-group ref-filter-group-wide">
+              <label>Referral code Status</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select">
+                  {['All','Active','Inactive','Going to Expire'].map(o => <option key={o}>{o}</option>)}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
           </div>
+
         </div>
 
-        {/* ── FILTER BAR 2 ── */}
-        <div style={{
-          marginBottom:14,
-          display:'flex', alignItems:'center', flexWrap:'wrap', gap:12,
-        }}>
-          <FilterSelect label="Referral Code Generated by" options={['All','User','Partner','Influencer']} />
-          <FilterSelect label="Referral Code used by" options={['All','User','Partner']} />
-          <FilterSelect label="Reward Type" options={['All','Reward1','Reward2','Reward3','Reward4']} />
-          <FilterSelect label="Referral code Status" options={['All','Active','Inactive','Going to Expire']} />
-        </div>
-
-        {/* ── 8 KPI CARDS ── */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(8,1fr)', gap:8, marginBottom:14 }}>
-          {topKpis.map((k, i) => {
+        {/* ── 8 KPI Cards ── */}
+        <div className="ref-kpi-grid">
+          {dynTopKpis.map((k, i) => {
             const Icon = k.icon;
             return (
-              <div key={i} style={{
-                background:'#fff', borderRadius:10, padding:'12px',
-                boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2',
-                display:'flex', flexDirection:'column', gap:8
-              }}>
-                <div style={{ display:'flex', alignItems:'center', gap: 6 }}>
-                  <div style={{ background:k.bg, borderRadius:'50%', width:28, height:28, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                    <Icon size={14} color={k.color} />
+              <div key={i} className="ref-kpi-card">
+                <div className="ref-kpi-top-row">
+                  <div className="ref-kpi-icon-wrap" style={{ background: k.iconBg }}>
+                    <Icon size={18} color={k.iconColor} />
                   </div>
-                  <div style={{ fontSize:9, fontWeight:700, color:'#0f172a', lineHeight:1.2 }}>{k.label}</div>
+                  <div className="ref-kpi-label">{k.label}</div>
                 </div>
                 {!k.isCustom ? (
                   <>
-                    <div style={{ fontSize:18, fontWeight:800, color:'#0f172a' }}>{fmtNum(k.value)}</div>
-                    <div style={{ fontSize:9, color: k.sub.includes('↑') ? '#16a34a' : k.sub.includes('↓') ? '#dc2626' : '#64748b', fontWeight:600 }}>{k.sub}</div>
+                    <div className="ref-kpi-value">{fmtNum(k.value)}</div>
+                    <div className={`ref-kpi-sub${k.trend === 'up' ? ' up' : k.trend === 'down' ? ' down' : ''}`}>
+                      {k.sub}
+                    </div>
                   </>
                 ) : (
-                  <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
-                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:9 }}>
-                      <span style={{ color:'#64748b' }}>User Referred</span>
-                      <span style={{ fontWeight:700 }}>1,136 <span style={{ color:'#94a3b8', fontWeight:400 }}>(63.1%)</span></span>
+                  <div className="ref-kpi-influencer">
+                    <div className="ref-kpi-inf-row">
+                      <span className="ref-kpi-inf-label">User Referred</span>
+                      <span className="ref-kpi-inf-val">1,136 <span className="ref-kpi-inf-pct">(63.1%)</span></span>
                     </div>
-                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:9 }}>
-                      <span style={{ color:'#64748b' }}>Partner Referred</span>
-                      <span style={{ fontWeight:700 }}>662 <span style={{ color:'#94a3b8', fontWeight:400 }}>(36.9%)</span></span>
+                    <div className="ref-kpi-inf-row">
+                      <span className="ref-kpi-inf-label">Partner Referred</span>
+                      <span className="ref-kpi-inf-val">662 <span className="ref-kpi-inf-pct">(36.9%)</span></span>
                     </div>
                   </div>
                 )}
@@ -253,117 +433,130 @@ export default function ReferralDashboard({ activeTab = 'Referral Dashboard' }) 
           })}
         </div>
 
-        {/* ── 3 SUB KPI + TOP PERFORMERS ── */}
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1.5fr', gap:12, marginBottom:14 }}>
-          {/* Sub KPIs (Left side) */}
-          <div style={{ display:'flex', gap:10 }}>
-            {subKpis.map((k,i) => {
+        {/* ── Sub KPIs + Top Performers ── */}
+        <div className="ref-mid-row">
+          {/* Sub KPI Cards — horizontal unified row */}
+          <div className="ref-sub-kpi-row">
+            {dynSubKpis.map((k, i) => {
               const Icon = k.icon;
               return (
-                <div key={i} style={{ flex:1, background:'#fff', borderRadius:10, padding:'14px', boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2', display:'flex' }}>
-                  <div style={{ flex:1 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap: 6, marginBottom:8 }}>
-                      <div style={{ background:k.bg, borderRadius:'50%', width:28, height:28, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                        <Icon size={14} color={k.color} />
-                      </div>
-                      <div style={{ fontSize:10, fontWeight:800, color:'#0f172a', lineHeight:1.1, maxWidth:70 }}>
-                        {k.label.split(' ').map((w,j)=><div key={j}>{w}</div>)}
-                      </div>
+                <div key={i} className="ref-sub-kpi-card">
+                  <div className="ref-sub-kpi-left">
+                    <div className="ref-sub-kpi-icon" style={{ background: k.iconBg }}>
+                      <Icon size={15} color={k.iconColor} />
                     </div>
-                    <div style={{ fontSize:18, fontWeight:800, color:'#0f172a' }}>{fmtNum(k.value)}</div>
-                    <div style={{ fontSize:9, color:'#64748b', fontWeight:600 }}>{k.sub}</div>
+                    <div className="ref-sub-kpi-info">
+                      <div className="ref-sub-kpi-label">{k.label}</div>
+                      <div className="ref-sub-kpi-value">{fmtNum(k.value)}</div>
+                      <div className="ref-sub-kpi-sub">{k.sub}</div>
+                    </div>
                   </div>
-                  
-                  <div style={{ width:1, background:'#e8edf2', margin:'0 10px' }} />
-                  
-                  <div style={{ flex:1, display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', textAlign:'center' }}>
-                    <div style={{ fontSize:10, fontWeight:800, color:'#3b82f6', marginBottom:4, lineHeight:1.1 }}>
-                      Unused<br/>Codes
-                    </div>
-                    <div style={{ fontSize:16, fontWeight:800, color:'#0f172a' }}>{k.unused}</div>
-                    <div style={{ fontSize:9, color:'#64748b', fontWeight:600 }}>({k.unusedPct} of total)</div>
+                  <div className="ref-sub-kpi-divider" />
+                  <div className="ref-sub-kpi-right">
+                    <div className="ref-sub-kpi-unused-label">Unused Codes</div>
+                    <div className="ref-sub-kpi-unused-val">{k.unused}</div>
+                    <div className="ref-sub-kpi-unused-sub">({k.unusedPct} of total)</div>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
 
-          {/* Top Performers (Right side card) */}
-          <div style={{ background:'#fff', borderRadius:10, padding:'14px', boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2' }}>
-            <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 12px' }}>Top Performer Statistics</h2>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:16 }}>
-              {/* Table 1 */}
-              <div>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-                  <div style={{ fontSize:11, fontWeight:800, color:'#0f172a', display:'flex', alignItems:'center', gap:4 }}><User size={12} color="#22c55e" /> Top Referred Users</div>
-                  <a href="#" style={{ fontSize:9, color:'#3b82f6', textDecoration:'none', fontWeight:600 }}>View All</a>
+          {/* Top Performer Statistics */}
+          <div className="ref-top-performers">
+            <h3 className="ref-card-title" style={{ marginBottom: '12px', fontSize: '13px' }}>Top Performer Statistics</h3>
+            <div className="ref-performers-grid">
+              {/* Top Referred Users */}
+              <div className="ref-perf-card">
+                <div className="ref-performer-header">
+                  <span className="ref-performer-title">
+                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <User size={12} color="#22c55e" />
+                    </div>
+                    Top Referred Users
+                  </span>
+                  <a href="#" className="ref-view-all-link" onClick={(e) => { e.preventDefault(); setViewAllModal({ type: 'users', title: 'Top Referred Users' }); }}>View All</a>
                 </div>
-                <table style={{ width:'100%', fontSize:9.5, borderCollapse:'collapse' }}>
+                <table className="ref-perf-table">
                   <thead>
-                    <tr style={{ background:'#1e1b4b', color:'#fff' }}>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>RANK</th>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>USER NAME</th>
-                      <th style={{ textAlign:'right', padding:'6px 8px', fontWeight:700 }}>USERS REFERRED</th>
+                    <tr>
+                      <th>Rank</th>
+                      <th>User Name</th>
+                      <th>Users Referred</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {topPerformerUsers.map(u => (
-                      <tr key={u.rank} style={{ borderBottom:'1px solid #e8edf2' }}>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.rank}</td>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.name}</td>
-                        <td style={{ padding:'6px 8px', textAlign:'right', fontWeight:700 }}>{u.referred}</td>
+                    {dynTopUsers.map(u => (
+                      <tr key={u.rank}>
+                        <td>{u.rank}</td>
+                        <td className="ref-perf-name">{u.name}</td>
+                        <td className="ref-perf-num">{u.referred}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              {/* Table 2 */}
-              <div>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-                  <div style={{ fontSize:11, fontWeight:800, color:'#0f172a', display:'flex', alignItems:'center', gap:4 }}><Briefcase size={12} color="#8b5cf6" /> Top Referred Partners</div>
-                  <a href="#" style={{ fontSize:9, color:'#3b82f6', textDecoration:'none', fontWeight:600 }}>View All</a>
+              {/* Top Referred Partners */}
+              <div className="ref-perf-card">
+                <div className="ref-performer-header">
+                  <span className="ref-performer-title">
+                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Briefcase size={12} color="#8b5cf6" />
+                    </div>
+                    Top Referred Partners
+                  </span>
+                  <a href="#" className="ref-view-all-link" onClick={(e) => { e.preventDefault(); setViewAllModal({ type: 'partners', title: 'Top Referred Partners' }); }}>View All</a>
                 </div>
-                <table style={{ width:'100%', fontSize:9.5, borderCollapse:'collapse' }}>
+                <table className="ref-perf-table">
                   <thead>
-                    <tr style={{ background:'#1e1b4b', color:'#fff' }}>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>RANK</th>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>PARTNER NAME</th>
-                      <th style={{ textAlign:'right', padding:'6px 8px', fontWeight:700 }}>PARTNERS REFERRED</th>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Partner Name</th>
+                      <th>Partners Referred</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {topPerformerPartners.map(u => (
-                      <tr key={u.rank} style={{ borderBottom:'1px solid #e8edf2' }}>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.rank}</td>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.name}</td>
-                        <td style={{ padding:'6px 8px', textAlign:'right', fontWeight:700 }}>{u.referred}</td>
+                    {dynTopPartners.map(u => (
+                      <tr key={u.rank}>
+                        <td>{u.rank}</td>
+                        <td className="ref-perf-name">{u.name}</td>
+                        <td className="ref-perf-num">{u.referred}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              {/* Table 3 */}
-              <div>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-                  <div style={{ fontSize:11, fontWeight:800, color:'#0f172a', display:'flex', alignItems:'center', gap:4 }}><Star size={12} color="#f59e0b" /> Top Referred Influencers</div>
-                  <a href="#" style={{ fontSize:9, color:'#3b82f6', textDecoration:'none', fontWeight:600 }}>View All</a>
+              {/* Top Referred Influencers */}
+              <div className="ref-perf-card">
+                <div className="ref-performer-header">
+                  <span className="ref-performer-title">
+                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#ffedd5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Star size={12} color="#f59e0b" />
+                    </div>
+                    Top Referred Influencers
+                  </span>
+                  <a href="#" className="ref-view-all-link" onClick={(e) => { e.preventDefault(); setViewAllModal({ type: 'influencers', title: 'Top Referred Influencers' }); }}>View All</a>
                 </div>
-                <table style={{ width:'100%', fontSize:9.5, borderCollapse:'collapse' }}>
+                <table className="ref-perf-table">
                   <thead>
-                    <tr style={{ background:'#1e1b4b', color:'#fff' }}>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>RANK</th>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>INFLUENCER NAME</th>
-                      <th style={{ textAlign:'right', padding:'6px 8px', fontWeight:700 }}>TOTAL REFERRED</th>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Influencer Name</th>
+                      <th>Users Referred</th>
+                      <th>Partners Referred</th>
+                      <th>Total Referred</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {topPerformerInfluencers.map(u => (
-                      <tr key={u.rank} style={{ borderBottom:'1px solid #e8edf2' }}>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.rank}</td>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.name}</td>
-                        <td style={{ padding:'6px 8px', textAlign:'right', fontWeight:700 }}>{u.tRef}</td>
+                    {dynTopInfluencers.map(u => (
+                      <tr key={u.rank}>
+                        <td>{u.rank}</td>
+                        <td className="ref-perf-name">{u.name}</td>
+                        <td className="ref-perf-num">{u.uRef}</td>
+                        <td className="ref-perf-num">{u.pRef}</td>
+                        <td className="ref-perf-num">{u.tRef}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -373,111 +566,49 @@ export default function ReferralDashboard({ activeTab = 'Referral Dashboard' }) 
           </div>
         </div>
 
-        {/* ── ROW 3: Donuts + Table ── */}
-        <div style={{ display:'grid', gridTemplateColumns:'1.2fr 1fr 1fr 2.5fr', gap:12, marginBottom:12 }}>
-          
-          <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2', display:'flex', flexDirection:'column' }}>
-            <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 8px' }}>Referral Codes Generated by</h2>
-            <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-              <PieChart width={140} height={140}>
-                <Pie data={genByDist} cx={70} cy={70} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
-                  {genByDist.map((e,i) => <Cell key={i} fill={e.color} />)}
-                  <DonutCenter viewBox={{ cx:70, cy:70 }} value="2,568" label="Total Codes" />
-                </Pie>
-                <Tooltip formatter={v => fmtNum(v)} />
-              </PieChart>
-              <div style={{ flex:1, display:'flex', flexDirection:'column', gap:6 }}>
-                {genByDist.map((item,i) => (
-                  <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:10.5 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                      <span style={{ width:7, height:7, borderRadius:'50%', background:item.color, flexShrink:0, display:'inline-block' }} />
-                      <span style={{ color:'#475569', fontWeight:600 }}>{item.name}</span>
-                    </div>
-                    <div style={{ display:'flex', gap:4, alignItems:'center' }}>
-                      <span style={{ fontWeight:800, color:'#0f172a' }}>{fmtNum(item.value)}</span>
-                      <span style={{ color:'#94a3b8', fontSize:9.5 }}>({item.pct})</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+        {/* ── Donut Charts Row ── */}
+        <div className="ref-donuts-row">
+          <DonutCard
+            title="Referral Codes Generated by"
+            data={dynGenByDist}
+            centerValue={fmtNum(Math.floor(2568 * m))}
+            centerLabel="Total Codes"
+          />
+          <DonutCard
+            title="Referral Codes Used by"
+            data={dynUsedByDist}
+            centerValue={fmtNum(Math.floor(8642 * m))}
+            centerLabel="Total Members"
+          />
+          <DonutCard
+            title="Referral Code Status"
+            data={dynStatusDist}
+            centerValue={fmtNum(Math.floor(2568 * m))}
+            centerLabel="Total Codes"
+          />
 
-          <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2', display:'flex', flexDirection:'column' }}>
-            <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 8px' }}>Referral Codes Used by</h2>
-            <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-              <PieChart width={140} height={140}>
-                <Pie data={usedByDist} cx={70} cy={70} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
-                  {usedByDist.map((e,i) => <Cell key={i} fill={e.color} />)}
-                  <DonutCenter viewBox={{ cx:70, cy:70 }} value="8,642" label="Total Members" />
-                </Pie>
-                <Tooltip formatter={v => fmtNum(v)} />
-              </PieChart>
-              <div style={{ flex:1, display:'flex', flexDirection:'column', gap:6 }}>
-                {usedByDist.map((item,i) => (
-                  <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:10.5 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                      <span style={{ width:7, height:7, borderRadius:'50%', background:item.color, flexShrink:0, display:'inline-block' }} />
-                      <span style={{ color:'#475569', fontWeight:600 }}>{item.name}</span>
-                    </div>
-                    <div style={{ display:'flex', gap:4, alignItems:'center' }}>
-                      <span style={{ fontWeight:800, color:'#0f172a' }}>{fmtNum(item.value)}</span>
-                      <span style={{ color:'#94a3b8', fontSize:9.5 }}>({item.pct})</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+          {/* Codes Going to Expire */}
+          <div className="ref-card ref-expire-card">
+            <div className="ref-card-header">
+              <h3 className="ref-card-title">Codes Going to Expire</h3>
+              <a href="#" className="ref-view-all-link">View All</a>
             </div>
-          </div>
-
-          <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2', display:'flex', flexDirection:'column' }}>
-            <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 8px' }}>Referral Code Status</h2>
-            <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-              <PieChart width={140} height={140}>
-                <Pie data={statusDist} cx={70} cy={70} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
-                  {statusDist.map((e,i) => <Cell key={i} fill={e.color} />)}
-                  <DonutCenter viewBox={{ cx:70, cy:70 }} value="2,568" label="Total Codes" />
-                </Pie>
-                <Tooltip formatter={v => fmtNum(v)} />
-              </PieChart>
-              <div style={{ flex:1, display:'flex', flexDirection:'column', gap:6 }}>
-                {statusDist.map((item,i) => (
-                  <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:10.5 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                      <span style={{ width:7, height:7, borderRadius:'50%', background:item.color, flexShrink:0, display:'inline-block' }} />
-                      <span style={{ color:'#475569', fontWeight:600 }}>{item.name}</span>
-                    </div>
-                    <div style={{ display:'flex', gap:4, alignItems:'center' }}>
-                      <span style={{ fontWeight:800, color:'#0f172a' }}>{fmtNum(item.value)}</span>
-                      <span style={{ color:'#94a3b8', fontSize:9.5 }}>({item.pct})</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2' }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
-              <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:0 }}>Codes Going to Expire</h2>
-              <a href="#" style={{ fontSize:10, color:'#3b82f6', textDecoration:'none', fontWeight:600 }}>View All</a>
-            </div>
-            <table style={{ width:'100%', fontSize:10.5 }}>
+            <table className="ref-expire-table">
               <thead>
                 <tr>
-                  <th style={{ textAlign:'left', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Referral Code</th>
-                  <th style={{ textAlign:'left', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Expires On</th>
-                  <th style={{ textAlign:'left', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Generated By</th>
-                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Days Left</th>
+                  <th>Referral Code</th>
+                  <th>Expires On</th>
+                  <th>Generated By</th>
+                  <th>Days Left</th>
                 </tr>
               </thead>
               <tbody>
                 {expiringCodes.map(c => (
                   <tr key={c.code}>
-                    <td style={{ padding:'6px 0', fontWeight:800, color:'#0f172a' }}>{c.code}</td>
-                    <td style={{ padding:'6px 0', fontWeight:600, color:'#475569' }}>{c.expires}</td>
-                    <td style={{ padding:'6px 0', fontWeight:600, color:'#475569' }}>{c.generatedBy}</td>
-                    <td style={{ padding:'6px 0', textAlign:'right', fontWeight:700, color:'#ef4444' }}>{c.daysLeft} days</td>
+                    <td className="ref-code-cell">{c.code}</td>
+                    <td>{c.expires}</td>
+                    <td>{c.generatedBy}</td>
+                    <td className="ref-days-cell">{c.daysLeft} days</td>
                   </tr>
                 ))}
               </tbody>
@@ -485,150 +616,238 @@ export default function ReferralDashboard({ activeTab = 'Referral Dashboard' }) 
           </div>
         </div>
 
-        {/* ── ROW 4: Line Chart + Donut + Table ── */}
-        <div style={{ display:'grid', gridTemplateColumns:'2fr 1fr 1.5fr', gap:12, marginBottom:12 }}>
-          
-          <div style={{ background:'#fff', borderRadius:10, padding:'18px 18px 10px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2' }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
-              <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:0 }}>Referral Members Over Time</h2>
-              <FilterSelect options={['Daily','Weekly','Monthly']} />
+        {/* ── Line Chart + Reward Donut + Reward Table ── */}
+        <div className="ref-charts-row">
+          {/* Line Chart */}
+          <div className="ref-card ref-line-chart-card">
+            <div className="ref-card-header">
+              <h3 className="ref-card-title">Referral Members Over Time</h3>
+              <div className="ref-freq-btns">
+                {['Daily', 'Weekly', 'Monthly'].map(f => (
+                  <button
+                    key={f}
+                    className={`ref-freq-btn${chartFreq === f ? ' active' : ''}`}
+                    onClick={() => setChartFreq(f)}
+                  >{f}</button>
+                ))}
+              </div>
             </div>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={referralOverTime} margin={{ top:4, right:4, left:-20, bottom:0 }}>
+            <ResponsiveContainer width="100%" height={195}>
+              <LineChart data={dynChartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="day" tick={{ fontSize:10, fill:'#94a3b8', fontWeight:600 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize:10, fill:'#94a3b8', fontWeight:600 }} axisLine={false} tickLine={false} tickFormatter={v => v>=1000?(v/1000)+'K':v} />
+                <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? (v / 1000) + 'K' : v} />
                 <Tooltip content={<LineTooltip />} />
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize:11, paddingTop:6, fontWeight:600 }} />
-                <Line type="monotone" dataKey="total"  name="Total Members"  stroke="#3b82f6" strokeWidth={3} dot={false} />
-                <Line type="monotone" dataKey="users"   name="Users"   stroke="#22c55e" strokeWidth={3} dot={false} />
-                <Line type="monotone" dataKey="partners"  name="Partners"  stroke="#8b5cf6" strokeWidth={3} dot={false} />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, paddingTop: 6, fontWeight: 600 }} />
+                <Line type="monotone" dataKey="total"    name="Total Members" stroke="#3b82f6" strokeWidth={2.5} dot={false} />
+                <Line type="monotone" dataKey="users"    name="Users"         stroke="#22c55e" strokeWidth={2.5} dot={false} />
+                <Line type="monotone" dataKey="partners" name="Partners"      stroke="#8b5cf6" strokeWidth={2.5} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
 
-          <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2', display:'flex', flexDirection:'column' }}>
-            <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 12px' }}>Top Reward Types</h2>
-            <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-              <PieChart width={140} height={140}>
-                <Pie data={rewardDist} cx={70} cy={70} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
-                  {rewardDist.map((e,i) => <Cell key={i} fill={e.color} />)}
-                  <DonutCenter viewBox={{ cx:70, cy:70 }} value="8,642" label="Total Usage" />
-                </Pie>
-                <Tooltip formatter={v => fmtNum(v)} />
-              </PieChart>
-              <div style={{ flex:1, display:'flex', flexDirection:'column', gap:8 }}>
-                {rewardDist.map((item,i) => (
-                  <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:10.5 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                      <span style={{ width:7, height:7, borderRadius:'50%', background:item.color, flexShrink:0, display:'inline-block' }} />
-                      <span style={{ color:'#475569', fontWeight:600 }}>{item.name}</span>
-                    </div>
-                    <div style={{ display:'flex', gap:4, alignItems:'center' }}>
-                      <span style={{ fontWeight:800, color:'#0f172a' }}>{fmtNum(item.value)}</span>
-                      <span style={{ color:'#94a3b8', fontSize:9.5 }}>({item.pct})</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+          {/* Top Reward Types Donut */}
+          <DonutCard
+            title="Top Reward Types"
+            data={dynRewardDist}
+            centerValue={fmtNum(Math.floor(8642 * m))}
+            centerLabel="Total Usage"
+          />
+
+          {/* Reward Types Performance */}
+          <div className="ref-card ref-reward-perf-card">
+            <div className="ref-card-header">
+              <h3 className="ref-card-title">Reward Types Performance</h3>
+            </div>
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+              <table className="ref-reward-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '450px' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', color: '#1e3a8a', fontWeight: 700 }}>Reward Type</th>
+                    <th className="text-center" style={{ padding: '12px 16px', fontSize: '13px', color: '#1e3a8a', fontWeight: 700 }}>Total Codes</th>
+                    <th className="text-center" style={{ padding: '12px 16px', fontSize: '13px', color: '#1e3a8a', fontWeight: 700 }}>Used Codes</th>
+                    <th className="text-center" style={{ padding: '12px 16px', fontSize: '13px', color: '#1e3a8a', fontWeight: 700 }}>Total Usage</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '13px', color: '#1e3a8a', fontWeight: 700, whiteSpace: 'nowrap' }}>% Usage</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dynRewardPerf.map((r, i) => (
+                    <tr key={r.type} style={{ borderBottom: i === dynRewardPerf.length - 1 ? 'none' : '1px solid #e2e8f0' }}>
+                      <td className="ref-reward-type" style={{ padding: '14px 16px', fontWeight: 700, color: '#0f172a', fontSize: '13px', whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: r.color }} />
+                          {r.type}
+                        </div>
+                      </td>
+                      <td className="text-center" style={{ padding: '14px 16px', fontSize: '13px', fontWeight: 600 }}>{r.total}</td>
+                      <td className="text-center" style={{ padding: '14px 16px', fontSize: '13px', fontWeight: 600 }}>{r.used}</td>
+                      <td className="text-center" style={{ padding: '14px 16px', fontSize: '13px', fontWeight: 600 }}>{fmtNum(r.usage)}</td>
+                      <td style={{ padding: '14px 16px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
+                          <div style={{ width: '80px', height: '10px', borderRadius: '10px', background: '#f1f5f9', overflow: 'hidden' }}>
+                            <div style={{ width: `${r.pct}%`, height: '100%', borderRadius: '10px', background: r.color }} />
+                          </div>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#1e3a8a', minWidth: '40px', textAlign: 'right' }}>
+                            {r.pct.toFixed(1)}%
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
+        </div>
 
-          <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2' }}>
-            <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 12px' }}>Reward Types Performance</h2>
-            <table style={{ width:'100%', fontSize:10.5 }}>
+        {/* ── Referral Codes Performance Table ── */}
+        <div className="ref-card ref-main-table-card">
+          <div className="ref-card-header">
+            <h3 className="ref-card-title">Referral Codes Performance</h3>
+          </div>
+          <div className="ref-table-scroll">
+            <table className="ref-main-table">
               <thead>
-                <tr style={{ borderBottom:'1px solid #f1f5f9' }}>
-                  <th style={{ textAlign:'left', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Reward Type</th>
-                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Total Codes</th>
-                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Used Codes</th>
-                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Total Usage</th>
-                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>% Usage</th>
+                <tr>
+                  <th>Referral Code</th>
+                  <th>Generated By</th>
+                  <th>Generated By Name</th>
+                  <th>Code Type</th>
+                  <th>Status</th>
+                  <th colSpan={3} style={{ textAlign: 'center' }}>Members Referred</th>
+                  <th>Reward Type</th>
+                  <th>Total Reward Earned</th>
+                  <th>Expires On</th>
+                  <th>Created On</th>
+                  <th>Actions</th>
+                </tr>
+                <tr className="ref-sub-header">
+                  <th colSpan={5}></th>
+                  <th>Users</th>
+                  <th>Partners</th>
+                  <th>Total</th>
+                  <th colSpan={5}></th>
                 </tr>
               </thead>
               <tbody>
-                {rewardPerformance.map(r => (
-                  <tr key={r.type}>
-                    <td style={{ padding:'8px 0', fontWeight:700, color:'#0f172a' }}>{r.type}</td>
-                    <td style={{ padding:'8px 0', textAlign:'right', fontWeight:600, color:'#475569' }}>{r.total}</td>
-                    <td style={{ padding:'8px 0', textAlign:'right', fontWeight:600, color:'#475569' }}>{r.used}</td>
-                    <td style={{ padding:'8px 0', textAlign:'right', fontWeight:600, color:'#475569' }}>{fmtNum(r.usage)}</td>
-                    <td style={{ padding:'8px 0', minWidth:90 }}>
-                      <div style={{ display:'flex', alignItems:'center', justifyContent:'flex-end', gap:6 }}>
-                        <div style={{ flex:1, height:4, borderRadius:2, background:'#f1f5f9', overflow:'hidden' }}>
-                          <div style={{ height:'100%', background:r.color, width:`${r.pct}%` }} />
-                        </div>
-                        <span style={{ fontWeight:700, fontSize:10 }}>{r.pct}%</span>
-                      </div>
+                {dynCodesPerf.map((r, i) => (
+                  <tr key={i}>
+                    <td className="ref-code-bold">{r.code}</td>
+                    <td>{r.genBy}</td>
+                    <td className="ref-name-bold">{r.name}</td>
+                    <td>{r.type}</td>
+                    <td><StatusBadge status={r.status} /></td>
+                    <td className="ref-num-cell">{r.users}</td>
+                    <td className="ref-num-cell">{r.partners}</td>
+                    <td className="ref-num-cell ref-total-bold">{r.total}</td>
+                    <td>{r.reward}</td>
+                    <td className="ref-earned-cell">{r.earned}</td>
+                    <td className="ref-date-cell">{r.expires}</td>
+                    <td className="ref-date-cell">{r.created}</td>
+                    <td>
+                      <button className="ref-action-btn">
+                        <Eye size={12} color="#2563eb" />
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
-
-        {/* ── ROW 5: Main Table ── */}
-        <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2', overflowX:'auto' }}>
-          <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 12px' }}>Referral Codes Performance</h2>
-          <table style={{ width:'100%', borderCollapse:'collapse', fontSize:10, minWidth:900 }}>
-            <thead>
-              <tr style={{ borderBottom:'1px solid #f1f5f9' }}>
-                <th style={{ padding:'8px 6px', textAlign:'left', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Referral Code</th>
-                <th style={{ padding:'8px 6px', textAlign:'left', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Generated By</th>
-                <th style={{ padding:'8px 6px', textAlign:'left', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Generated By Name</th>
-                <th style={{ padding:'8px 6px', textAlign:'left', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Code Type</th>
-                <th style={{ padding:'8px 6px', textAlign:'left', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Status</th>
-                <th colSpan="3" style={{ padding:'8px 6px', textAlign:'center', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Members Referred</th>
-                <th style={{ padding:'8px 6px', textAlign:'left', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Reward Type</th>
-                <th style={{ padding:'8px 6px', textAlign:'right', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Total Reward Earned</th>
-                <th style={{ padding:'8px 6px', textAlign:'left', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Expires On</th>
-                <th style={{ padding:'8px 6px', textAlign:'left', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Created On</th>
-                <th style={{ padding:'8px 6px', textAlign:'center', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Actions</th>
-              </tr>
-              <tr style={{ borderBottom:'1px solid #f1f5f9' }}>
-                <th colSpan="5"></th>
-                <th style={{ padding:'4px 6px', textAlign:'right', fontWeight:600, color:'#94a3b8', fontSize:9 }}>Users</th>
-                <th style={{ padding:'4px 6px', textAlign:'right', fontWeight:600, color:'#94a3b8', fontSize:9 }}>Partners</th>
-                <th style={{ padding:'4px 6px', textAlign:'right', fontWeight:600, color:'#94a3b8', fontSize:9 }}>Total</th>
-                <th colSpan="5"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {codesPerformance.map((r,i) => (
-                <tr key={i} style={{ borderBottom:i<codesPerformance.length-1?'1px solid #f8fafc':'none' }}>
-                  <td style={{ padding:'10px 6px', fontWeight:800, color:'#0f172a', whiteSpace:'nowrap' }}>{r.code}</td>
-                  <td style={{ padding:'10px 6px', fontWeight:600, color:'#475569' }}>{r.genBy}</td>
-                  <td style={{ padding:'10px 6px', fontWeight:700, color:'#0f172a' }}>{r.name}</td>
-                  <td style={{ padding:'10px 6px', fontWeight:600, color:'#475569' }}>{r.type}</td>
-                  <td style={{ padding:'10px 6px', fontWeight:700, color:r.status==='Active'?'#22c55e':r.status==='Inactive'?'#ef4444':'#f59e0b' }}>{r.status}</td>
-                  <td style={{ padding:'10px 6px', textAlign:'right', fontWeight:700, color:'#0f172a' }}>{r.users}</td>
-                  <td style={{ padding:'10px 6px', textAlign:'right', fontWeight:700, color:'#0f172a' }}>{r.partners}</td>
-                  <td style={{ padding:'10px 6px', textAlign:'right', fontWeight:800, color:'#0f172a' }}>{r.total}</td>
-                  <td style={{ padding:'10px 6px', fontWeight:600, color:'#475569' }}>{r.reward}</td>
-                  <td style={{ padding:'10px 6px', textAlign:'right', fontWeight:700, color:'#0f172a' }}>{r.earned}</td>
-                  <td style={{ padding:'10px 6px', fontWeight:600, color:'#475569' }}>{r.expires}</td>
-                  <td style={{ padding:'10px 6px', fontWeight:600, color:'#475569' }}>{r.created}</td>
-                  <td style={{ padding:'10px 6px', textAlign:'center' }}>
-                    <button style={{ background:'#f0f7ff', border:'none', borderRadius:4, padding:'4px 6px', cursor:'pointer' }}>
-                      <Eye size={12} color="#2563eb" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div style={{ display:'flex', justifyContent:'flex-end', marginTop:12, gap:6, alignItems:'center' }}>
-            <span style={{ fontSize:10, color:'#64748b', fontWeight:600 }}>Page 1 of 257</span>
-            <button style={{ border:'1px solid #dde3ea', background:'#fff', padding:'4px 8px', borderRadius:4, cursor:'pointer' }}>{'<'}</button>
-            <button style={{ border:'none', background:'#2563eb', color:'#fff', padding:'4px 10px', borderRadius:4, cursor:'pointer', fontWeight:600 }}>1</button>
-            <button style={{ border:'none', background:'transparent', color:'#475569', padding:'4px 10px', borderRadius:4, cursor:'pointer', fontWeight:600 }}>2</button>
-            <button style={{ border:'none', background:'transparent', color:'#475569', padding:'4px 10px', borderRadius:4, cursor:'pointer', fontWeight:600 }}>3</button>
-            <button style={{ border:'1px solid #dde3ea', background:'#fff', padding:'4px 8px', borderRadius:4, cursor:'pointer' }}>{'>'}</button>
+          {/* Pagination */}
+          <div className="ref-pagination">
+            <button className="ref-page-btn ref-page-arrow"><ChevronLeft size={13} /></button>
+            {[1, 2, 3, '...', 5].map((p, i) => (
+              <button key={i} className={`ref-page-btn${p === 1 ? ' active' : ''}`}>{p}</button>
+            ))}
+            <button className="ref-page-btn ref-page-arrow"><ChevronRight size={13} /></button>
+            <span className="ref-page-info">257 total pages</span>
           </div>
         </div>
 
       </div>
+      
+      {/* ── View All Modal ── */}
+      {viewAllModal && (
+        <div className="ref-modal-overlay" onClick={() => setViewAllModal(null)}>
+          <div className="ref-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="ref-modal-header">
+              <h3 className="ref-modal-title">{viewAllModal.title}</h3>
+              <button className="ref-modal-close" onClick={() => setViewAllModal(null)}>
+                <XCircle size={20} />
+              </button>
+            </div>
+            <div className="ref-modal-body">
+              <table className="ref-modal-table">
+                {viewAllModal.type === 'users' && (
+                  <>
+                    <thead>
+                      <tr>
+                        <th>Rank</th>
+                        <th>User Name</th>
+                        <th>Users Referred</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dynTopUsers.map(u => (
+                        <tr key={u.rank}>
+                          <td>{u.rank}</td>
+                          <td style={{ fontWeight: 600, color: '#1e40af' }}>{u.name}</td>
+                          <td style={{ fontWeight: 700 }}>{u.referred}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </>
+                )}
+                {viewAllModal.type === 'partners' && (
+                  <>
+                    <thead>
+                      <tr>
+                        <th>Rank</th>
+                        <th>Partner Name</th>
+                        <th>Partners Referred</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dynTopPartners.map(u => (
+                        <tr key={u.rank}>
+                          <td>{u.rank}</td>
+                          <td style={{ fontWeight: 600, color: '#5b21b6' }}>{u.name}</td>
+                          <td style={{ fontWeight: 700 }}>{u.referred}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </>
+                )}
+                {viewAllModal.type === 'influencers' && (
+                  <>
+                    <thead>
+                      <tr>
+                        <th>Rank</th>
+                        <th>Influencer Name</th>
+                        <th>Users Referred</th>
+                        <th>Partners Referred</th>
+                        <th>Total Referred</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dynTopInfluencers.map(u => (
+                        <tr key={u.rank}>
+                          <td>{u.rank}</td>
+                          <td style={{ fontWeight: 600, color: '#9a3412' }}>{u.name}</td>
+                          <td>{u.uRef}</td>
+                          <td>{u.pRef}</td>
+                          <td style={{ fontWeight: 700 }}>{u.tRef}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </>
+                )}
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminShell>
   );
 }

@@ -72,6 +72,7 @@ export default function GlobalAdminShell({ children }) {
   const [showSwitchRolePopup, setShowSwitchRolePopup] = useState(false);
   const [openSubModules, setOpenSubModules] = useState({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -244,16 +245,32 @@ export default function GlobalAdminShell({ children }) {
   };
 
   return (
-    <main className="dashboard global-dashboard">
+    <main className={`dashboard global-dashboard ${sidebarCollapsed ? 'collapsed-sidebar' : ''}`}>
       <style>{`
         @keyframes slideDown {
           from { opacity: 0; transform: translateY(-10px); }
           to { opacity: 1; transform: translateY(0); }
         }
 
+        @media (min-width: 769px) {
+          .global-dashboard.collapsed-sidebar {
+            grid-template-columns: 0px minmax(0, 1fr) !important;
+          }
+        }
+
         .global-sidebar {
           border-right: none !important;
           background: linear-gradient(180deg, #1B2435 0%, #232F45 100%) !important;
+          transition: width 0.3s ease, opacity 0.3s ease !important;
+          overflow: hidden !important;
+        }
+
+        .global-sidebar.collapsed {
+          width: 0 !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          opacity: 0 !important;
+          border: none !important;
         }
 
         .global-sidebar .sidebar-module-btn {
@@ -309,7 +326,7 @@ export default function GlobalAdminShell({ children }) {
         }
 
         .global-header {
-          background: linear-gradient(90deg, #1B0B90 0%, #2F1DB8 100%) !important;
+          background: linear-gradient(90deg, #1B2435 0%, #232F45 100%) !important;
           border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
           padding: 0 24px !important;
@@ -369,7 +386,7 @@ export default function GlobalAdminShell({ children }) {
         />
       )}
 
-      <aside className={`sidebar global-sidebar ${sidebarOpen ? 'open' : ''}`}>
+      <aside className={`sidebar global-sidebar ${sidebarOpen ? 'open' : ''} ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-brand" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '28px', paddingBottom: '24px', justifyContent: 'center', background: 'transparent' }}>
           <img
             src={brandLogo}
@@ -437,16 +454,22 @@ export default function GlobalAdminShell({ children }) {
             flexWrap: 'nowrap',
             padding: '10px 24px', 
             minHeight: '64px', 
-            background: 'linear-gradient(90deg, #1B0B90 0%, #2F1DB8 100%)', 
+            background: 'linear-gradient(90deg, #1B2435 0%, #232F45 100%)', 
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)' 
           }}
         >
           {/* Left Combo */}
-          <div className="header-left-combo" style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '0 1 auto', minWidth: 0 }}>
+          <div className="header-left-combo" style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: '0 1 auto', minWidth: 0 }}>
             <button
-              className="mobile-menu-btn"
-              onClick={() => setSidebarOpen(true)}
-              style={{ display: 'none', background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer' }}
+              className="menu-toggle-btn"
+              onClick={() => {
+                if (window.innerWidth <= 768) {
+                  setSidebarOpen(true);
+                } else {
+                  setSidebarCollapsed(!sidebarCollapsed);
+                }
+              }}
+              style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}
             >
               <Menu size={24} />
             </button>
@@ -456,30 +479,7 @@ export default function GlobalAdminShell({ children }) {
               className="mobile-header-logo"
               style={{ display: 'none', width: '32px', height: '32px', objectFit: 'contain', flexShrink: 0, background: '#ffffff', borderRadius: '4px', padding: '2px' }} 
             />
-            {canGoBack && (
-              <button
-                onClick={(e) => { e.preventDefault(); goBack(); }}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.12)',
-                  border: 'none',
-                  color: '#ffffff',
-                  borderRadius: '50%',
-                  width: '30px',
-                  height: '30px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s',
-                  flexShrink: 0
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.22)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)'}
-                title="Go Back"
-              >
-                <ArrowLeft size={16} />
-              </button>
-            )}
+
             {/* Always show the active module/tab name in navbar */}
             <span style={{ fontWeight: '800', fontSize: '20px', color: '#FFFFFF', whiteSpace: 'nowrap', letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
               {headerTitle || getActivePageLabel() || activeTab}
@@ -802,28 +802,7 @@ export default function GlobalAdminShell({ children }) {
         )}
         <div className="dash-content global-content" style={{ padding: 'var(--spacing-section, 24px)' }}>
 
-          {/* Page Title Banner - rendered in content area, below the sticky header */}
-          {pageTitle && (
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '16px',
-              marginBottom: '24px'
-            }}>
-              <div>
-                <h1 style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text)', margin: 0 }}>
-                  {pageTitle}
-                </h1>
-                {pageSubtitle && (
-                  <p style={{ fontSize: '14px', color: 'var(--muted)', marginTop: '4px', margin: 0 }}>
-                    {pageSubtitle}
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
+
           {children}
         </div>
       </section>

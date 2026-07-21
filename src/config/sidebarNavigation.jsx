@@ -42,7 +42,9 @@ export const sidebarNavigation = [
     icon: LayoutGrid,
     children: [
       { label: 'Overview Dashboard', route: ROUTES.dashboard },
-      { label: 'Revenue Dashboard', route: ROUTES.dashboardRevenue },
+      { label: 'Admin Dashboard', route: ROUTES.adminDashboard },
+      { label: 'KYC Dashboard', route: ROUTES.kycDashboard },
+      { label: 'Revenue Dashboard', route: ROUTES.revenueDashboard },
       { label: 'Bookings Dashboard', route: ROUTES.dashboardBookings },
       { label: 'User Dashboard', route: ROUTES.dashboardUsers },
       { label: 'Partner Dashboard', route: ROUTES.dashboardPartners },
@@ -50,6 +52,15 @@ export const sidebarNavigation = [
       { label: 'Services Dashboard', route: ROUTES.dashboardServices },
       { label: 'GST Dashboard', route: ROUTES.dashboardGST },
       { label: 'Approval Dashboard', route: ROUTES.dashboardApprovals },
+      { label: 'Performance Dashboard', route: ROUTES.performance },
+      { label: 'Live Dashboard', route: ROUTES.liveDashboard },
+      { label: 'Inventory Dashboard', route: ROUTES.materialInventory },
+      { label: 'Quotation Dashboard', route: ROUTES.quotationDashboard },
+      { label: 'Earnings Dashboard', route: ROUTES.walletEarnings },
+      { label: 'Referral Dashboard', route: ROUTES.referralDashboard },
+      { label: 'Campaign Dashboard', route: ROUTES.referralCampaignDashboard },
+      { label: 'Fraud Dashboard', route: ROUTES.fraudDashboard },
+      { label: 'Order Dashboard', route: ROUTES.orderDashboard },
       { label: 'Activity Center', route: ROUTES.dashboardActivity },
       { label: 'System Health', route: ROUTES.dashboardSystemHealth },
       { label: 'Channel Performance & ROI', route: ROUTES.dashboardChannelPerformance },
@@ -60,7 +71,6 @@ export const sidebarNavigation = [
     label: 'Admin Management',
     icon: UserCog,
     children: [
-      { label: 'Admin Dashboard', route: ROUTES.adminDashboard },
       { label: 'All Admins', route: ROUTES.adminDashboard },
       { label: 'Team Management', route: ROUTES.adminDashboard },
       { label: 'Role & Permission', route: ROUTES.rolePermissions },
@@ -155,7 +165,6 @@ export const sidebarNavigation = [
     icon: ShieldCheck,
     route: ROUTES.kyc,
     children: [
-      { label: 'KYC Dashboard', route: ROUTES.kycDashboard },
       { label: 'Pending KYC', route: ROUTES.kycPending },
       { label: 'Approved KYC', route: ROUTES.kycApproved },
       { label: 'Rejected KYC', route: ROUTES.kycRejected },
@@ -253,7 +262,6 @@ export const sidebarNavigation = [
       { label: 'Leave Management', route: ROUTES.leaveManagement },
       { label: 'Employee Documents', route: ROUTES.employeeDocuments },
       { label: 'Employee KYC', route: ROUTES.employeeKyc },
-      { label: 'Performance Dashboard', route: ROUTES.performance },
       { label: 'Ratings & Reviews', route: ROUTES.employeeRatings },
       { label: 'Earnings', route: ROUTES.employeeEarnings },
       { label: 'Employee Analytics', route: ROUTES.employeeAnalytics },
@@ -320,7 +328,6 @@ export const sidebarNavigation = [
     label: 'Live Tracking',
     icon: Compass,
     children: [
-      { label: 'Live Dashboard', route: ROUTES.liveDashboard },
       { label: 'Operations Map', route: ROUTES.liveOpsMap },
       { label: 'Active Jobs', route: ROUTES.liveActiveJobs },
       { label: 'Employee Tracking', route: ROUTES.liveEmployeeTracking },
@@ -342,7 +349,6 @@ export const sidebarNavigation = [
       { label: 'Material Requests', route: ROUTES.materialRequests },
       { label: 'Create Request', route: ROUTES.materialCreate },
       { label: 'Approval Queue', route: ROUTES.materialApprovals },
-      { label: 'Inventory Dashboard', route: ROUTES.materialInventory },
       { label: 'Inventory Listing', route: ROUTES.materialListing },
       { label: 'Material Categories', route: ROUTES.materialCategories },
       { label: 'Restocking', route: ROUTES.materialRestocking },
@@ -360,7 +366,6 @@ export const sidebarNavigation = [
     label: 'Quotation Management',
     icon: FileText,
     children: [
-      { label: 'Quotation Dashboard', route: ROUTES.quotationDashboard },
       { label: 'Seller Quotations', route: ROUTES.quotationSeller },
       { label: 'Customer Quotations', route: ROUTES.quotationCustomer },
       { label: 'RFQ Listing', route: ROUTES.quotationRfq },
@@ -393,7 +398,6 @@ export const sidebarNavigation = [
       { label: 'Fraud Monitoring', route: ROUTES.walletFraud },
       { label: 'Chargebacks', route: ROUTES.chargebackManagement },
       { label: 'Wallet Analytics', route: ROUTES.walletAnalytics },
-      { label: 'Earnings Dashboard', route: ROUTES.walletEarnings },
       { label: 'Reconciliation', route: ROUTES.walletReconciliation }
     ]
   },
@@ -425,7 +429,6 @@ export const sidebarNavigation = [
     label: 'Revenue Management',
     icon: Banknote,
     children: [
-      { label: 'Revenue Dashboard', route: ROUTES.revenueDashboard },
       { label: 'Revenue Overview', route: ROUTES.revenueOverview },
       { label: 'Daily Revenue', route: ROUTES.revenueDaily },
       { label: 'Weekly Revenue', route: ROUTES.revenueWeekly },
@@ -449,9 +452,7 @@ export const sidebarNavigation = [
     label: 'Referral Management',
     icon: Network,
     children: [
-      { label: 'Referral Dashboard', route: ROUTES.referralDashboard },
       { label: 'Referral Listing', route: ROUTES.referralListing },
-      { label: 'Campaign Dashboard', route: ROUTES.referralCampaignDashboard },
       { label: 'Campaign Listing', route: ROUTES.referralCampaignListing },
       { label: 'Create Campaign', route: ROUTES.referralCreateCampaign },
       { label: 'Reward Approval Queue', route: ROUTES.referralRewardApprovals },
@@ -600,7 +601,6 @@ export const sidebarNavigation = [
     label: 'Fraud Management',
     icon: ShieldAlert,
     children: [
-      { label: 'Fraud Dashboard', route: ROUTES.fraudDashboard },
       { label: 'User Fraud', route: ROUTES.fraudUser },
       { label: 'Partner Fraud', route: ROUTES.fraudPartner },
       { label: 'Wallet Fraud', route: ROUTES.fraudWallet },
@@ -656,7 +656,6 @@ export const sidebarNavigation = [
     label: 'Order Management',
     icon: Layers,
     children: [
-      { label: 'Order Dashboard', route: ROUTES.orderDashboard },
       { label: 'All Orders', route: ROUTES.orderManagement }
     ]
   },

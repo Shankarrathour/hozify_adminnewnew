@@ -1151,15 +1151,7 @@ export default function Dashboard() {
       <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)' }}>
         
         {/* Page Header with Tab selectors */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', position: 'relative', zIndex: 100 }}>
-          <div>
-            <h1 style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text)', margin: 0 }}>
-              {dashboardView === 'global' ? 'Dashboard' : dashboardView === 'system' ? 'System Overview' : 'Procurement Overview'}
-            </h1>
-            <p style={{ fontSize: '14px', color: 'var(--muted)', marginTop: '4px', margin: 0 }}>
-              {dashboardView === 'global' ? "Welcome back! Here's what's happening today." : dashboardView === 'system' ? 'Core user metrics and booking statistics.' : 'Real-time logistics and expense metrics'}
-            </p>
-          </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexWrap: 'wrap', gap: '16px', position: 'relative', zIndex: 100 }}>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             
             {/* 3-Way View Toggle */}

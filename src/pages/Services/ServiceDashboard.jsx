@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import {
   DollarSign,
   Clock,
@@ -18,6 +19,8 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../components/common/ToastNotification';
 import AdminShell from '../../components/layouts/AdminShell';
+import StatusBadge from '../../components/common/StatusBadge';
+import Avatar from '../../components/common/Avatar';
 import {
   AreaChart,
   Area,
@@ -109,28 +112,6 @@ function StatCard({ icon: Icon, iconBg, iconColor, value, label, sublabel, trend
   );
 }
 
-function SvcStatusBadge({ status }) {
-  const map = {
-    Active:      { bg: '#dcfce7', color: '#166534' },
-    Completed:   { bg: '#dcfce7', color: '#166534' },
-    'In Progress': { bg: '#fef3c7', color: '#92400e' },
-    Critical:    { bg: '#fee2e2', color: '#991b1b' },
-    'At Risk':   { bg: '#ffedd5', color: '#9a3412' },
-    Cancelled:   { bg: '#fee2e2', color: '#991b1b' },
-  };
-  const s = map[status] || { bg: '#f1f5f9', color: '#475569' };
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 10px', borderRadius: '20px', fontSize: '11.5px', fontWeight: 600, background: s.bg, color: s.color }}>
-      {status}
-    </span>
-  );
-}
-
-function SeverityBadge({ severity }) {
-  const cls = severity === 'High' ? 'svc-severity-high' : severity === 'Medium' ? 'svc-severity-medium' : 'svc-severity-low';
-  return <span className={`svc-severity-badge ${cls}`}>{severity}</span>;
-}
-
 function CustomTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
     return (
@@ -169,6 +150,69 @@ export default function ServiceDashboard() {
 
   const totalMix = revenueMixData.reduce((s, d) => s + d.value, 0);
 
+  const topServicesColumns = [
+    { header: 'Service', accessor: 'name', render: (row) => <span style={{fontWeight: 600, color: '#1e293b'}}>{row.name}</span> },
+    { header: 'Category', accessor: 'category', render: (row) => <span className="premium-chip premium-chip-indigo">{row.category}</span> },
+    { header: 'Revenue', accessor: 'revenue', render: (row) => <span style={{fontWeight: 600, color: '#16a34a'}}>{row.revenue}</span> },
+    { header: 'Orders', accessor: 'orders' },
+    { header: 'Rating', accessor: 'rating', render: (row) => (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>
+        <Star size={14} color="#f59e0b" fill="#f59e0b" /> {row.rating}
+      </span>
+    ) },
+    { header: 'Status', accessor: 'status', render: (row) => <StatusBadge status={row.status} /> }
+  ];
+
+  const recentOrdersColumns = [
+    { header: 'Order ID', accessor: 'id', render: (row) => <span style={{fontWeight: 600, color: '#4f46e5'}}>{row.id}</span> },
+    { header: 'Service', accessor: 'service', render: (row) => <span style={{fontWeight: 600, color: '#1e293b'}}>{row.service}</span> },
+    { header: 'Amount', accessor: 'amount', render: (row) => <span style={{fontWeight: 600}}>{row.amount}</span> },
+    { header: 'Status', accessor: 'status', render: (row) => <StatusBadge status={row.status} /> },
+    { header: 'Date', accessor: 'date' }
+  ];
+
+  const slaAlertsColumns = [
+    { header: 'Alert ID', accessor: 'id', render: (row) => <span style={{fontWeight: 600, color: '#4f46e5'}}>{row.id}</span> },
+    { header: 'Service', accessor: 'service', render: (row) => <span style={{fontWeight: 600, color: '#1e293b'}}>{row.service}</span> },
+    { header: 'Issue', accessor: 'issue', render: (row) => <span style={{color: '#64748b', fontSize: '13px'}}>{row.issue}</span> },
+    { header: 'Severity', accessor: 'severity', render: (row) => <StatusBadge status={row.severity} /> },
+    { header: 'Assignee', accessor: 'assignee' },
+    { header: 'Date', accessor: 'date' }
+  ];
+
+  const [filterTrigger, setFilterTrigger] = useState(0);
+
+  const m = dateRange === 'This Quarter' ? 1 : dateRange === 'Last 30 Days' ? 0.3 : 3;
+
+  const dynTopServices = useMemo(() => topServices.slice(0, Math.max(2, Math.floor(topServices.length * (m >= 1 ? 1 : m * 1.5)))), [m, filterTrigger]);
+  
+  const dynRecentOrders = useMemo(() => {
+    let filtered = recentOrders.filter(t => {
+      if (category !== 'All Categories' && t.service !== category) return false;
+      if (statusFilter !== 'All Status' && t.status !== statusFilter) return false;
+      return true;
+    });
+    return filtered.slice(0, Math.max(2, Math.floor(filtered.length * (m >= 1 ? 1 : m * 1.5))));
+  }, [m, filterTrigger, category, statusFilter]);
+
+  const dynSlaAlerts = useMemo(() => slaAlerts.slice(0, Math.max(2, Math.floor(slaAlerts.length * (m >= 1 ? 1 : m * 1.5)))), [m, filterTrigger]);
+
+  const renderActions = (row) => (
+    <div className="action-btn-group">
+      <button className="action-icon-btn" title="View Details" onClick={() => toast.success('Viewing Details')}><Eye size={16} /></button>
+    </div>
+  );
+
+  const handleRefresh = () => {
+    setFilterTrigger(prev => prev + 1);
+    toast.success('Dashboard data refreshed successfully.');
+  };
+
+  const handleExport = () => {
+    toast.success('Services report exported successfully!');
+  };
+
+
   return (
     <AdminShell
       activeTab="Services"
@@ -197,69 +241,84 @@ export default function ServiceDashboard() {
         <div className="svc-dash-filters">
           <div className="svc-filter-group">
             <label>Date Range</label>
-            <div className="svc-filter-select">
+            <div className="svc-filter-select" style={{ position: 'relative' }}>
+              <select value={dateRange} onChange={e => setDateRange(e.target.value)} style={{ appearance: 'none', width: '100%', height: '100%', position: 'absolute', opacity: 0, cursor: 'pointer', left: 0, top: 0 }}>
+                <option>This Quarter</option>
+                <option>Last 30 Days</option>
+                <option>This Year</option>
+              </select>
               <span>{dateRange}</span>
               <ChevronDown size={14} />
             </div>
           </div>
           <div className="svc-filter-group">
             <label>Category</label>
-            <div className="svc-filter-select">
+            <div className="svc-filter-select" style={{ position: 'relative' }}>
+              <select value={category} onChange={e => setCategory(e.target.value)} style={{ appearance: 'none', width: '100%', height: '100%', position: 'absolute', opacity: 0, cursor: 'pointer', left: 0, top: 0 }}>
+                <option>All Categories</option>
+                <option>AC Services</option>
+                <option>Plumbing</option>
+                <option>Electrical</option>
+                <option>Cleaning</option>
+              </select>
               <span>{category}</span>
               <ChevronDown size={14} />
             </div>
           </div>
           <div className="svc-filter-group">
             <label>Region</label>
-            <div className="svc-filter-select">
+            <div className="svc-filter-select" style={{ position: 'relative' }}>
+              <select value={region} onChange={e => setRegion(e.target.value)} style={{ appearance: 'none', width: '100%', height: '100%', position: 'absolute', opacity: 0, cursor: 'pointer', left: 0, top: 0 }}>
+                <option>All Regions</option>
+                <option>North</option>
+                <option>South</option>
+                <option>East</option>
+                <option>West</option>
+              </select>
               <span>{region}</span>
               <ChevronDown size={14} />
             </div>
           </div>
           <div className="svc-filter-group">
             <label>Status</label>
-            <div className="svc-filter-select">
+            <div className="svc-filter-select" style={{ position: 'relative' }}>
+              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ appearance: 'none', width: '100%', height: '100%', position: 'absolute', opacity: 0, cursor: 'pointer', left: 0, top: 0 }}>
+                <option>All Status</option>
+                <option>Completed</option>
+                <option>In Progress</option>
+                <option>Cancelled</option>
+              </select>
               <span>{statusFilter}</span>
               <ChevronDown size={14} />
             </div>
           </div>
           <div className="svc-filter-actions">
-            <button className="svc-filter-btn-refresh"><RefreshCw size={15} /> Refresh</button>
-            <button className="svc-filter-btn-export"><Download size={15} /> Export Report</button>
+            <button className="svc-filter-btn-refresh" onClick={handleRefresh}><RefreshCw size={15} /> Refresh</button>
+            <button className="svc-filter-btn-export" onClick={handleExport}><Download size={15} /> Export Report</button>
           </div>
         </div>
 
         {/* ── Stat Cards ── */}
         <div className="svc-dash-stats-grid">
           <StatCard
-            icon={DollarSign} iconBg="#eff6ff" iconColor="#2563eb"
-            value="₹42,00,000" label="Total Revenue" sublabel="This Quarter"
-            trend="+12%" trendUp={true} trendLabel="vs last quarter"
+            icon={Layers} iconBg="#eff6ff" iconColor="#2563eb"
+            value={Math.floor(248 * m)} label="Total Services" sublabel="Active offerings"
+            trend="+12" trendUp={true} trendLabel="new this qtr"
           />
           <StatCard
-            icon={Clock} iconBg="#fef2f2" iconColor="#dc2626"
-            value="2.4d" label="Avg. Fulfillment" sublabel="Per Order"
-            trend="-0.3d" trendUp={false} trendLabel="vs last quarter"
+            icon={DollarSign} iconBg="#f0fdf4" iconColor="#16a34a"
+            value={`₹${(34.2 * m).toFixed(1)}L`} label="Service Revenue" sublabel="This Quarter"
+            trend="+18.4%" trendUp={true} trendLabel="vs prev"
           />
           <StatCard
-            icon={Layers} iconBg="#fff7ed" iconColor="#ea580c"
-            value="1,842" label="Active Orders" sublabel="Currently Active"
-            trend="+3.6%" trendUp={true} trendLabel="vs last quarter"
+            icon={Clock} iconBg="#fef3c7" iconColor="#d97706"
+            value={`${Math.floor(45 * (2 - (m > 1 ? 1 : m)))}m`} label="Avg SLA Time" sublabel="Resolution speed"
+            trend="-12%" trendUp={true} trendLabel="improvement"
           />
           <StatCard
-            icon={ThumbsUp} iconBg="#f0fdf4" iconColor="#16a34a"
-            value="4.8/5" label="Customer CSAT" sublabel="Avg Rating"
-            trend="+0.2" trendUp={true} trendLabel="vs last quarter"
-          />
-          <StatCard
-            icon={TrendingUp} iconBg="#faf5ff" iconColor="#9333ea"
-            value="94.6%" label="SLA Compliance" sublabel="This Quarter"
-            trend="+1.8%" trendUp={true} trendLabel="vs last quarter"
-          />
-          <StatCard
-            icon={AlertTriangle} iconBg="#fff1f2" iconColor="#e11d48"
-            value="4" label="SLA Breaches" sublabel="This Month"
-            trend="-33%" trendUp={false} trendLabel="vs last month"
+            icon={ThumbsUp} iconBg="#faf5ff" iconColor="#9333ea"
+            value={(4.7).toFixed(1)} label="Avg Rating" sublabel="Customer satisfaction"
+            trend="+0.2" trendUp={true} trendLabel="vs prev"
           />
         </div>
 
@@ -297,172 +356,119 @@ export default function ServiceDashboard() {
             </div>
           </div>
 
-          {/* Revenue Mix Donut */}
-          <div className="svc-dash-card">
-            <div className="svc-dash-card-header">
-              <h3>Revenue Mix</h3>
-            </div>
-            <div className="svc-donut-content">
-              <div className="svc-donut-wrap">
-                <PieChart width={160} height={160}>
-                  <Pie data={revenueMixData} cx={75} cy={75} innerRadius={50} outerRadius={72} dataKey="value" startAngle={90} endAngle={-270} stroke="none">
-                    {revenueMixData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                  </Pie>
-                </PieChart>
-                <div style={{ position: 'absolute', textAlign: 'center', pointerEvents: 'none' }}>
-                  <span style={{ display: 'block', fontSize: '20px', fontWeight: 800, color: '#1e293b' }}>62%</span>
-                  <span style={{ display: 'block', fontSize: '10px', color: '#64748b', fontWeight: 600 }}>Subs.</span>
-                </div>
-              </div>
-              <DonutLegend data={revenueMixData} />
-            </div>
-          </div>
-
-          {/* Category Revenue Donut */}
-          <div className="svc-dash-card">
-            <div className="svc-dash-card-header">
-              <h3>Revenue by Category</h3>
-            </div>
-            <div className="svc-donut-content">
-              <div className="svc-donut-wrap">
-                <PieChart width={160} height={160}>
-                  <Pie data={categoryRevenueData} cx={75} cy={75} innerRadius={50} outerRadius={72} dataKey="value" startAngle={90} endAngle={-270} stroke="none">
-                    {categoryRevenueData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                  </Pie>
-                </PieChart>
-                <div style={{ position: 'absolute', textAlign: 'center', pointerEvents: 'none' }}>
-                  <span style={{ display: 'block', fontSize: '20px', fontWeight: 800, color: '#1e293b' }}>5</span>
-                  <span style={{ display: 'block', fontSize: '10px', color: '#64748b', fontWeight: 600 }}>Cats</span>
-                </div>
-              </div>
-              <DonutLegend data={categoryRevenueData} />
-            </div>
-          </div>
-        </div>
-
-        {/* ── Mid Row ── */}
-        <div className="svc-dash-mid-row">
-
           {/* Top Performing Services */}
-          <div className="svc-dash-card">
-            <div className="svc-dash-card-header">
+          <div className="admin-dash-card">
+            <div className="admin-dash-card-header">
               <h3>Top Performing Services</h3>
-              <a href="#details" onClick={e => e.preventDefault()} style={{ fontSize: 12, color: '#4f46e5', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
-                View All <ArrowUpRight size={14} />
-              </a>
             </div>
-            <div className="svc-table-container">
-              <table className="svc-dash-table">
-                <thead>
-                  <tr>
-                    <th>Service</th>
-                    <th>Category</th>
-                    <th>Revenue</th>
-                    <th>Orders</th>
-                    <th>Rating</th>
-                    <th>Status</th>
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '700px' }}>
+              <thead>
+                <tr>
+                  <th>Service</th>
+                  <th>Category</th>
+                  <th>Revenue</th>
+                  <th>Orders</th>
+                  <th>Rating</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dynTopServices.map((s, i) => (
+                  <tr key={i}>
+                    <td><span style={{fontWeight: 600, color: '#1e293b'}}>{s.name}</span></td>
+                    <td><span className="premium-chip premium-chip-indigo">{s.category}</span></td>
+                    <td><span style={{fontWeight: 600, color: '#16a34a'}}>{s.revenue}</span></td>
+                    <td>{s.orders}</td>
+                    <td>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>
+                        <Star size={14} color="#f59e0b" fill="#f59e0b" /> {s.rating}
+                      </span>
+                    </td>
+                    <td><StatusBadge status={s.status} /></td>
                   </tr>
-                </thead>
-                <tbody>
-                  {topServices.map((s, i) => (
-                    <tr key={i}>
-                      <td className="svc-bold-cell">{s.name}</td>
-                      <td>{s.category}</td>
-                      <td className="svc-revenue-cell">{s.revenue}</td>
-                      <td>{s.orders}</td>
-                      <td>
-                        <span className="svc-rating">
-                          <Star size={12} color="#f59e0b" fill="#f59e0b" /> {s.rating}
-                        </span>
-                      </td>
-                      <td><SvcStatusBadge status={s.status} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))}
+              </tbody>
+            </table>
             </div>
-            <div className="svc-dash-view-all">
-              <button>View All Services <ChevronRight size={14} /></button>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to All Services')}>View All Services <ChevronRight size={14} /></button>
             </div>
           </div>
 
           {/* Recent Orders */}
-          <div className="svc-dash-card">
-            <div className="svc-dash-card-header">
-              <h3>Recent Orders</h3>
+          <div className="admin-dash-card">
+            <div className="admin-dash-card-header">
+              <h3>Recent Service Orders</h3>
             </div>
-            <div className="svc-table-container">
-              <table className="svc-dash-table">
-                <thead>
-                  <tr>
-                    <th>Order ID</th>
-                    <th>Service</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th></th>
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '600px' }}>
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Service</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dynRecentOrders.map((o, i) => (
+                  <tr key={i}>
+                    <td><span style={{fontWeight: 600, color: '#4f46e5'}}>{o.id}</span></td>
+                    <td><span style={{fontWeight: 600, color: '#1e293b'}}>{o.service}</span></td>
+                    <td><span style={{fontWeight: 600}}>{o.amount}</span></td>
+                    <td><StatusBadge status={o.status} /></td>
+                    <td>{o.date}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {recentOrders.map((o, i) => (
-                    <tr key={i}>
-                      <td className="svc-id-cell">{o.id}</td>
-                      <td className="svc-bold-cell">{o.service}</td>
-                      <td style={{ fontWeight: 600 }}>{o.amount}</td>
-                      <td><SvcStatusBadge status={o.status} /></td>
-                      <td className="svc-date-cell">{o.date}</td>
-                      <td>
-                        <button className="svc-btn-icon"><Eye size={14} /></button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))}
+              </tbody>
+            </table>
             </div>
-            <div className="svc-dash-view-all">
-              <button>View All Orders <ChevronRight size={14} /></button>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to All Orders')}>View All Orders <ChevronRight size={14} /></button>
+            </div>
+          </div>
+
+          {/* SLA Alerts Table */}
+          <div className="admin-dash-card">
+            <div className="admin-dash-card-header">
+              <h3>SLA Alerts & Escalations</h3>
+            </div>
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="rev-dash-table" style={{ width: '100%', minWidth: '700px' }}>
+              <thead>
+                <tr>
+                  <th>Alert ID</th>
+                  <th>Service</th>
+                  <th>Issue</th>
+                  <th>Severity</th>
+                  <th>Assignee</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dynSlaAlerts.map((a, i) => (
+                  <tr key={i}>
+                    <td><span style={{fontWeight: 600, color: '#4f46e5'}}>{a.id}</span></td>
+                    <td><span style={{fontWeight: 600, color: '#1e293b'}}>{a.service}</span></td>
+                    <td><span style={{color: '#64748b', fontSize: '13px'}}>{a.issue}</span></td>
+                    <td><StatusBadge status={a.severity} /></td>
+                    <td>{a.assignee}</td>
+                    <td>{a.date}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            </div>
+            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+              <button onClick={() => toast.success('Navigating to Escalations')}>View All Escalations <ChevronRight size={14} /></button>
             </div>
           </div>
         </div>
 
         {/* ── Bottom Row ── */}
         <div className="svc-dash-bottom-row">
-
-          {/* SLA Alerts Table */}
-          <div className="svc-dash-card">
-            <div className="svc-dash-card-header">
-              <h3>SLA Alerts <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 400 }}>(This Month)</span></h3>
-            </div>
-            <div className="svc-table-container">
-              <table className="svc-dash-table">
-                <thead>
-                  <tr>
-                    <th>Alert ID</th>
-                    <th>Service</th>
-                    <th>Issue</th>
-                    <th>Severity</th>
-                    <th>Assignee</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {slaAlerts.map((a, i) => (
-                    <tr key={i}>
-                      <td className="svc-id-cell">{a.id}</td>
-                      <td className="svc-bold-cell">{a.service}</td>
-                      <td style={{ color: '#64748b', fontSize: 12 }}>{a.issue}</td>
-                      <td><SeverityBadge severity={a.severity} /></td>
-                      <td>{a.assignee}</td>
-                      <td className="svc-date-cell">{a.date}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="svc-dash-view-all">
-              <button>View All Alerts <ChevronRight size={14} /></button>
-            </div>
-          </div>
 
           {/* Global Service Density */}
           <div className="svc-dash-card">

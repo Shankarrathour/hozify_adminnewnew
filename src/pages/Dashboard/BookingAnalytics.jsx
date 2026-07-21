@@ -1,255 +1,413 @@
 import React, { useState } from 'react';
 import {
-  Calendar, CheckCircle, XCircle, Clock, Users, User, Briefcase, Star,
-  Download, ChevronDown, Eye, DollarSign, Activity, CalendarCheck, ShieldCheck, RefreshCcw
+  CalendarCheck, CheckCircle, XCircle, Clock, Users, User, Briefcase, Star,
+  Eye, ChevronDown, ChevronLeft, ChevronRight, Download, RefreshCcw, DollarSign
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
 import { useToast } from '../../components/common/ToastNotification';
 import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 
-// ─── MOCK DATA ────────────────────────────────────────────────────────────────
+/* ─────────────────── Mock Data ─────────────────── */
 
 const bookingsOverTime = [
-  { day:'01 May', total:150, completed:100, pending:50 },
-  { day:'05 May', total:180, completed:120, pending:60 },
-  { day:'10 May', total:240, completed:180, pending:60 },
-  { day:'15 May', total:290, completed:210, pending:80 },
-  { day:'20 May', total:320, completed:250, pending:70 },
-  { day:'25 May', total:380, completed:310, pending:70 },
-  { day:'31 May', total:420, completed:350, pending:70 },
+  { day: '01 May', total: 150, completed: 100, pending: 50 },
+  { day: '05 May', total: 180, completed: 120, pending: 60 },
+  { day: '10 May', total: 240, completed: 180, pending: 60 },
+  { day: '15 May', total: 290, completed: 210, pending: 80 },
+  { day: '20 May', total: 320, completed: 250, pending: 70 },
+  { day: '25 May', total: 380, completed: 310, pending: 70 },
+  { day: '31 May', total: 420, completed: 350, pending: 70 },
 ];
 
 const categoryDist = [
-  { name:'Home Services', value:1450, color:'#3b82f6', pct:'45.0%' },
-  { name:'Beauty & Salon', value:950, color:'#ec4899', pct:'29.5%' },
-  { name:'Cleaning', value:820, color:'#22c55e', pct:'25.5%' },
-];
-
-const paymentDist = [
-  { name:'Paid Online', value:2150, color:'#22c55e', pct:'66.8%' },
-  { name:'Cash on Delivery', value:1070, color:'#f59e0b', pct:'33.2%' },
+  { name: 'Home Services', value: 1450, color: '#3b82f6', pct: '45.0%' },
+  { name: 'Beauty & Salon', value: 950,  color: '#ec4899', pct: '29.5%' },
+  { name: 'Cleaning',       value: 820,  color: '#22c55e', pct: '25.5%' },
 ];
 
 const statusDist = [
-  { name:'Completed', value:2450, color:'#22c55e', pct:'76.1%' },
-  { name:'Pending', value:620, color:'#f59e0b', pct:'19.2%' },
-  { name:'Cancelled', value:150, color:'#ef4444', pct:'4.7%' },
+  { name: 'Completed', value: 2450, color: '#22c55e', pct: '76.1%' },
+  { name: 'Pending',   value: 620,  color: '#f59e0b', pct: '19.2%' },
+  { name: 'Cancelled', value: 150,  color: '#ef4444', pct: '4.7%'  },
 ];
 
-const revenueDist = [
-  { name:'Home Services', value:45000, color:'#3b82f6', pct:'42.8%' },
-  { name:'Beauty & Salon', value:35000, color:'#ec4899', pct:'33.3%' },
-  { name:'Cleaning', value:25000, color:'#22c55e', pct:'23.9%' },
+const paymentDist = [
+  { name: 'Paid Online',       value: 2150, color: '#22c55e', pct: '66.8%' },
+  { name: 'Cash on Delivery',  value: 1070, color: '#f59e0b', pct: '33.2%' },
 ];
 
 const upcomingBookings = [
-  { id:'BK-98462', date:'05 Jun 2026', customer:'Ramesh Kumar', status:'Pending' },
-  { id:'BK-75663', date:'06 Jun 2026', customer:'Suresh Babu', status:'Assigned' },
-  { id:'BK-14487', date:'07 Jun 2026', customer:'Priya Sharma', status:'Pending' },
-  { id:'BK-16219', date:'08 Jun 2026', customer:'Anil Kumar', status:'Assigned' },
-  { id:'BK-18351', date:'09 Jun 2026', customer:'Kavitha Reddy', status:'Pending' },
+  { id: 'BK-98462', expires: '05 Jun 2026', generatedBy: 'User',    daysLeft: 3, danger: true  },
+  { id: 'BK-75663', expires: '06 Jun 2026', generatedBy: 'Partner', daysLeft: 4, danger: true  },
+  { id: 'BK-14487', expires: '07 Jun 2026', generatedBy: 'User',    daysLeft: 5, danger: false },
+  { id: 'BK-16219', expires: '08 Jun 2026', generatedBy: 'Partner', daysLeft: 6, danger: false },
+  { id: 'BK-18351', expires: '09 Jun 2026', generatedBy: 'User',    daysLeft: 7, danger: false },
 ];
 
-const topServices = [
-  { rank:1, name:'Deep Cleaning', bookings:452 },
-  { rank:2, name:'AC Repair', bookings:398 },
-  { rank:3, name:'Plumbing', bookings:275 },
-  { rank:4, name:'Hair Cut & Spa', bookings:264 },
-  { rank:5, name:'Pest Control', bookings:152 },
+const topPerformerUsers = [
+  { rank: 1, name: 'Ramesh Kumar',   bookings: 26 },
+  { rank: 2, name: 'Vikram Mehta',   bookings: 21 },
+  { rank: 3, name: 'Neha Gupta',     bookings: 18 },
+  { rank: 4, name: 'Sandeep Sharma', bookings: 15 },
+  { rank: 5, name: 'Anjali Verma',   bookings: 12 },
 ];
-const topProfessionals = [
-  { rank:1, name:'Tech Revive Solutions', bookings:168 },
-  { rank:2, name:'QuickFix Services', bookings:147 },
-  { rank:3, name:'Home Care Pro', bookings:139 },
-  { rank:4, name:'Service Hub India', bookings:131 },
-  { rank:5, name:'Bright Services', bookings:127 },
+
+const topPerformerPartners = [
+  { rank: 1, name: 'Tech Revive Solutions', bookings: 68 },
+  { rank: 2, name: 'QuickFix Services',     bookings: 47 },
+  { rank: 3, name: 'Home Care Pro',         bookings: 39 },
+  { rank: 4, name: 'Service Hub India',     bookings: 31 },
+  { rank: 5, name: 'Bright Services',       bookings: 27 },
 ];
-const topCustomers = [
-  { rank:1, name:'Rajesh Singhania', totalVal:'₹45,200', bookings:26 },
-  { rank:2, name:'Vikram Mehta', totalVal:'₹34,100', bookings:21 },
-  { rank:3, name:'Neha Gupta', totalVal:'₹28,900', bookings:18 },
-  { rank:4, name:'Sandeep Sharma', totalVal:'₹25,300', bookings:15 },
-  { rank:5, name:'Anjali Verma', totalVal:'₹21,700', bookings:12 },
+
+const topPerformerServices = [
+  { rank: 1, name: 'Deep Cleaning',  uBookings: 218, pBookings: 108, tBookings: 326 },
+  { rank: 2, name: 'AC Repair',      uBookings: 164, pBookings: 77,  tBookings: 241 },
+  { rank: 3, name: 'Plumbing',       uBookings: 131, pBookings: 58,  tBookings: 189 },
+  { rank: 4, name: 'Hair Cut & Spa', uBookings: 104, pBookings: 49,  tBookings: 153 },
+  { rank: 5, name: 'Pest Control',   uBookings: 86,  pBookings: 41,  tBookings: 127 },
 ];
 
 const servicePerformance = [
-  { type:'Deep Cleaning', bookings:856, completed:732, revenue:41250, pct:47.7, color:'#3b82f6' },
-  { type:'AC Repair', bookings:642, completed:521, revenue:26530, pct:30.7, color:'#22c55e' },
-  { type:'Plumbing', bookings:412, completed:298, revenue:12560, pct:14.5, color:'#f59e0b' },
-  { type:'Hair Cut & Spa', bookings:218, completed:144, revenue:6080,  pct:7.0,  color:'#ec4899' },
+  { type: 'Deep Cleaning',  total: 856, completed: 732, revenue: 41250, pct: 47.7, color: '#3b82f6' },
+  { type: 'AC Repair',      total: 642, completed: 521, revenue: 26530, pct: 30.7, color: '#22c55e' },
+  { type: 'Plumbing',       total: 412, completed: 298, revenue: 12560, pct: 14.5, color: '#f59e0b' },
+  { type: 'Hair Cut & Spa', total: 218, completed: 144, revenue: 6080,  pct: 7.0,  color: '#ec4899' },
 ];
 
-const bookingsTable = [
-  { id:'BK-98462', category:'Home Services', service:'AC Repair', customer:'Ramesh Kumar', professional:'Tech Revive', status:'Completed', amount:'₹1,250.00', date:'05 Jun 2026', created:'05 May 2026' },
-  { id:'BK-75663', category:'Cleaning', service:'Deep Cleaning', customer:'Suresh Electricals', professional:'Home Care Pro', status:'Completed', amount:'₹2,450.00', date:'06 Jun 2026', created:'06 May 2026' },
-  { id:'BK-14487', category:'Beauty & Salon', service:'Hair Cut & Spa', customer:'Tech Review Hub', professional:'Beauty Hub', status:'Pending', amount:'₹780.00', date:'07 Jun 2026', created:'07 May 2026' },
-  { id:'BK-16219', category:'Home Services', service:'Plumbing', customer:'Priya Sharma', professional:'QuickFix', status:'Cancelled', amount:'₹100.00', date:'08 Jun 2026', created:'08 May 2026' },
-  { id:'BK-18351', category:'Cleaning', service:'Pest Control', customer:'QuickFix Services', professional:'Pest Experts', status:'Completed', amount:'₹1,360.00', date:'09 Jun 2026', created:'09 May 2026' },
+const bookingsPerformance = [
+  { id: 'BK-98462', genBy: 'User',    name: 'Ramesh Kumar',       category: 'Home Services', status: 'Completed',      userBookings: 18, partnerBookings: 7,  total: 25, service: 'AC Repair',    amount: '₹1,250.00', expires: '05 Jun 2026', created: '05 May 2026' },
+  { id: 'BK-75663', genBy: 'Partner', name: 'Suresh Electricals', category: 'Cleaning',      status: 'Completed',      userBookings: 32, partnerBookings: 13, total: 45, service: 'Deep Cleaning', amount: '₹2,450.00', expires: '06 Jun 2026', created: '06 May 2026' },
+  { id: 'BK-14487', genBy: 'User',    name: 'Tech Review Hub',    category: 'Beauty & Salon', status: 'Pending',        userBookings: 60, partnerBookings: 18, total: 78, service: 'Hair Cut & Spa', amount: '₹780.00',   expires: '07 Jun 2026', created: '07 May 2026' },
+  { id: 'BK-16219', genBy: 'Partner', name: 'Priya Sharma',       category: 'Home Services', status: 'Cancelled',      userBookings: 9,  partnerBookings: 1,  total: 10, service: 'Plumbing',     amount: '₹100.00',   expires: '08 Jun 2026', created: '08 May 2026' },
+  { id: 'BK-18351', genBy: 'User',    name: 'QuickFix Services',  category: 'Cleaning',      status: 'Completed',      userBookings: 24, partnerBookings: 12, total: 36, service: 'Pest Control', amount: '₹1,360.00', expires: '09 Jun 2026', created: '09 May 2026' },
 ];
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
+/* ─────────────────── Helpers ─────────────────── */
 
 function fmtNum(n) {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
   if (n >= 1_000) return n.toLocaleString();
   return String(n);
 }
-function fmtCurr(n) {
-  if (n >= 1_000_000) return '₹' + (n / 1_000_000).toFixed(1) + 'M';
-  if (n >= 1_000) return '₹' + (n / 1_000).toFixed(1) + 'k';
-  return '₹' + String(n);
+
+function StatusBadge({ status }) {
+  const map = {
+    'Completed': { bg: '#f0fdf4', color: '#16a34a' },
+    'Pending':   { bg: '#fffbeb', color: '#d97706' },
+    'Cancelled': { bg: '#fff1f2', color: '#dc2626' },
+  };
+  const s = map[status] || { bg: '#f1f5f9', color: '#64748b' };
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center',
+      padding: '2px 8px', borderRadius: 20,
+      fontSize: 10.5, fontWeight: 700,
+      background: s.bg, color: s.color,
+    }}>{status}</span>
+  );
 }
 
-function DonutCenter({ viewBox, value, label }) {
+function LineTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{ background: '#1e293b', borderRadius: 10, padding: '10px 14px', fontSize: 11 }}>
+      <div style={{ color: '#94a3b8', fontWeight: 700, marginBottom: 6 }}>{label}</div>
+      {payload.map(p => (
+        <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: p.color, display: 'inline-block' }} />
+          <span style={{ color: '#cbd5e1' }}>{p.name}:</span>
+          <strong style={{ color: '#fff' }}>{fmtNum(p.value)}</strong>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DonutCenterLabel({ viewBox, value, label }) {
   const { cx, cy } = viewBox;
   return (
     <g>
-      <text x={cx} y={cy - 7} textAnchor="middle" fill="#0f172a" fontSize={15} fontWeight={800}>{value}</text>
+      <text x={cx} y={cy - 6} textAnchor="middle" fill="#0f172a" fontSize={14} fontWeight={800}>{value}</text>
       <text x={cx} y={cy + 9}  textAnchor="middle" fill="#94a3b8" fontSize={8}  fontWeight={600}>{label}</text>
     </g>
   );
 }
 
-const LineTooltip = ({ active, payload, label }) => {
-  if (!active || !payload?.length) return null;
+function DonutCard({ title, data, centerValue, centerLabel }) {
   return (
-    <div style={{ background:'#1e293b', borderRadius:10, padding:'10px 14px', fontSize:11 }}>
-      <div style={{ color:'#94a3b8', fontWeight:700, marginBottom:6 }}>{label}</div>
-      {payload.map(p => (
-        <div key={p.name} style={{ display:'flex', alignItems:'center', gap:6, marginBottom:3 }}>
-          <span style={{ width:7, height:7, borderRadius:'50%', background:p.color, display:'inline-block' }} />
-          <span style={{ color:'#cbd5e1' }}>{p.name}:</span>
-          <strong style={{ color:'#fff' }}>{fmtNum(p.value)}</strong>
+    <div className="ref-card ref-donut-card">
+      <div className="ref-card-header">
+        <h3 className="ref-card-title">{title}</h3>
+      </div>
+      <div className="ref-donut-body">
+        <PieChart width={130} height={130}>
+          <Pie
+            data={data} cx={65} cy={65}
+            innerRadius={38} outerRadius={60}
+            paddingAngle={2} dataKey="value"
+            startAngle={90} endAngle={-270}
+          >
+            {data.map((e, i) => <Cell key={i} fill={e.color} />)}
+            <DonutCenterLabel viewBox={{ cx: 65, cy: 65 }} value={centerValue} label={centerLabel} />
+          </Pie>
+          <Tooltip formatter={v => fmtNum(v)} />
+        </PieChart>
+        <div className="ref-donut-legend">
+          {data.map((item, i) => (
+            <div key={i} className="ref-donut-legend-row">
+              <span className="ref-donut-dot" style={{ background: item.color }} />
+              <span className="ref-donut-name">{item.name}</span>
+              <span className="ref-donut-val">{fmtNum(item.value)}</span>
+              <span className="ref-donut-pct">({item.pct})</span>
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
-  );
-};
-
-function FilterSelect({ label, options }) {
-  return (
-    <div style={{ display:'flex', flexDirection:'column', gap:3, flex:1, minWidth:110 }}>
-      {label && <label style={{ fontSize:10, fontWeight:600, color:'#0f172a', letterSpacing:0.3 }}>{label}</label>}
-      <div style={{ position:'relative' }}>
-        <select style={{
-          appearance:'none', background:'#fff', border:'1px solid #dde3ea',
-          borderRadius:6, padding:'6px 26px 6px 10px', fontSize:11.5,
-          fontWeight:500, color:'#334155', cursor:'pointer', outline:'none', width:'100%',
-        }}>
-          {options.map(o => <option key={o}>{o}</option>)}
-        </select>
-        <ChevronDown size={11} style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', color:'#94a3b8', pointerEvents:'none' }} />
       </div>
     </div>
   );
 }
 
-// ─── MAIN ────────────────────────────────────────────────────────────────────
+/* ─────────────────── Main Component ─────────────────── */
+
 export default function BookingAnalytics({ activeTab = 'Bookings Dashboard' }) {
   const { addToast } = useToast();
-  const [period, setPeriod] = useState('Monthly');
+  const [period, setPeriod]       = useState('Monthly');
+  const [chartFreq, setChartFreq] = useState('Daily');
+  const [viewAllModal, setViewAllModal] = useState(null);
+  const [filterTrigger, setFilterTrigger] = useState(0);
 
-  const topKpis = [
-    { label:'Total Bookings', value:3220, sub:'↑ 18.6% vs Apr 2026', color:'#3b82f6', bg:'#eff6ff', icon:CalendarCheck },
-    { label:'Completed Bookings', value:2450, sub:'76.1% of total ↑ 12.5%', color:'#22c55e', bg:'#f0fdf4', icon:CheckCircle },
-    { label:'Pending Bookings', value:620, sub:'19.2% of total ↓ 5.8%', color:'#f59e0b', bg:'#fffbeb', icon:Clock },
-    { label:'Cancelled Bookings', value:150, sub:'4.7% of total', color:'#ef4444', bg:'#fff1f2', icon:XCircle },
-    { label:'Total Revenue', value:105000, isCurr:true, sub:'↑ 22.4% vs Apr 2026', color:'#8b5cf6', bg:'#f5f3ff', icon:DollarSign },
-    { label:'Assigned Bookings', value:2150, sub:'66.8% of total', color:'#22c55e', bg:'#f0fdf4', icon:User },
-    { label:'Refunded Bookings', value:85, sub:'2.6% of total', color:'#ef4444', bg:'#fff1f2', icon:RefreshCcw },
-    { label:'Average Booking Value', value:0, isCustom:true, color:'#f59e0b', bg:'#fffbeb', icon:Activity },
+  const m = filterTrigger === 0 ? 1 : 1 + ((filterTrigger % 5) * 0.15);
+
+  const dynTopKpis = [
+    { label: 'Total Bookings',      value: Math.floor(3220 * m),  sub: '↑ 18.6% vs Apr 2026',      trend: 'up',      icon: CalendarCheck, iconColor: '#3b82f6', iconBg: '#eff6ff' },
+    { label: 'Completed Bookings',  value: Math.floor(2450 * m),  sub: '76.1% of total ↑ 12.5%',  trend: 'up',      icon: CheckCircle,   iconColor: '#22c55e', iconBg: '#f0fdf4' },
+    { label: 'Pending Bookings',    value: Math.floor(620 * m),   sub: '19.2% of total ↓ 5.8%',   trend: 'down',    icon: Clock,         iconColor: '#f59e0b', iconBg: '#fffbeb' },
+    { label: 'Cancelled Bookings',  value: Math.floor(150 * m),   sub: '4.7% of total',            trend: 'neutral', icon: XCircle,       iconColor: '#ef4444', iconBg: '#fff1f2' },
+    { label: 'Total Revenue',       value: Math.floor(105000 * m),sub: '↑ 22.4% vs Apr 2026',      trend: 'up',      icon: DollarSign,    iconColor: '#8b5cf6', iconBg: '#f5f3ff' },
+    { label: 'Total Customers',     value: Math.floor(8642 * m),  sub: '↑ 15.2% vs Apr 2026',      trend: 'up',      icon: Users,         iconColor: '#3b82f6', iconBg: '#eff6ff' },
+    { label: 'Assigned Bookings',   value: Math.floor(2150 * m),  sub: '66.8% of total',           trend: 'neutral', icon: User,          iconColor: '#22c55e', iconBg: '#f0fdf4' },
+    { label: 'Booking Partners', isCustom: true, icon: Briefcase, iconColor: '#f59e0b', iconBg: '#fffbeb' },
   ];
 
-  const subKpis = [
-    { label:'Home Services', value:1450, sub:'45.0% of total', unused:450, unusedPct:'31.0%', color:'#3b82f6', bg:'#eff6ff', icon:ShieldCheck },
-    { label:'Beauty & Salon', value:950, sub:'29.5% of total', unused:210, unusedPct:'22.1%', color:'#ec4899', bg:'#fdf2f8', icon:User },
-    { label:'Cleaning', value:820, sub:'25.5% of total', unused:160, unusedPct:'19.5%', color:'#22c55e', bg:'#f0fdf4', icon:Briefcase },
+  const dynSubKpis = [
+    { label: 'Home Services',  value: Math.floor(1450 * m), sub: '45.0% of total', unused: Math.floor(450 * m), unusedPct: '31.0%', icon: CalendarCheck, iconColor: '#3b82f6', iconBg: '#eff6ff' },
+    { label: 'Beauty & Salon', value: Math.floor(950 * m),  sub: '29.5% of total', unused: Math.floor(210 * m), unusedPct: '22.1%', icon: User,          iconColor: '#ec4899', iconBg: '#fdf2f8' },
+    { label: 'Cleaning',       value: Math.floor(820 * m),  sub: '25.5% of total', unused: Math.floor(160 * m), unusedPct: '19.5%', icon: Briefcase,     iconColor: '#22c55e', iconBg: '#f0fdf4' },
   ];
+
+  const dynCategoryDist   = categoryDist.map(k => ({ ...k, value: Math.floor(k.value * m) }));
+  const dynStatusDist     = statusDist.map(k => ({ ...k, value: Math.floor(k.value * m) }));
+  const dynPaymentDist    = paymentDist.map(k => ({ ...k, value: Math.floor(k.value * m) }));
+  const dynServicePerf    = servicePerformance.map(r => ({ ...r, total: Math.floor(r.total * m), completed: Math.floor(r.completed * m), revenue: Math.floor(r.revenue * m) }));
+  const dynBookingsPerf   = bookingsPerformance.map(c => ({
+    ...c,
+    userBookings: Math.floor(c.userBookings * m),
+    partnerBookings: Math.floor(c.partnerBookings * m),
+    total: Math.floor(c.total * m),
+  }));
+
+  const dynTopUsers       = topPerformerUsers.map(u => ({ ...u, bookings: Math.floor(u.bookings * m) }));
+  const dynTopPartners    = topPerformerPartners.map(u => ({ ...u, bookings: Math.floor(u.bookings * m) }));
+  const dynTopServices    = topPerformerServices.map(u => ({ ...u, uBookings: Math.floor(u.uBookings * m), pBookings: Math.floor(u.pBookings * m), tBookings: Math.floor(u.tBookings * m) }));
+
+  const chartDataWeekly = [
+    { day: 'Week 1', total: 420, completed: 320, pending: 100 },
+    { day: 'Week 2', total: 560, completed: 430, pending: 130 },
+    { day: 'Week 3', total: 780, completed: 620, pending: 160 },
+    { day: 'Week 4', total: 920, completed: 750, pending: 170 },
+  ];
+  const chartDataMonthly = [
+    { day: 'Jan', total: 2100, completed: 1600, pending: 500 },
+    { day: 'Feb', total: 2400, completed: 1850, pending: 550 },
+    { day: 'Mar', total: 2800, completed: 2200, pending: 600 },
+    { day: 'Apr', total: 3100, completed: 2450, pending: 650 },
+    { day: 'May', total: 3220, completed: 2450, pending: 620 },
+  ];
+
+  const dynChartData = (chartFreq === 'Weekly' ? chartDataWeekly : chartFreq === 'Monthly' ? chartDataMonthly : bookingsOverTime).map(d => ({
+    ...d,
+    total:     Math.floor(d.total * m),
+    completed: Math.floor(d.completed * m),
+    pending:   Math.floor(d.pending * m),
+  }));
 
   return (
     <AdminShell activeTab={activeTab} headerTitle="Bookings Dashboard" searchPlaceholder="Search pages, modules...">
-      <div style={{ padding:'20px 24px 48px', background:'#f8fafc', minHeight:'100vh', fontFamily:"'Inter',-apple-system,sans-serif" }}>
+      <div className="ref-dash-root">
 
-        {/* ── HEADER ── */}
-        <div style={{ marginBottom:16 }}>
-          <h1 style={{ fontSize:22, fontWeight:800, color:'#0f172a', margin:0 }}>Bookings Dashboard</h1>
-          <p style={{ fontSize:12, color:'#94a3b8', margin:'4px 0 0' }}>High-level overview of bookings performance and ecosystem health</p>
-        </div>
+        {/* ── Filter Bar ── */}
+        <div className="ref-filter-bar">
 
-        {/* ── FILTER BAR 1 ── */}
-        <div style={{
-          marginBottom:14,
-          display:'flex', alignItems:'center', flexWrap:'wrap', gap:12,
-        }}>
-          <FilterSelect label="City" options={['All Cities','Mumbai','Bengaluru']} />
-          <FilterSelect label="District" options={['All Districts','Andheri','Koramangala']} />
-          <FilterSelect label="Service" options={['All Services','Cleaning','Repair']} />
-          <FilterSelect label="Partner Vise" options={['All Partners','Partner A','Partner B']} />
-          
-          <div style={{ display:'flex', border:'1px solid #dde3ea', borderRadius:6, overflow:'hidden', marginTop:14 }}>
-            {['Daily','Weekly','Monthly','Yearly'].map((p, i) => (
-              <button key={p} onClick={() => setPeriod(p)} style={{
-                padding:'6px 12px', border:'none', borderLeft:i>0?'1px solid #dde3ea':'none',
-                fontSize:11.5, fontWeight:600, cursor:'pointer', transition:'all 0.15s',
-                background: period===p ? '#0f172a' : '#fff',
-                color: period===p ? '#fff' : '#64748b',
-              }}>{p}</button>
-            ))}
+          {/* Row 1: Location + Period + Month/Year + Apply/Reset */}
+          <div className="ref-filter-row">
+            <div className="ref-filter-group">
+              <label>State</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select" style={{ minWidth: '110px' }}>
+                  <option>All States</option>
+                  <option>Maharashtra</option>
+                  <option>Karnataka</option>
+                  <option>Tamil Nadu</option>
+                  <option>Delhi</option>
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            <div className="ref-filter-group">
+              <label>City</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select" style={{ minWidth: '110px' }}>
+                  <option>All Cities</option>
+                  <option>Mumbai</option>
+                  <option>Bengaluru</option>
+                  <option>Chennai</option>
+                  <option>Hyderabad</option>
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            <div className="ref-filter-group">
+              <label>District</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select" style={{ minWidth: '110px' }}>
+                  <option>All Districts</option>
+                  <option>Andheri</option>
+                  <option>Koramangala</option>
+                  <option>T. Nagar</option>
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            <div className="ref-filter-divider" />
+
+            <div className="ref-period-toggle" style={{ alignSelf: 'flex-end' }}>
+              {['Daily', 'Weekly', 'Monthly', 'Yearly'].map(p => (
+                <button
+                  key={p}
+                  className={`ref-period-btn${period === p ? ' active' : ''}`}
+                  onClick={() => setPeriod(p)}
+                >{p}</button>
+              ))}
+            </div>
+
+            <div className="ref-filter-group" style={{ minWidth: '90px' }}>
+              <label>Month</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select ref-select-sm">
+                  {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map(mon => (
+                    <option key={mon}>{mon}</option>
+                  ))}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            <div className="ref-filter-group" style={{ minWidth: '90px' }}>
+              <label>Year</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select ref-select-sm">
+                  {['2026','2025','2024','2023'].map(y => (
+                    <option key={y}>{y}</option>
+                  ))}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignSelf: 'flex-end' }}>
+              <button
+                className="ref-btn-primary"
+                onClick={() => { setFilterTrigger(prev => prev + 1); addToast('Filters applied', 'success'); }}
+              >Apply</button>
+              <button
+                className="ref-btn-secondary"
+                onClick={() => { setPeriod('Monthly'); setFilterTrigger(0); addToast('Filters reset', 'info'); }}
+              >Reset</button>
+            </div>
           </div>
 
-          <FilterSelect label="" options={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']} />
-          <FilterSelect label="" options={['2026', '2027', '2028', '2029', '2030', '2031', '2032', '2033', '2034', '2035']} />
+          {/* Row 2: Booking-specific filters */}
+          <div className="ref-filter-row">
+            <div className="ref-filter-group ref-filter-group-wide">
+              <label>Booking Category</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select">
+                  {['All','Home Services','Beauty & Salon','Cleaning'].map(o => <option key={o}>{o}</option>)}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
 
-          <div style={{ display:'flex', gap:8, marginTop:14 }}>
-            <button onClick={() => addToast('Filters applied','success')} style={{ padding:'7px 20px', borderRadius:6, border:'none', background:'#0f172a', color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer' }}>Apply</button>
-            <button onClick={() => { setPeriod('Monthly'); addToast('Filters reset','info'); }} style={{ padding:'7px 14px', borderRadius:6, border:'1px solid #dde3ea', background:'#fff', color:'#334155', fontSize:12, fontWeight:600, cursor:'pointer' }}>Reset</button>
+            <div className="ref-filter-group ref-filter-group-wide">
+              <label>Payment Status</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select">
+                  {['All','Paid Online','Cash on Delivery'].map(o => <option key={o}>{o}</option>)}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            <div className="ref-filter-divider" />
+
+            <div className="ref-filter-group ref-filter-group-wide">
+              <label>Service Type</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select">
+                  {['All','Deep Cleaning','AC Repair','Plumbing','Hair Cut & Spa'].map(o => <option key={o}>{o}</option>)}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
+
+            <div className="ref-filter-group ref-filter-group-wide">
+              <label>Booking Status</label>
+              <div className="ref-select-wrap">
+                <select className="ref-select">
+                  {['All','Completed','Pending','Cancelled'].map(o => <option key={o}>{o}</option>)}
+                </select>
+                <ChevronDown size={12} className="ref-select-arrow" />
+              </div>
+            </div>
           </div>
+
         </div>
 
-        {/* ── FILTER BAR 2 ── */}
-        <div style={{
-          marginBottom:14,
-          display:'flex', alignItems:'center', flexWrap:'wrap', gap:12,
-        }}>
-          <FilterSelect label="Booking Category" options={['All','Home Services','Beauty & Salon','Cleaning']} />
-          <FilterSelect label="Payment Status" options={['All','Paid Online','Cash on Delivery']} />
-          <FilterSelect label="Service Type" options={['All','Deep Cleaning','AC Repair','Plumbing','Hair Cut & Spa']} />
-          <FilterSelect label="Booking Status" options={['All','Completed','Pending','Cancelled']} />
-        </div>
-
-        {/* ── 8 KPI CARDS ── */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(8,1fr)', gap:8, marginBottom:14 }}>
-          {topKpis.map((k, i) => {
+        {/* ── 8 KPI Cards ── */}
+        <div className="ref-kpi-grid">
+          {dynTopKpis.map((k, i) => {
             const Icon = k.icon;
             return (
-              <div key={i} style={{
-                background:'#fff', borderRadius:10, padding:'12px',
-                boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2',
-                display:'flex', flexDirection:'column', gap:8
-              }}>
-                <div style={{ display:'flex', alignItems:'center', gap: 6 }}>
-                  <div style={{ background:k.bg, borderRadius:'50%', width:28, height:28, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                    <Icon size={14} color={k.color} />
+              <div key={i} className="ref-kpi-card">
+                <div className="ref-kpi-top-row">
+                  <div className="ref-kpi-icon-wrap" style={{ background: k.iconBg }}>
+                    <Icon size={18} color={k.iconColor} />
                   </div>
-                  <div style={{ fontSize:9, fontWeight:700, color:'#0f172a', lineHeight:1.2 }}>{k.label}</div>
+                  <div className="ref-kpi-label">{k.label}</div>
                 </div>
                 {!k.isCustom ? (
                   <>
-                    <div style={{ fontSize:18, fontWeight:800, color:'#0f172a' }}>{k.isCurr ? fmtCurr(k.value) : fmtNum(k.value)}</div>
-                    <div style={{ fontSize:9, color: k.sub.includes('↑') ? '#16a34a' : k.sub.includes('↓') ? '#dc2626' : '#64748b', fontWeight:600 }}>{k.sub}</div>
+                    <div className="ref-kpi-value">{fmtNum(k.value)}</div>
+                    <div className={`ref-kpi-sub${k.trend === 'up' ? ' up' : k.trend === 'down' ? ' down' : ''}`}>
+                      {k.sub}
+                    </div>
                   </>
                 ) : (
-                  <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
-                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:9 }}>
-                      <span style={{ color:'#64748b' }}>Current Month</span>
-                      <span style={{ fontWeight:700 }}>₹1,425 <span style={{ color:'#16a34a', fontWeight:600 }}>(+2.1%)</span></span>
+                  <div className="ref-kpi-influencer">
+                    <div className="ref-kpi-inf-row">
+                      <span className="ref-kpi-inf-label">User Bookings</span>
+                      <span className="ref-kpi-inf-val">{fmtNum(Math.floor(6125 * m))} <span className="ref-kpi-inf-pct">(70.8%)</span></span>
                     </div>
-                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:9 }}>
-                      <span style={{ color:'#64748b' }}>Previous Month</span>
-                      <span style={{ fontWeight:700 }}>₹1,395</span>
+                    <div className="ref-kpi-inf-row">
+                      <span className="ref-kpi-inf-label">Partner Bookings</span>
+                      <span className="ref-kpi-inf-val">{fmtNum(Math.floor(2517 * m))} <span className="ref-kpi-inf-pct">(29.2%)</span></span>
                     </div>
                   </div>
                 )}
@@ -258,119 +416,130 @@ export default function BookingAnalytics({ activeTab = 'Bookings Dashboard' }) {
           })}
         </div>
 
-        {/* ── 3 SUB KPI + TOP PERFORMERS ── */}
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1.5fr', gap:12, marginBottom:14 }}>
-          {/* Sub KPIs (Left side) */}
-          <div style={{ display:'flex', gap:10 }}>
-            {subKpis.map((k,i) => {
+        {/* ── Sub KPIs + Top Performers ── */}
+        <div className="ref-mid-row">
+          {/* Sub KPI Cards */}
+          <div className="ref-sub-kpi-row">
+            {dynSubKpis.map((k, i) => {
               const Icon = k.icon;
               return (
-                <div key={i} style={{ flex:1, background:'#fff', borderRadius:10, padding:'14px', boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2', display:'flex' }}>
-                  <div style={{ flex:1 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap: 6, marginBottom:8 }}>
-                      <div style={{ background:k.bg, borderRadius:'50%', width:28, height:28, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                        <Icon size={14} color={k.color} />
-                      </div>
-                      <div style={{ fontSize:10, fontWeight:800, color:'#0f172a', lineHeight:1.1, maxWidth:70 }}>
-                        {k.label.split(' ').map((w,j)=><div key={j}>{w}</div>)}
-                      </div>
+                <div key={i} className="ref-sub-kpi-card">
+                  <div className="ref-sub-kpi-left">
+                    <div className="ref-sub-kpi-icon" style={{ background: k.iconBg }}>
+                      <Icon size={15} color={k.iconColor} />
                     </div>
-                    <div style={{ fontSize:18, fontWeight:800, color:'#0f172a' }}>{fmtNum(k.value)}</div>
-                    <div style={{ fontSize:9, color:'#64748b', fontWeight:600 }}>{k.sub}</div>
+                    <div className="ref-sub-kpi-info">
+                      <div className="ref-sub-kpi-label">{k.label}</div>
+                      <div className="ref-sub-kpi-value">{fmtNum(k.value)}</div>
+                      <div className="ref-sub-kpi-sub">{k.sub}</div>
+                    </div>
                   </div>
-                  
-                  <div style={{ width:1, background:'#e8edf2', margin:'0 10px' }} />
-                  
-                  <div style={{ flex:1, display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', textAlign:'center' }}>
-                    <div style={{ fontSize:10, fontWeight:800, color:'#3b82f6', marginBottom:4, lineHeight:1.1 }}>
-                      Pending
-                    </div>
-                    <div style={{ fontSize:16, fontWeight:800, color:'#0f172a' }}>{k.unused}</div>
-                    <div style={{ fontSize:9, color:'#64748b', fontWeight:600 }}>({k.unusedPct} of total)</div>
+                  <div className="ref-sub-kpi-divider" />
+                  <div className="ref-sub-kpi-right">
+                    <div className="ref-sub-kpi-unused-label">Pending</div>
+                    <div className="ref-sub-kpi-unused-val">{k.unused}</div>
+                    <div className="ref-sub-kpi-unused-sub">({k.unusedPct} of total)</div>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
 
-          {/* Top Performers (Right side card) */}
-          <div style={{ background:'#fff', borderRadius:10, padding:'14px', boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2' }}>
-            <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 12px' }}>Top Performer Statistics</h2>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:16 }}>
-              {/* Table 1 */}
-              <div>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-                  <div style={{ fontSize:11, fontWeight:800, color:'#0f172a', display:'flex', alignItems:'center', gap:4 }}><Activity size={12} color="#3b82f6" /> Top Services</div>
-                  <a href="#" style={{ fontSize:9, color:'#3b82f6', textDecoration:'none', fontWeight:600 }}>View All</a>
+          {/* Top Performer Statistics */}
+          <div className="ref-top-performers">
+            <h3 className="ref-card-title" style={{ marginBottom: '12px', fontSize: '13px' }}>Top Performer Statistics</h3>
+            <div className="ref-performers-grid">
+              {/* Top Booking Customers */}
+              <div className="ref-perf-card">
+                <div className="ref-performer-header">
+                  <span className="ref-performer-title">
+                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <User size={12} color="#22c55e" />
+                    </div>
+                    Top Booking Customers
+                  </span>
+                  <a href="#" className="ref-view-all-link" onClick={(e) => { e.preventDefault(); setViewAllModal({ type: 'users', title: 'Top Booking Customers' }); }}>View All</a>
                 </div>
-                <table style={{ width:'100%', fontSize:9.5, borderCollapse:'collapse' }}>
+                <table className="ref-perf-table">
                   <thead>
-                    <tr style={{ background:'#1e1b4b', color:'#fff' }}>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>RANK</th>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>SERVICE NAME</th>
-                      <th style={{ textAlign:'right', padding:'6px 8px', fontWeight:700 }}>BOOKINGS</th>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Customer Name</th>
+                      <th>Bookings</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {topServices.map(u => (
-                      <tr key={u.rank} style={{ borderBottom:'1px solid #e8edf2' }}>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.rank}</td>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.name}</td>
-                        <td style={{ padding:'6px 8px', textAlign:'right', fontWeight:700 }}>{u.bookings}</td>
+                    {dynTopUsers.map(u => (
+                      <tr key={u.rank}>
+                        <td>{u.rank}</td>
+                        <td className="ref-perf-name">{u.name}</td>
+                        <td className="ref-perf-num">{u.bookings}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              {/* Table 2 */}
-              <div>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-                  <div style={{ fontSize:11, fontWeight:800, color:'#0f172a', display:'flex', alignItems:'center', gap:4 }}><Briefcase size={12} color="#8b5cf6" /> Top Professionals</div>
-                  <a href="#" style={{ fontSize:9, color:'#3b82f6', textDecoration:'none', fontWeight:600 }}>View All</a>
+              {/* Top Service Partners */}
+              <div className="ref-perf-card">
+                <div className="ref-performer-header">
+                  <span className="ref-performer-title">
+                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Briefcase size={12} color="#8b5cf6" />
+                    </div>
+                    Top Service Partners
+                  </span>
+                  <a href="#" className="ref-view-all-link" onClick={(e) => { e.preventDefault(); setViewAllModal({ type: 'partners', title: 'Top Service Partners' }); }}>View All</a>
                 </div>
-                <table style={{ width:'100%', fontSize:9.5, borderCollapse:'collapse' }}>
+                <table className="ref-perf-table">
                   <thead>
-                    <tr style={{ background:'#1e1b4b', color:'#fff' }}>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>RANK</th>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>PROFESSIONAL NAME</th>
-                      <th style={{ textAlign:'right', padding:'6px 8px', fontWeight:700 }}>BOOKINGS</th>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Partner Name</th>
+                      <th>Bookings</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {topProfessionals.map(u => (
-                      <tr key={u.rank} style={{ borderBottom:'1px solid #e8edf2' }}>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.rank}</td>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.name}</td>
-                        <td style={{ padding:'6px 8px', textAlign:'right', fontWeight:700 }}>{u.bookings}</td>
+                    {dynTopPartners.map(u => (
+                      <tr key={u.rank}>
+                        <td>{u.rank}</td>
+                        <td className="ref-perf-name">{u.name}</td>
+                        <td className="ref-perf-num">{u.bookings}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              {/* Table 3 */}
-              <div>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-                  <div style={{ fontSize:11, fontWeight:800, color:'#0f172a', display:'flex', alignItems:'center', gap:4 }}><User size={12} color="#f59e0b" /> Top Customers</div>
-                  <a href="#" style={{ fontSize:9, color:'#3b82f6', textDecoration:'none', fontWeight:600 }}>View All</a>
+              {/* Top Services */}
+              <div className="ref-perf-card">
+                <div className="ref-performer-header">
+                  <span className="ref-performer-title">
+                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#ffedd5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Star size={12} color="#f59e0b" />
+                    </div>
+                    Top Services
+                  </span>
+                  <a href="#" className="ref-view-all-link" onClick={(e) => { e.preventDefault(); setViewAllModal({ type: 'services', title: 'Top Services' }); }}>View All</a>
                 </div>
-                <table style={{ width:'100%', fontSize:9.5, borderCollapse:'collapse' }}>
+                <table className="ref-perf-table">
                   <thead>
-                    <tr style={{ background:'#1e1b4b', color:'#fff' }}>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>RANK</th>
-                      <th style={{ textAlign:'left', padding:'6px 8px', fontWeight:700 }}>CUSTOMER NAME</th>
-                      <th style={{ textAlign:'right', padding:'6px 8px', fontWeight:700 }}>VALUE</th>
-                      <th style={{ textAlign:'right', padding:'6px 8px', fontWeight:700 }}>BOOKINGS</th>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Service Name</th>
+                      <th>User Bkgs</th>
+                      <th>Partner Bkgs</th>
+                      <th>Total</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {topCustomers.map(u => (
-                      <tr key={u.rank} style={{ borderBottom:'1px solid #e8edf2' }}>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.rank}</td>
-                        <td style={{ padding:'6px 8px', fontWeight:600 }}>{u.name}</td>
-                        <td style={{ padding:'6px 8px', textAlign:'right', fontWeight:700 }}>{u.totalVal}</td>
-                        <td style={{ padding:'6px 8px', textAlign:'right', fontWeight:700 }}>{u.bookings}</td>
+                    {dynTopServices.map(u => (
+                      <tr key={u.rank}>
+                        <td>{u.rank}</td>
+                        <td className="ref-perf-name">{u.name}</td>
+                        <td className="ref-perf-num">{u.uBookings}</td>
+                        <td className="ref-perf-num">{u.pBookings}</td>
+                        <td className="ref-perf-num">{u.tBookings}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -380,111 +549,49 @@ export default function BookingAnalytics({ activeTab = 'Bookings Dashboard' }) {
           </div>
         </div>
 
-        {/* ── ROW 3: Donuts + Table ── */}
-        <div style={{ display:'grid', gridTemplateColumns:'1.2fr 1fr 1fr 2.5fr', gap:12, marginBottom:12 }}>
-          
-          <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2', display:'flex', flexDirection:'column' }}>
-            <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 8px' }}>Bookings by Category</h2>
-            <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-              <PieChart width={140} height={140}>
-                <Pie data={categoryDist} cx={70} cy={70} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
-                  {categoryDist.map((e,i) => <Cell key={i} fill={e.color} />)}
-                  <DonutCenter viewBox={{ cx:70, cy:70 }} value="3,220" label="Total Bookings" />
-                </Pie>
-                <Tooltip formatter={v => fmtNum(v)} />
-              </PieChart>
-              <div style={{ flex:1, display:'flex', flexDirection:'column', gap:6 }}>
-                {categoryDist.map((item,i) => (
-                  <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:10.5 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                      <span style={{ width:7, height:7, borderRadius:'50%', background:item.color, flexShrink:0, display:'inline-block' }} />
-                      <span style={{ color:'#475569', fontWeight:600 }}>{item.name}</span>
-                    </div>
-                    <div style={{ display:'flex', gap:4, alignItems:'center' }}>
-                      <span style={{ fontWeight:800, color:'#0f172a' }}>{fmtNum(item.value)}</span>
-                      <span style={{ color:'#94a3b8', fontSize:9.5 }}>({item.pct})</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+        {/* ── Donut Charts Row ── */}
+        <div className="ref-donuts-row">
+          <DonutCard
+            title="Bookings by Category"
+            data={dynCategoryDist}
+            centerValue={fmtNum(Math.floor(3220 * m))}
+            centerLabel="Total Bookings"
+          />
+          <DonutCard
+            title="Booking Status"
+            data={dynStatusDist}
+            centerValue={fmtNum(Math.floor(3220 * m))}
+            centerLabel="Total Bookings"
+          />
+          <DonutCard
+            title="Payment Method"
+            data={dynPaymentDist}
+            centerValue={fmtNum(Math.floor(3220 * m))}
+            centerLabel="Total Bookings"
+          />
 
-          <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2', display:'flex', flexDirection:'column' }}>
-            <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 8px' }}>Payment Status</h2>
-            <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-              <PieChart width={140} height={140}>
-                <Pie data={paymentDist} cx={70} cy={70} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
-                  {paymentDist.map((e,i) => <Cell key={i} fill={e.color} />)}
-                  <DonutCenter viewBox={{ cx:70, cy:70 }} value="3,220" label="Total Bookings" />
-                </Pie>
-                <Tooltip formatter={v => fmtNum(v)} />
-              </PieChart>
-              <div style={{ flex:1, display:'flex', flexDirection:'column', gap:6 }}>
-                {paymentDist.map((item,i) => (
-                  <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:10.5 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                      <span style={{ width:7, height:7, borderRadius:'50%', background:item.color, flexShrink:0, display:'inline-block' }} />
-                      <span style={{ color:'#475569', fontWeight:600 }}>{item.name}</span>
-                    </div>
-                    <div style={{ display:'flex', gap:4, alignItems:'center' }}>
-                      <span style={{ fontWeight:800, color:'#0f172a' }}>{fmtNum(item.value)}</span>
-                      <span style={{ color:'#94a3b8', fontSize:9.5 }}>({item.pct})</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+          {/* Upcoming / Expiring Bookings */}
+          <div className="ref-card ref-expire-card">
+            <div className="ref-card-header">
+              <h3 className="ref-card-title">Upcoming Bookings</h3>
+              <a href="#" className="ref-view-all-link">View All</a>
             </div>
-          </div>
-
-          <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2', display:'flex', flexDirection:'column' }}>
-            <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 8px' }}>Booking Status</h2>
-            <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-              <PieChart width={140} height={140}>
-                <Pie data={statusDist} cx={70} cy={70} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
-                  {statusDist.map((e,i) => <Cell key={i} fill={e.color} />)}
-                  <DonutCenter viewBox={{ cx:70, cy:70 }} value="3,220" label="Total Bookings" />
-                </Pie>
-                <Tooltip formatter={v => fmtNum(v)} />
-              </PieChart>
-              <div style={{ flex:1, display:'flex', flexDirection:'column', gap:6 }}>
-                {statusDist.map((item,i) => (
-                  <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:10.5 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                      <span style={{ width:7, height:7, borderRadius:'50%', background:item.color, flexShrink:0, display:'inline-block' }} />
-                      <span style={{ color:'#475569', fontWeight:600 }}>{item.name}</span>
-                    </div>
-                    <div style={{ display:'flex', gap:4, alignItems:'center' }}>
-                      <span style={{ fontWeight:800, color:'#0f172a' }}>{fmtNum(item.value)}</span>
-                      <span style={{ color:'#94a3b8', fontSize:9.5 }}>({item.pct})</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2' }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
-              <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:0 }}>Upcoming Bookings</h2>
-              <a href="#" style={{ fontSize:10, color:'#3b82f6', textDecoration:'none', fontWeight:600 }}>View All</a>
-            </div>
-            <table style={{ width:'100%', fontSize:10.5 }}>
+            <table className="ref-expire-table">
               <thead>
                 <tr>
-                  <th style={{ textAlign:'left', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Booking ID</th>
-                  <th style={{ textAlign:'left', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Date</th>
-                  <th style={{ textAlign:'left', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Customer</th>
-                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Status</th>
+                  <th>Booking ID</th>
+                  <th>Scheduled On</th>
+                  <th>Booked By</th>
+                  <th>Days Left</th>
                 </tr>
               </thead>
               <tbody>
                 {upcomingBookings.map(c => (
                   <tr key={c.id}>
-                    <td style={{ padding:'6px 0', fontWeight:800, color:'#0f172a' }}>{c.id}</td>
-                    <td style={{ padding:'6px 0', fontWeight:600, color:'#475569' }}>{c.date}</td>
-                    <td style={{ padding:'6px 0', fontWeight:600, color:'#475569' }}>{c.customer}</td>
-                    <td style={{ padding:'6px 0', textAlign:'right', fontWeight:700, color:'#f59e0b' }}>{c.status}</td>
+                    <td className="ref-code-cell">{c.id}</td>
+                    <td>{c.expires}</td>
+                    <td>{c.generatedBy}</td>
+                    <td className="ref-days-cell">{c.daysLeft} days</td>
                   </tr>
                 ))}
               </tbody>
@@ -492,139 +599,242 @@ export default function BookingAnalytics({ activeTab = 'Bookings Dashboard' }) {
           </div>
         </div>
 
-        {/* ── ROW 4: Line Chart + Donut + Table ── */}
-        <div style={{ display:'grid', gridTemplateColumns:'2fr 1fr 1.5fr', gap:12, marginBottom:12 }}>
-          
-          <div style={{ background:'#fff', borderRadius:10, padding:'18px 18px 10px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2' }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
-              <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:0 }}>Bookings Over Time</h2>
-              <FilterSelect options={['Daily','Weekly','Monthly']} />
+        {/* ── Line Chart + Service Donut + Service Performance Table ── */}
+        <div className="ref-charts-row">
+          {/* Line Chart */}
+          <div className="ref-card ref-line-chart-card">
+            <div className="ref-card-header">
+              <h3 className="ref-card-title">Bookings Over Time</h3>
+              <div className="ref-freq-btns">
+                {['Daily', 'Weekly', 'Monthly'].map(f => (
+                  <button
+                    key={f}
+                    className={`ref-freq-btn${chartFreq === f ? ' active' : ''}`}
+                    onClick={() => setChartFreq(f)}
+                  >{f}</button>
+                ))}
+              </div>
             </div>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={bookingsOverTime} margin={{ top:4, right:4, left:-20, bottom:0 }}>
+            <ResponsiveContainer width="100%" height={195}>
+              <LineChart data={dynChartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="day" tick={{ fontSize:10, fill:'#94a3b8', fontWeight:600 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize:10, fill:'#94a3b8', fontWeight:600 }} axisLine={false} tickLine={false} tickFormatter={v => v>=1000?(v/1000)+'K':v} />
+                <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? (v / 1000) + 'K' : v} />
                 <Tooltip content={<LineTooltip />} />
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize:11, paddingTop:6, fontWeight:600 }} />
-                <Line type="monotone" dataKey="total"  name="Total Bookings"  stroke="#3b82f6" strokeWidth={3} dot={false} />
-                <Line type="monotone" dataKey="completed"   name="Completed"   stroke="#22c55e" strokeWidth={3} dot={false} />
-                <Line type="monotone" dataKey="pending"  name="Pending"  stroke="#f59e0b" strokeWidth={3} dot={false} />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, paddingTop: 6, fontWeight: 600 }} />
+                <Line type="monotone" dataKey="total"     name="Total Bookings" stroke="#3b82f6" strokeWidth={2.5} dot={false} />
+                <Line type="monotone" dataKey="completed" name="Completed"       stroke="#22c55e" strokeWidth={2.5} dot={false} />
+                <Line type="monotone" dataKey="pending"   name="Pending"         stroke="#f59e0b" strokeWidth={2.5} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
 
-          <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2', display:'flex', flexDirection:'column' }}>
-            <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 12px' }}>Revenue by Category</h2>
-            <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-              <PieChart width={140} height={140}>
-                <Pie data={revenueDist} cx={70} cy={70} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
-                  {revenueDist.map((e,i) => <Cell key={i} fill={e.color} />)}
-                  <DonutCenter viewBox={{ cx:70, cy:70 }} value="₹105K" label="Total Revenue" />
-                </Pie>
-                <Tooltip formatter={v => fmtCurr(v)} />
-              </PieChart>
-              <div style={{ flex:1, display:'flex', flexDirection:'column', gap:8 }}>
-                {revenueDist.map((item,i) => (
-                  <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:10.5 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                      <span style={{ width:7, height:7, borderRadius:'50%', background:item.color, flexShrink:0, display:'inline-block' }} />
-                      <span style={{ color:'#475569', fontWeight:600 }}>{item.name}</span>
-                    </div>
-                    <div style={{ display:'flex', gap:4, alignItems:'center' }}>
-                      <span style={{ fontWeight:800, color:'#0f172a' }}>{fmtCurr(item.value)}</span>
-                      <span style={{ color:'#94a3b8', fontSize:9.5 }}>({item.pct})</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+          {/* Category Revenue Donut */}
+          <DonutCard
+            title="Revenue by Category"
+            data={[
+              { name: 'Home Services', value: Math.floor(45000 * m), color: '#3b82f6', pct: '42.8%' },
+              { name: 'Beauty & Salon', value: Math.floor(35000 * m), color: '#ec4899', pct: '33.3%' },
+              { name: 'Cleaning', value: Math.floor(25000 * m), color: '#22c55e', pct: '23.9%' },
+            ]}
+            centerValue={'₹' + fmtNum(Math.floor(105000 * m))}
+            centerLabel="Total Revenue"
+          />
+
+          {/* Service Performance */}
+          <div className="ref-card ref-reward-perf-card">
+            <div className="ref-card-header">
+              <h3 className="ref-card-title">Service Performance</h3>
+            </div>
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+              <table className="ref-reward-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '450px' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', color: '#1e3a8a', fontWeight: 700 }}>Service Type</th>
+                    <th className="text-center" style={{ padding: '12px 16px', fontSize: '13px', color: '#1e3a8a', fontWeight: 700 }}>Total Bookings</th>
+                    <th className="text-center" style={{ padding: '12px 16px', fontSize: '13px', color: '#1e3a8a', fontWeight: 700 }}>Completed</th>
+                    <th className="text-center" style={{ padding: '12px 16px', fontSize: '13px', color: '#1e3a8a', fontWeight: 700 }}>Revenue</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '13px', color: '#1e3a8a', fontWeight: 700, whiteSpace: 'nowrap' }}>% Share</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dynServicePerf.map((r, i) => (
+                    <tr key={r.type} style={{ borderBottom: i === dynServicePerf.length - 1 ? 'none' : '1px solid #e2e8f0' }}>
+                      <td className="ref-reward-type" style={{ padding: '14px 16px', fontWeight: 700, color: '#0f172a', fontSize: '13px', whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: r.color }} />
+                          {r.type}
+                        </div>
+                      </td>
+                      <td className="text-center" style={{ padding: '14px 16px', fontSize: '13px', fontWeight: 600 }}>{r.total}</td>
+                      <td className="text-center" style={{ padding: '14px 16px', fontSize: '13px', fontWeight: 600 }}>{r.completed}</td>
+                      <td className="text-center" style={{ padding: '14px 16px', fontSize: '13px', fontWeight: 600 }}>₹{fmtNum(r.revenue)}</td>
+                      <td style={{ padding: '14px 16px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
+                          <div style={{ width: '80px', height: '10px', borderRadius: '10px', background: '#f1f5f9', overflow: 'hidden' }}>
+                            <div style={{ width: `${r.pct}%`, height: '100%', borderRadius: '10px', background: r.color }} />
+                          </div>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#1e3a8a', minWidth: '40px', textAlign: 'right' }}>
+                            {r.pct.toFixed(1)}%
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
+        </div>
 
-          <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2' }}>
-            <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 12px' }}>Service Revenue Performance</h2>
-            <table style={{ width:'100%', fontSize:10.5 }}>
+        {/* ── Bookings Performance Table ── */}
+        <div className="ref-card ref-main-table-card">
+          <div className="ref-card-header">
+            <h3 className="ref-card-title">Bookings Performance</h3>
+          </div>
+          <div className="ref-table-scroll">
+            <table className="ref-main-table">
               <thead>
-                <tr style={{ borderBottom:'1px solid #f1f5f9' }}>
-                  <th style={{ textAlign:'left', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Service Type</th>
-                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Bookings</th>
-                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Completed</th>
-                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>Revenue</th>
-                  <th style={{ textAlign:'right', color:'#94a3b8', paddingBottom:6, fontWeight:600 }}>% Total</th>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Booked By</th>
+                  <th>Customer Name</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th colSpan={3} style={{ textAlign: 'center' }}>Booking Counts</th>
+                  <th>Service</th>
+                  <th>Amount</th>
+                  <th>Scheduled On</th>
+                  <th>Created On</th>
+                  <th>Actions</th>
+                </tr>
+                <tr className="ref-sub-header">
+                  <th colSpan={5}></th>
+                  <th>Users</th>
+                  <th>Partners</th>
+                  <th>Total</th>
+                  <th colSpan={5}></th>
                 </tr>
               </thead>
               <tbody>
-                {servicePerformance.map(r => (
-                  <tr key={r.type}>
-                    <td style={{ padding:'8px 0', fontWeight:700, color:'#0f172a' }}>{r.type}</td>
-                    <td style={{ padding:'8px 0', textAlign:'right', fontWeight:600, color:'#475569' }}>{r.bookings}</td>
-                    <td style={{ padding:'8px 0', textAlign:'right', fontWeight:600, color:'#475569' }}>{r.completed}</td>
-                    <td style={{ padding:'8px 0', textAlign:'right', fontWeight:600, color:'#475569' }}>{fmtCurr(r.revenue)}</td>
-                    <td style={{ padding:'8px 0', minWidth:90 }}>
-                      <div style={{ display:'flex', alignItems:'center', justifyContent:'flex-end', gap:6 }}>
-                        <div style={{ flex:1, height:4, borderRadius:2, background:'#f1f5f9', overflow:'hidden' }}>
-                          <div style={{ height:'100%', background:r.color, width:`${r.pct}%` }} />
-                        </div>
-                        <span style={{ fontWeight:700, fontSize:10 }}>{r.pct}%</span>
-                      </div>
+                {dynBookingsPerf.map((r, i) => (
+                  <tr key={i}>
+                    <td className="ref-code-bold">{r.id}</td>
+                    <td>{r.genBy}</td>
+                    <td className="ref-name-bold">{r.name}</td>
+                    <td>{r.category}</td>
+                    <td><StatusBadge status={r.status} /></td>
+                    <td className="ref-num-cell">{r.userBookings}</td>
+                    <td className="ref-num-cell">{r.partnerBookings}</td>
+                    <td className="ref-num-cell ref-total-bold">{r.total}</td>
+                    <td>{r.service}</td>
+                    <td className="ref-earned-cell">{r.amount}</td>
+                    <td className="ref-date-cell">{r.expires}</td>
+                    <td className="ref-date-cell">{r.created}</td>
+                    <td>
+                      <button className="ref-action-btn">
+                        <Eye size={12} color="#2563eb" />
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
-
-        {/* ── ROW 5: Main Table ── */}
-        <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2', overflowX:'auto' }}>
-          <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 12px' }}>Recent Bookings</h2>
-          <table style={{ width:'100%', borderCollapse:'collapse', fontSize:10, minWidth:900 }}>
-            <thead>
-              <tr style={{ borderBottom:'1px solid #f1f5f9' }}>
-                <th style={{ padding:'8px 6px', textAlign:'left', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Booking ID</th>
-                <th style={{ padding:'8px 6px', textAlign:'left', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Category</th>
-                <th style={{ padding:'8px 6px', textAlign:'left', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Service</th>
-                <th style={{ padding:'8px 6px', textAlign:'left', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Customer Name</th>
-                <th style={{ padding:'8px 6px', textAlign:'left', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Professional Name</th>
-                <th style={{ padding:'8px 6px', textAlign:'left', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Status</th>
-                <th style={{ padding:'8px 6px', textAlign:'right', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Amount</th>
-                <th style={{ padding:'8px 6px', textAlign:'left', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Date</th>
-                <th style={{ padding:'8px 6px', textAlign:'left', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Created On</th>
-                <th style={{ padding:'8px 6px', textAlign:'center', fontWeight:700, color:'#94a3b8', whiteSpace:'nowrap' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bookingsTable.map((r,i) => (
-                <tr key={i} style={{ borderBottom:i<bookingsTable.length-1?'1px solid #f8fafc':'none' }}>
-                  <td style={{ padding:'10px 6px', fontWeight:800, color:'#0f172a', whiteSpace:'nowrap' }}>{r.id}</td>
-                  <td style={{ padding:'10px 6px', fontWeight:600, color:'#475569' }}>{r.category}</td>
-                  <td style={{ padding:'10px 6px', fontWeight:700, color:'#0f172a' }}>{r.service}</td>
-                  <td style={{ padding:'10px 6px', fontWeight:600, color:'#475569' }}>{r.customer}</td>
-                  <td style={{ padding:'10px 6px', fontWeight:600, color:'#475569' }}>{r.professional}</td>
-                  <td style={{ padding:'10px 6px', fontWeight:700, color:r.status==='Completed'?'#22c55e':r.status==='Cancelled'?'#ef4444':'#f59e0b' }}>{r.status}</td>
-                  <td style={{ padding:'10px 6px', textAlign:'right', fontWeight:800, color:'#0f172a' }}>{r.amount}</td>
-                  <td style={{ padding:'10px 6px', fontWeight:600, color:'#475569' }}>{r.date}</td>
-                  <td style={{ padding:'10px 6px', fontWeight:600, color:'#475569' }}>{r.created}</td>
-                  <td style={{ padding:'10px 6px', textAlign:'center' }}>
-                    <button style={{ background:'#f0f7ff', border:'none', borderRadius:4, padding:'4px 6px', cursor:'pointer' }}>
-                      <Eye size={12} color="#2563eb" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div style={{ display:'flex', justifyContent:'flex-end', marginTop:12, gap:6, alignItems:'center' }}>
-            <span style={{ fontSize:10, color:'#64748b', fontWeight:600 }}>Page 1 of 257</span>
-            <button style={{ border:'1px solid #dde3ea', background:'#fff', padding:'4px 8px', borderRadius:4, cursor:'pointer' }}>{'<'}</button>
-            <button style={{ border:'none', background:'#2563eb', color:'#fff', padding:'4px 10px', borderRadius:4, cursor:'pointer', fontWeight:600 }}>1</button>
-            <button style={{ border:'none', background:'transparent', color:'#475569', padding:'4px 10px', borderRadius:4, cursor:'pointer', fontWeight:600 }}>2</button>
-            <button style={{ border:'none', background:'transparent', color:'#475569', padding:'4px 10px', borderRadius:4, cursor:'pointer', fontWeight:600 }}>3</button>
-            <button style={{ border:'1px solid #dde3ea', background:'#fff', padding:'4px 8px', borderRadius:4, cursor:'pointer' }}>{'>'}</button>
+          {/* Pagination */}
+          <div className="ref-pagination">
+            <button className="ref-page-btn ref-page-arrow"><ChevronLeft size={13} /></button>
+            {[1, 2, 3, '...', 5].map((p, i) => (
+              <button key={i} className={`ref-page-btn${p === 1 ? ' active' : ''}`}>{p}</button>
+            ))}
+            <button className="ref-page-btn ref-page-arrow"><ChevronRight size={13} /></button>
+            <span className="ref-page-info">257 total pages</span>
           </div>
         </div>
 
       </div>
+
+      {/* ── View All Modal ── */}
+      {viewAllModal && (
+        <div className="ref-modal-overlay" onClick={() => setViewAllModal(null)}>
+          <div className="ref-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="ref-modal-header">
+              <h3 className="ref-modal-title">{viewAllModal.title}</h3>
+              <button className="ref-modal-close" onClick={() => setViewAllModal(null)}>
+                <XCircle size={20} />
+              </button>
+            </div>
+            <div className="ref-modal-body">
+              <table className="ref-modal-table">
+                {viewAllModal.type === 'users' && (
+                  <>
+                    <thead>
+                      <tr>
+                        <th>Rank</th>
+                        <th>Customer Name</th>
+                        <th>Bookings</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dynTopUsers.map(u => (
+                        <tr key={u.rank}>
+                          <td>{u.rank}</td>
+                          <td style={{ fontWeight: 600, color: '#1e40af' }}>{u.name}</td>
+                          <td style={{ fontWeight: 700 }}>{u.bookings}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </>
+                )}
+                {viewAllModal.type === 'partners' && (
+                  <>
+                    <thead>
+                      <tr>
+                        <th>Rank</th>
+                        <th>Partner Name</th>
+                        <th>Bookings</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dynTopPartners.map(u => (
+                        <tr key={u.rank}>
+                          <td>{u.rank}</td>
+                          <td style={{ fontWeight: 600, color: '#5b21b6' }}>{u.name}</td>
+                          <td style={{ fontWeight: 700 }}>{u.bookings}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </>
+                )}
+                {viewAllModal.type === 'services' && (
+                  <>
+                    <thead>
+                      <tr>
+                        <th>Rank</th>
+                        <th>Service Name</th>
+                        <th>User Bookings</th>
+                        <th>Partner Bookings</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dynTopServices.map(u => (
+                        <tr key={u.rank}>
+                          <td>{u.rank}</td>
+                          <td style={{ fontWeight: 600, color: '#9a3412' }}>{u.name}</td>
+                          <td>{u.uBookings}</td>
+                          <td>{u.pBookings}</td>
+                          <td style={{ fontWeight: 700 }}>{u.tBookings}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </>
+                )}
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminShell>
   );
 }

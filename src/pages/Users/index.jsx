@@ -25,6 +25,10 @@ import UserEditModal from './UserEditModal';
 import UserSubTabs from "../../components/users/UserSubTabs";
 import Select from "../../components/ui/Select";
 import GlobalDashboardFilters from '../../components/common/GlobalDashboardFilters';
+import ExportReportModal from '../../components/common/ExportReportModal';
+import { useDashboardFilters } from '../../contexts/DashboardFilterContext';
+import { applyFilterToNumber } from '../../utils/filterEngine';
+import { Download } from 'lucide-react';
 
 const statusOptions = ['All', 'Active', 'Suspended', 'Blocked', 'Deleted'];
 
@@ -56,9 +60,11 @@ export default function Users() {
     status: 'All'
   });
   
+  const { filters: globalFilters } = useDashboardFilters();
   const [drawerUser, setDrawerUser] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [feedback, setFeedback] = useState('');
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   useEffect(() => {
     setFilters((current) => ({
@@ -68,14 +74,15 @@ export default function Users() {
   }, [route]);
 
   const summary = useMemo(() => ({
-    total: users.length,
-    active: users.filter((user) => user.status === 'Active').length,
-    suspended: users.filter((user) => user.status === 'Suspended').length,
-    blocked: users.filter((user) => user.status === 'Blocked').length
-  }), [users]);
+    total: applyFilterToNumber(users.length, globalFilters),
+    active: applyFilterToNumber(users.filter((user) => user.status === 'Active').length, globalFilters),
+    suspended: applyFilterToNumber(users.filter((user) => user.status === 'Suspended').length, globalFilters),
+    blocked: applyFilterToNumber(users.filter((user) => user.status === 'Blocked').length, globalFilters)
+  }), [users, globalFilters]);
 
   const filteredUsers = useMemo(() => {
     const query = normalize(filters.search);
+    const selectedCity = globalFilters.city !== 'All Cities' ? normalize(globalFilters.city) : '';
 
     return users.filter((user) => {
       const matchesSearch = !query || 
@@ -83,10 +90,12 @@ export default function Users() {
         normalize(user.email).includes(query) || 
         normalize(user.mobile).includes(query);
       const matchesStatus = filters.status === 'All' || user.status === filters.status;
+      
+      const matchesCity = !selectedCity || user.addresses?.some(addr => normalize(addr).includes(selectedCity));
 
-      return matchesSearch && matchesStatus;
+      return matchesSearch && matchesStatus && matchesCity;
     });
-  }, [filters, users]);
+  }, [filters, users, globalFilters.city]);
 
   const showFeedback = (message) => {
     addToast(message, 'success');
@@ -146,7 +155,7 @@ export default function Users() {
         {/* PROFILE SUB-TABS */}
         <UserSubTabs />
 
-        <GlobalDashboardFilters />
+        <GlobalDashboardFilters showService={false} showPartner={false} />
 
         {/* KPI Cards */}
         <div className="materio-kpi-grid">
@@ -233,6 +242,13 @@ export default function Users() {
                   background: 'var(--materio-surface)'
                 }}
               />
+              <button 
+                onClick={() => setIsExportModalOpen(true)}
+                className="btn-materio btn-materio-primary"
+                style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <Download size={16} /> Export
+              </button>
             </div>
           </div>
 
@@ -468,7 +484,18 @@ export default function Users() {
         )}
       </div>
 
-      <UserEditModal user={editingUser} onClose={() => setEditingUser(null)} onSave={saveEditedUser} />
+      <UserEditModal 
+        user={editingUser} 
+        onClose={() => setEditingUser(null)} 
+        onSave={saveEditedUser} 
+      />
+
+      <ExportReportModal 
+        isOpen={isExportModalOpen} 
+        onClose={() => setIsExportModalOpen(false)} 
+        entityName="Customers" 
+        data={filteredUsers} 
+      />
     </AdminShell>
   );
 }

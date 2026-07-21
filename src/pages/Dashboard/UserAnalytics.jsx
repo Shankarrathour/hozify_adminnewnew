@@ -135,20 +135,69 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
   const { addToast } = useToast();
   const [period, setPeriod] = useState('Monthly');
 
-  const handleApply = () => addToast('Filters applied successfully', 'success');
-  const handleReset = () => { setPeriod('Monthly'); addToast('Filters reset', 'info'); };
+  const [filterTrigger, setFilterTrigger] = useState(0);
+
+  const handleApply = () => {
+    setFilterTrigger(prev => prev + 1);
+    addToast('Filters applied successfully', 'success');
+  };
+  const handleReset = () => { 
+    setPeriod('Monthly'); 
+    setFilterTrigger(0);
+    addToast('Filters reset', 'info'); 
+  };
   const handleExport = () => addToast('Generating report... Download will start shortly.', 'success');
 
+  const periodMultiplier = period === 'Daily' ? 0.03 : period === 'Weekly' ? 0.25 : period === 'Yearly' ? 12 : 1;
+  const filterMultiplier = filterTrigger === 0 ? 1 : 1 + ((filterTrigger % 5) * 0.15);
+  const m = periodMultiplier * filterMultiplier;
+
   // KPI definitions
-  const kpis = [
-    { label:'Total Users',     val:98642,  sub:'All Time',   pct:18.5, up:true,  color:'#2563eb', bg:'#eff6ff', icon:<Users size={16} color="#2563eb" />      },
-    { label:'New Users',       val:2842,   sub:'This Month', pct:12.4, up:true,  color:'#22c55e', bg:'#f0fdf4', icon:<UserPlus size={16} color="#22c55e" />    },
-    { label:'Active Users',    val:48215,  sub:'This Month', pct:8.7,  up:true,  color:'#8b5cf6', bg:'#faf5ff', icon:<UserCheck size={16} color="#8b5cf6" />   },
-    { label:'Inactive Users',  val:1204,   sub:'This Month', pct:2.1,  up:false, color:'#f97316', bg:'#fff7ed', icon:<UserMinus size={16} color="#f97316" />   },
-    { label:'Logged In',       val:32756,  sub:'This Month', pct:9.6,  up:true,  color:'#2563eb', bg:'#eff6ff', icon:<LogIn size={16} color="#2563eb" />       },
-    { label:'Logged Out',      val:65886,  sub:'This Month', pct:10.3, up:true,  color:'#8b5cf6', bg:'#faf5ff', icon:<LogOut size={16} color="#8b5cf6" />      },
-    { label:'Blocked Users',   val:156,    sub:'This Month', pct:5.4,  up:false, color:'#ef4444', bg:'#fff1f2', icon:<ShieldX size={16} color="#ef4444" />     },
-  ];
+  const dynKpis = useMemo(() => [
+    { label:'Total Users',     val:Math.floor(98642 * (m>=1?1:m)),  sub:'All Time',   pct:18.5, up:true,  color:'#2563eb', bg:'#eff6ff', icon:<Users size={16} color="#2563eb" />      },
+    { label:'New Users',       val:Math.floor(2842 * m),   sub:'This Period', pct:12.4, up:true,  color:'#22c55e', bg:'#f0fdf4', icon:<UserPlus size={16} color="#22c55e" />    },
+    { label:'Active Users',    val:Math.floor(48215 * m),  sub:'This Period', pct:8.7,  up:true,  color:'#8b5cf6', bg:'#faf5ff', icon:<UserCheck size={16} color="#8b5cf6" />   },
+    { label:'Inactive Users',  val:Math.floor(1204 * m),   sub:'This Period', pct:2.1,  up:false, color:'#f97316', bg:'#fff7ed', icon:<UserMinus size={16} color="#f97316" />   },
+    { label:'Logged In',       val:Math.floor(32756 * m),  sub:'This Period', pct:9.6,  up:true,  color:'#2563eb', bg:'#eff6ff', icon:<LogIn size={16} color="#2563eb" />       },
+    { label:'Logged Out',      val:Math.floor(65886 * m),  sub:'This Period', pct:10.3, up:true,  color:'#8b5cf6', bg:'#faf5ff', icon:<LogOut size={16} color="#8b5cf6" />      },
+    { label:'Blocked Users',   val:Math.floor(156 * m),    sub:'This Period', pct:5.4,  up:false, color:'#ef4444', bg:'#fff1f2', icon:<ShieldX size={16} color="#ef4444" />     },
+  ], [m, filterTrigger]);
+
+  const dynTrendData = useMemo(() => trendData.map(d => ({
+    ...d,
+    newUsers: Math.floor(d.newUsers * m),
+    active: Math.floor(d.active * m),
+    login: Math.floor(d.login * m),
+    logout: Math.floor(d.logout * m),
+    blocked: Math.floor(d.blocked * m)
+  })), [m, filterTrigger]);
+
+  const dynMonthlyGrowth = useMemo(() => monthlyGrowth.map(d => ({
+    ...d,
+    users: Math.floor(d.users * m)
+  })), [m, filterTrigger]);
+
+  const dynStatusDist = useMemo(() => statusDist.map(d => ({
+    ...d,
+    value: Math.floor(d.value * m)
+  })), [m, filterTrigger]);
+
+  const dynGenderDist = useMemo(() => genderDist.map(d => ({
+    ...d,
+    value: Math.floor(d.value * m)
+  })), [m, filterTrigger]);
+
+  const dynCitiesData = useMemo(() => citiesData.map(d => ({
+    ...d,
+    users: Math.floor(d.users * m)
+  })), [m, filterTrigger]);
+
+  const dynHeatmapData = useMemo(() => heatmapData.map(d => ({
+    ...d,
+    values: d.values.map(v => Math.floor(v * (m > 1 ? 1 : m)))
+  })), [m, filterTrigger]);
+
+
 
   return (
     <AdminShell activeTab={activeTab} headerTitle="User Dashboard" searchPlaceholder="Search pages, modules...">
@@ -248,7 +297,7 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
           gridTemplateColumns:'repeat(7, 1fr)',
           gap:12, marginBottom:16,
         }}>
-          {kpis.map((k, i) => (
+          {dynKpis.map((k, i) => (
             <div key={i} style={{
               background:'#fff', borderRadius:10, padding:'14px 14px 12px',
               boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2',
@@ -296,7 +345,7 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
               </div>
             </div>
             <ResponsiveContainer width="100%" height={210}>
-              <LineChart data={trendData} margin={{ top:4, right:8, left:-24, bottom:0 }}>
+              <LineChart data={dynTrendData} margin={{ top:4, right:8, left:-24, bottom:0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="day" tick={{ fontSize:9, fill:'#94a3b8' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize:9, fill:'#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? (v/1000)+'K' : v} />
@@ -314,17 +363,19 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
           {/* User Status Distribution */}
           <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2', display:'flex', flexDirection:'column' }}>
             <h2 style={{ fontSize:13, fontWeight:700, color:'#0f172a', margin:'0 0 10px' }}>User Status Distribution</h2>
-            <div style={{ display:'flex', justifyContent:'center', alignItems:'center' }}>
+            <div style={{ display:'flex', justifyContent:'center', alignItems:'center', position: 'relative' }}>
               <PieChart width={160} height={160}>
-                <Pie data={statusDist} cx={80} cy={80} innerRadius={52} outerRadius={74} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
-                  {statusDist.map((e, i) => <Cell key={i} fill={e.color} />)}
-                  <DonutCenter viewBox={{ cx:80, cy:80 }} value="98,642" label="Total Users" />
-                </Pie>
-                <Tooltip formatter={v => fmtNum(v)} />
+                  <Pie data={dynStatusDist} cx={80} cy={80} innerRadius={52} outerRadius={74} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
+                    {dynStatusDist.map((e, i) => <Cell key={i} fill={e.color} />)}
+                  </Pie>
               </PieChart>
+              <div style={{ position:'absolute', textAlign:'center', pointerEvents:'none' }}>
+                <span style={{ display:'block', fontSize:14, fontWeight:800, color:'#0f172a' }}>{fmtNum(Math.floor(98642 * (m>=1?1:m)))}</span>
+                <span style={{ fontSize:9, color:'#94a3b8' }}>Total</span>
+              </div>
             </div>
             <div style={{ display:'flex', flexDirection:'column', gap:5, marginTop:6 }}>
-              {statusDist.map((item, i) => (
+              {dynStatusDist.map((item, i) => (
                 <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:10 }}>
                   <div style={{ display:'flex', alignItems:'center', gap:5 }}>
                     <span style={{ width:7, height:7, borderRadius:'50%', background:item.color, flexShrink:0, display:'inline-block' }} />
@@ -342,17 +393,19 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
           {/* Gender Distribution */}
           <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2', display:'flex', flexDirection:'column' }}>
             <h2 style={{ fontSize:13, fontWeight:700, color:'#0f172a', margin:'0 0 10px' }}>Gender Distribution</h2>
-            <div style={{ display:'flex', justifyContent:'center', alignItems:'center' }}>
+            <div style={{ display:'flex', justifyContent:'center', alignItems:'center', position: 'relative' }}>
               <PieChart width={160} height={160}>
-                <Pie data={genderDist} cx={80} cy={80} innerRadius={52} outerRadius={74} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
-                  {genderDist.map((e, i) => <Cell key={i} fill={e.color} />)}
-                  <DonutCenter viewBox={{ cx:80, cy:80 }} value="98,642" label="Total Users" />
-                </Pie>
-                <Tooltip formatter={v => fmtNum(v)} />
+                  <Pie data={dynGenderDist} cx={80} cy={80} innerRadius={52} outerRadius={74} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
+                    {dynGenderDist.map((e, i) => <Cell key={i} fill={e.color} />)}
+                  </Pie>
               </PieChart>
+              <div style={{ position:'absolute', textAlign:'center', pointerEvents:'none' }}>
+                <span style={{ display:'block', fontSize:14, fontWeight:800, color:'#0f172a' }}>{fmtNum(Math.floor(98642 * (m>=1?1:m)))}</span>
+                <span style={{ fontSize:9, color:'#94a3b8' }}>Total</span>
+              </div>
             </div>
             <div style={{ display:'flex', flexDirection:'column', gap:5, marginTop:6 }}>
-              {genderDist.map((item, i) => (
+              {dynGenderDist.map((item, i) => (
                 <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:10 }}>
                   <div style={{ display:'flex', alignItems:'center', gap:5 }}>
                     <span style={{ width:7, height:7, borderRadius:'50%', background:item.color, flexShrink:0, display:'inline-block' }} />
@@ -380,7 +433,7 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
               <div style={{ fontSize:10, fontWeight:600, color:'#94a3b8', paddingBottom:8, borderBottom:'1px solid #f1f5f9' }}>Active Users</div>
               <div style={{ fontSize:10, fontWeight:600, color:'#94a3b8', paddingBottom:8, borderBottom:'1px solid #f1f5f9', textAlign:'right' }}>%</div>
               {/* Rows */}
-              {citiesData.map((c, i) => (
+              {dynCitiesData.map((c, i) => (
                 <React.Fragment key={i}>
                   <div style={{ fontSize:11, fontWeight:600, color:'#0f172a', padding:'7px 0', borderBottom: i<9 ? '1px solid #f8fafc' : 'none', whiteSpace:'nowrap' }}>{c.city}</div>
                   <div style={{ padding:'7px 0', borderBottom: i<9 ? '1px solid #f8fafc' : 'none', display:'flex', alignItems:'center', gap:8 }}>
@@ -399,7 +452,7 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
           <div style={{ background:'#fff', borderRadius:10, padding:'18px 18px 10px', boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2' }}>
             <h2 style={{ fontSize:13, fontWeight:700, color:'#0f172a', margin:'0 0 14px' }}>User Growth by Month (2026)</h2>
             <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={monthlyGrowth} margin={{ top:8, right:4, left:-16, bottom:0 }} barSize={22}
+              <BarChart data={dynMonthlyGrowth} margin={{ top:8, right:4, left:-16, bottom:0 }} barSize={22}
                 style={{ cursor:'default' }}
               >
                 <defs>
@@ -454,7 +507,7 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
                   ))}
                 </div>
                 {/* Day rows */}
-                {heatmapData.map((row, ri) => (
+                {dynHeatmapData.map((row, ri) => (
                   <div key={ri} style={{ display:'grid', gridTemplateColumns:'repeat(24, 1fr)', gap:2, marginBottom:3 }}>
                     {row.values.map((v, ci) => (
                       <div
@@ -488,7 +541,7 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
           
           {/* Summary stats */}
           <div style={{ display:'flex', alignItems:'center', gap:20, flex:1, flexWrap:'wrap' }}>
-            {kpis.slice(0, 7).map((k, i) => (
+            {dynKpis.slice(0, 7).map((k, i) => (
               <div key={i} style={{ display:'flex', alignItems:'center', gap:8 }}>
                 {i > 0 && <div style={{ width:1, height:28, background:'#e8edf2' }} />}
                 <div style={{ background:k.bg, borderRadius:7, padding:'5px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
