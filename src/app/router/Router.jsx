@@ -17,6 +17,7 @@ import ActivityLogPage from '../../pages/MyProfile/ActivityLogPage';
 import HelpSupportPage from '../../pages/MyProfile/HelpSupportPage';
 import RevenueDashboard from '../../pages/Dashboard/RevenueDashboard';
 import BookingAnalytics from '../../pages/Dashboard/BookingAnalytics';
+import BookingsDashboard from '../../pages/BookingManagement/BookingsDashboard';
 import UserAnalytics from '../../pages/Dashboard/UserAnalytics';
 import PartnerAnalytics from '../../pages/Dashboard/PartnerAnalytics';
 import ApprovalsDashboard from '../../pages/Dashboard/ApprovalsDashboard';
@@ -127,7 +128,7 @@ import ChannelPerformance from '../../pages/Dashboard/ChannelPerformance';
 import ConversionAnalytics from '../../pages/Dashboard/ConversionAnalytics';
 import AdminDashboard from '../../pages/Dashboard/AdminDashboard';
 import PaymentDashboard from '../../pages/PaymentManagement/PaymentDashboard';
-import ServiceDashboard from '../../pages/Services/ServiceDashboard';
+import ServicesOverviewDashboard from '../../pages/Services/ServicesOverviewDashboard';
 import GSTDashboard from '../../pages/GSTManagement/GSTDashboard';
 
 // Notification Center sub-routes
@@ -552,7 +553,7 @@ export function Router() {
     case ROUTES.dashboardRevenue:
       return <RevenueDashboard activeTab="Dashboard" />;
     case ROUTES.dashboardBookings:
-      return <BookingAnalytics activeTab="Dashboard" />;
+      return <BookingsDashboard />;
     case ROUTES.dashboardUsers:
       return <UserAnalytics activeTab="Dashboard" />;
     case ROUTES.dashboardPartners:
@@ -570,7 +571,7 @@ export function Router() {
     case ROUTES.dashboardPayment:
       return <PaymentDashboard />;
     case ROUTES.dashboardServices:
-      return <ServiceDashboard />;
+      return <ServicesOverviewDashboard />;
     case ROUTES.dashboardGST:
       return <GSTDashboard />;
 

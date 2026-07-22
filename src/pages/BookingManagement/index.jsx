@@ -38,6 +38,7 @@ import {
   XCircle
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
+import BookingsDashboard from './BookingsDashboard';
 import { ROUTES } from '../../config/routes';
 import { useApp } from '../../hooks/useApp';
 import GlobalDashboardFilters from '../../components/common/GlobalDashboardFilters';
@@ -57,7 +58,7 @@ const money = (value) =>
 
 const normalize = (value) => String(value || '').trim().toLowerCase();
 
-const initialBookings = [
+export const initialBookings = [
   {
     id: 'BK-8821',
     customer: 'Julianne Devis',
@@ -643,7 +644,11 @@ function FilterSelect({ label, options }) {
   );
 }
 
-function DashboardScreen({ bookings, handlers }) {
+function DashboardScreen({ bookings, handlers, navigate, ROUTES }) {
+  return <BookingsDashboard bookings={bookings} handlers={handlers} navigate={navigate} ROUTES={ROUTES} />;
+}
+
+function _OriginalDashboardScreenUnused({ bookings, handlers }) {
   const [period, setPeriod] = useState('Monthly');
   const [filterTrigger, setFilterTrigger] = useState(0);
 
@@ -2002,7 +2007,7 @@ export default function BookingManagement() {
 
   const content = () => {
     if (selectedBooking) return <DetailsScreen booking={selectedBooking} onBack={() => setSelectedBooking(null)} onToast={toast} />;
-    if (meta.screen === 'dashboard') return <DashboardScreen bookings={bookings} handlers={handlers} />;
+    if (meta.screen === 'dashboard') return <DashboardScreen bookings={bookings} handlers={handlers} navigate={navigate} ROUTES={ROUTES} />;
     if (meta.screen === 'listing') return <ListingScreen bookings={bookings} handlers={handlers} />;
     if (meta.screen === 'status') return <StatusScreen bookings={bookings} status={meta.status} title={meta.title} handlers={handlers} />;
 
@@ -2023,8 +2028,10 @@ export default function BookingManagement() {
     if (meta.screen === 'communications') return <CommunicationsScreen onToast={toast} />;
     if (meta.screen === 'reports') return <ReportsScreen onToast={toast} />;
     if (meta.screen === 'archive') return <ArchiveScreen bookings={bookings} onToast={toast} handlers={handlers} />;
-    return <DashboardScreen bookings={bookings} handlers={handlers} />;
+    return <DashboardScreen bookings={bookings} handlers={handlers} navigate={navigate} ROUTES={ROUTES} />;
   };
+
+  const isDashboard = !selectedBooking && meta.screen === 'dashboard';
 
   return (
     <AdminShell
@@ -2033,19 +2040,25 @@ export default function BookingManagement() {
       searchPlaceholder="Search bookings, clients, or IDs..."
     >
       {feedback && <div className="booking-feedback"><CheckCircle2 size={16} /> {feedback}</div>}
-      <section className="booking-module">
-        <div className="booking-page-head">
-          <div>
-            <h1>{selectedBooking ? 'Booking Details' : meta.title}</h1>
-            <p>{selectedBooking ? `${selectedBooking.id} • ${selectedBooking.customer} • ${selectedBooking.status}` : meta.subtitle}</p>
+      {isDashboard ? (
+        <section className="booking-module">
+          {content()}
+        </section>
+      ) : (
+        <section className="booking-module">
+          <div className="booking-page-head">
+            <div>
+              <h1>{selectedBooking ? 'Booking Details' : meta.title}</h1>
+              <p>{selectedBooking ? `${selectedBooking.id} • ${selectedBooking.customer} • ${selectedBooking.status}` : meta.subtitle}</p>
+            </div>
+            <div className="booking-page-actions">
+              <ActionButton icon={Bell} onClick={() => toast('Operational alerts refreshed.')}>Alerts</ActionButton>
+            </div>
           </div>
-          <div className="booking-page-actions">
-            <ActionButton icon={Bell} onClick={() => toast('Operational alerts refreshed.')}>Alerts</ActionButton>
-          </div>
-        </div>
-        {!selectedBooking && <GlobalDashboardFilters />}
-        {content()}
-      </section>
+          {!selectedBooking && <GlobalDashboardFilters />}
+          {content()}
+        </section>
+      )}
     </AdminShell>
   );
 }

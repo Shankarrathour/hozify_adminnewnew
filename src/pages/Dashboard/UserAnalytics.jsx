@@ -134,6 +134,7 @@ const DonutCenter = ({ viewBox, value, label }) => {
 export default function UserAnalytics({ activeTab = 'Dashboard' }) {
   const { addToast } = useToast();
   const [period, setPeriod] = useState('Monthly');
+  const [locationType, setLocationType] = useState('All');
 
   const [filterTrigger, setFilterTrigger] = useState(0);
 
@@ -142,7 +143,8 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
     addToast('Filters applied successfully', 'success');
   };
   const handleReset = () => { 
-    setPeriod('Monthly'); 
+    setPeriod('Monthly');
+    setLocationType('All');
     setFilterTrigger(0);
     addToast('Filters reset', 'info'); 
   };
@@ -150,7 +152,8 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
 
   const periodMultiplier = period === 'Daily' ? 0.03 : period === 'Weekly' ? 0.25 : period === 'Yearly' ? 12 : 1;
   const filterMultiplier = filterTrigger === 0 ? 1 : 1 + ((filterTrigger % 5) * 0.15);
-  const m = periodMultiplier * filterMultiplier;
+  const locationMultiplier = locationType === 'Urban' ? 0.65 : locationType === 'Rural' ? 0.35 : 1;
+  const m = periodMultiplier * filterMultiplier * locationMultiplier;
 
   // KPI definitions
   const dynKpis = useMemo(() => [
@@ -230,6 +233,25 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
               </div>
             </div>
           ))}
+
+          {/* Location Type Dropdown */}
+          <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+            <label style={{ fontSize:10, fontWeight:600, color:'#94a3b8', letterSpacing:0.3 }}>Location Type</label>
+            <div style={{ position:'relative' }}>
+              <select
+                value={locationType}
+                onChange={e => setLocationType(e.target.value)}
+                style={{
+                  appearance:'none', background:'#fff', border:'1px solid #dde3ea',
+                  borderRadius:6, padding:'6px 28px 6px 10px', fontSize:12,
+                  fontWeight:500, color:'#334155', cursor:'pointer', outline:'none', minWidth:120,
+                }}
+              >
+                {['All', 'Urban', 'Rural'].map(o => <option key={o}>{o}</option>)}
+              </select>
+              <ChevronDown size={11} style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', color:'#94a3b8', pointerEvents:'none' }} />
+            </div>
+          </div>
 
           {/* Divider */}
           <div style={{ width:1, height:34, background:'#e8edf2', alignSelf:'flex-end', margin:'0 4px' }} />

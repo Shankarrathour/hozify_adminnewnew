@@ -183,6 +183,9 @@ function KPICard({ icon: Icon, iconBg, iconColor, label, value, sub, pct, up, cm
 export default function PartnerAnalytics({ activeTab = 'Dashboard' }) {
   const { addToast } = useToast();
   const [period, setPeriod] = useState('Monthly');
+  const [locationType, setLocationType] = useState('All');
+
+  const locationMultiplier = locationType === 'Urban' ? 0.65 : locationType === 'Rural' ? 0.35 : 1;
 
   const kpis = [
     { label:'Total Partners',    value:12548, sub:'All Time',    pct:13.6, up:true,  cmp:'vs Apr 2026', icon:Users,    iconBg:'#eff6ff', iconColor:'#2563eb' },
@@ -236,6 +239,25 @@ export default function PartnerAnalytics({ activeTab = 'Dashboard' }) {
           <FilterSelect label="City"         options={['All Cities','Mumbai','Bengaluru','Hyderabad','Chennai','Delhi','Pune']} />
           <FilterSelect label="District"     options={['All Districts','Andheri','Koramangala','Banjara Hills','T. Nagar']} />
           <FilterSelect label="Partner Role" options={['All Roles','ISP','BSP','Business Seller','Branch Manager','Professional']} />
+
+          {/* Location Type Dropdown */}
+          <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+            <label style={{ fontSize:10, fontWeight:600, color:'#94a3b8', letterSpacing:0.3 }}>Location Type</label>
+            <div style={{ position:'relative' }}>
+              <select
+                value={locationType}
+                onChange={e => setLocationType(e.target.value)}
+                style={{
+                  appearance:'none', background:'#fff', border:'1px solid #dde3ea',
+                  borderRadius:6, padding:'6px 28px 6px 10px', fontSize:12,
+                  fontWeight:500, color:'#334155', cursor:'pointer', outline:'none', minWidth:110,
+                }}
+              >
+                {['All', 'Urban', 'Rural'].map(o => <option key={o}>{o}</option>)}
+              </select>
+              <ChevronDown size={11} style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', color:'#94a3b8', pointerEvents:'none' }} />
+            </div>
+          </div>
           <div style={{ width:1, height:34, background:'#e8edf2', alignSelf:'flex-end', margin:'0 2px' }} />
           <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
             <label style={{ fontSize:10, fontWeight:600, color:'transparent' }}>_</label>
@@ -254,7 +276,7 @@ export default function PartnerAnalytics({ activeTab = 'Dashboard' }) {
           <FilterSelect label="" options={['2026','2025','2024','2023']} />
           <div style={{ display:'flex', gap:8, alignSelf:'flex-end' }}>
             <button onClick={() => addToast('Filters applied','success')} style={{ padding:'7px 20px', borderRadius:6, border:'none', background:'#0f172a', color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer' }}>Apply</button>
-            <button onClick={() => { setPeriod('Monthly'); addToast('Filters reset','info'); }} style={{ padding:'7px 14px', borderRadius:6, border:'1px solid #dde3ea', background:'#fff', color:'#334155', fontSize:12, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>
+            <button onClick={() => { setPeriod('Monthly'); setLocationType('All'); addToast('Filters reset','info'); }} style={{ padding:'7px 14px', borderRadius:6, border:'1px solid #dde3ea', background:'#fff', color:'#334155', fontSize:12, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>
               <RotateCcw size={11} /> Reset
             </button>
           </div>
