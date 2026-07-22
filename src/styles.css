@@ -9,7 +9,7 @@
   --lavender: #eee9f6;
   --line: #c8c0d7;
   --text: #20202a;
-  --muted: #565365;
+  --muted: #334155;
   --soft: #f4eff8;
   --green: #07956f;
   --red: #d32929;
@@ -11519,6 +11519,202 @@ table thead th {
 }
 
 .admin-dash-stat-icon {
+}
+
+table th, 
+table td {
+    border-left: 1px solid #e2e8f0 !important;
+    border-right: 1px solid #e2e8f0 !important;
+}
+
+table thead th {
+    border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.table-responsive-wrapper { overflow-x: auto; width: 100%; }
+.panel, .banking-filter-panel, [class*="-panel"], .bookings-panel { overflow: visible !important; z-index: 50 !important; }
+.calendar-dropdown { position: absolute; top: 100%; right: 0; margin-top: 8px; z-index: 50; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 8px; overflow: visible !important; background: #fff; min-width: 340px !important; } @media (max-width: 768px) { .calendar-dropdown { right: auto !important; left: 0 !important; } }
+
+/* Fix react-date-range formatting with Tailwind */
+.calendar-dropdown .rdrCalendarWrapper {
+  box-sizing: border-box;
+  font-size: 14px !important;
+  width: 100%;
+}
+
+.calendar-dropdown .rdrMonthAndYearPickers select {
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+  -moz-appearance: auto !important;
+  padding: 4px 8px !important;
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 4px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #1c2536 !important;
+  margin: 0 4px;
+  cursor: pointer;
+}
+
+.calendar-dropdown .rdrMonth {
+  width: 100% !important;
+  padding: 0 0.8em 0.8em 0.8em !important;
+}
+
+.calendar-dropdown .rdrDay {
+  background: transparent !important;
+  border: none !important;
+  box-sizing: border-box !important;
+  height: 2.8em !important;
+}
+
+.calendar-dropdown .rdrDayNumber {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ADMIN DASHBOARD STYLES
+   ═══════════════════════════════════════════════════════════ */
+
+.admin-dash-root {
+  padding: 0 0 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Filter Bar ── */
+.admin-dash-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: #fff;
+  border-radius: var(--radius-card);
+  padding: 18px 22px;
+  box-shadow: var(--shadow-standard);
+}
+
+.admin-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.admin-filter-group label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155 !important;
+  letter-spacing: 0.02em;
+}
+
+.admin-filter-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-input);
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a !important;
+  background: var(--bg);
+  cursor: pointer;
+  transition: var(--transition-standard);
+}
+
+.admin-filter-select:hover {
+  border-color: var(--primary-3);
+}
+
+.admin-filter-actions {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+  align-items: center;
+}
+
+.admin-filter-btn-refresh {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-btn);
+  border: 1.5px solid var(--line);
+  background: #fff;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-standard);
+}
+
+.admin-filter-btn-refresh:hover {
+  background: var(--bg);
+}
+
+.admin-filter-btn-export {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: var(--radius-btn);
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-standard);
+}
+
+.admin-filter-btn-export:hover {
+  background: var(--primary-2);
+}
+
+/* ── Stat Cards ── */
+.admin-dash-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 1400px) {
+  .admin-dash-stats-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .admin-dash-stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.admin-dash-stat-card {
+  background: #fff;
+  border-radius: var(--radius-card);
+  padding: 18px 16px 16px;
+  box-shadow: var(--shadow-standard);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: var(--transition-standard);
+}
+
+.admin-dash-stat-card:hover {
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.1);
+  transform: translateY(-2px);
+}
+
+.admin-dash-stat-icon {
   width: 42px;
   height: 42px;
   border-radius: 12px;
@@ -11536,15 +11732,15 @@ table thead th {
 .admin-dash-stat-value {
   font-size: 26px;
   font-weight: 800;
-  color: var(--text);
+  color: #0f172a;
   line-height: 1;
   letter-spacing: -0.5px;
 }
 
 .admin-dash-stat-label {
   font-size: 12px;
-  color: var(--muted);
-  font-weight: 500;
+  color: #334155 !important;
+  font-weight: 700;
 }
 
 .admin-dash-stat-trend {
@@ -11552,7 +11748,7 @@ table thead th {
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   margin-top: 4px;
 }
 
@@ -11560,8 +11756,8 @@ table thead th {
 .admin-dash-stat-trend.down { color: #dc2626; }
 
 .trend-vs {
-  color: var(--muted);
-  font-weight: 400;
+  color: #475569 !important;
+  font-weight: 600;
   margin-left: 2px;
 }
 
@@ -11584,14 +11780,14 @@ table thead th {
 .admin-dash-card-header h3 {
   font-size: 15px;
   font-weight: 700;
-  color: var(--text);
+  color: #0f172a;
   margin: 0;
 }
 
 .admin-dash-card-subtitle {
   font-size: 13px;
-  color: var(--muted);
-  font-weight: 400;
+  color: #334155 !important;
+  font-weight: 600;
 }
 
 /* ── Charts Row ── */
@@ -11620,9 +11816,9 @@ table thead th {
   border-radius: 8px;
   border: 1.5px solid var(--line);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   background: #fff;
-  color: var(--muted);
+  color: #334155;
   cursor: pointer;
   transition: var(--transition-standard);
 }
@@ -11664,13 +11860,14 @@ table thead th {
 .admin-donut-center-val {
   font-size: 22px;
   font-weight: 800;
-  color: var(--text);
+  color: #0f172a;
   line-height: 1;
 }
 
 .admin-donut-center-txt {
   font-size: 11px;
-  color: var(--muted);
+  color: #334155 !important;
+  font-weight: 700;
   text-align: center;
   line-height: 1.3;
   max-width: 60px;
@@ -11700,8 +11897,8 @@ table thead th {
 
 .admin-donut-legend-name {
   flex: 1;
-  color: var(--text);
-  font-weight: 500;
+  color: #0f172a !important;
+  font-weight: 600;
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -14670,4 +14867,69 @@ table thead th {
 .approval-queue-table thead tr,
 table thead tr {
   background-color: #f8fafc; /* Default dashboard header background */
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GLOBAL HIGH-CONTRAST & BRIGHT VISIBILITY OVERRIDES (ALL DASHBOARDS)
+   ═══════════════════════════════════════════════════════════ */
+
+/* All filter labels across all dashboards */
+label,
+.filter-group label,
+[class*="-filter"] label,
+[class*="-filter-group"] label,
+[class*="-group"] label {
+  color: #334155 !important;
+  font-weight: 700 !important;
+}
+
+/* All filter selects & inputs across all dashboards */
+select,
+.filter-select,
+[class*="-select"],
+[class*="-input"] {
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+/* All card labels, KPI titles & subtitles */
+[class*="-stat-label"],
+[class*="-card-subtitle"],
+[class*="-sub-title"],
+[class*="-lbl"],
+.ref-kpi-label,
+.pd-card-subtitle,
+.rev-stat-label,
+.bk-stat-label,
+.srv-stat-label {
+  color: #334155 !important;
+  font-weight: 700 !important;
+}
+
+/* All trend vs text and secondary subtitles */
+.trend-vs,
+[class*="-vs"],
+[class*="-sub"],
+[class*="-subtitle"] {
+  color: #475569 !important;
+  font-weight: 600 !important;
+}
+
+/* All donut chart center subtexts & legends */
+[class*="-center-txt"],
+[class*="-legend-pct"],
+[class*="-legend-name"],
+[class*="-legend-val"] {
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+/* Recharts ticks & legends text color */
+.recharts-text,
+.recharts-cartesian-axis-tick-value,
+.recharts-cartesian-axis-tick-value tspan,
+.recharts-legend-item-text {
+  fill: #334155 !important;
+  color: #334155 !important;
+  font-weight: 700 !important;
 }

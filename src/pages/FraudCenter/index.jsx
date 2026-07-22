@@ -133,13 +133,16 @@ export default function FraudCenter() {
 }
 
 function PageHeader({ page, onModal, onDrawer }) {
+  const hasText = Boolean(page.eyebrow || page.title || page.subtitle);
   return (
-    <section className="fraud-page-head">
-      <div>
-        {page.eyebrow && <p className="fraud-eyebrow">{page.eyebrow}</p>}
-        <h1 className="fraud-title">{page.title}</h1>
-        <p className="fraud-subtitle">{page.subtitle}</p>
-      </div>
+    <section className="fraud-page-head" style={!hasText ? { justifyContent: 'flex-end', marginBottom: '12px' } : {}}>
+      {hasText && (
+        <div>
+          {page.eyebrow && <p className="fraud-eyebrow">{page.eyebrow}</p>}
+          {page.title && <h1 className="fraud-title">{page.title}</h1>}
+          {page.subtitle && <p className="fraud-subtitle">{page.subtitle}</p>}
+        </div>
+      )}
       <div className="fraud-actions">
         {page.secondary && (
           <button className="fraud-btn ghost" type="button" onClick={() => onDrawer('report')}>

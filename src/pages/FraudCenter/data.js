@@ -145,9 +145,9 @@ export const riskRules = [
 export const pageCatalog = {
   dashboard: {
     key: 'dashboard',
-    title: 'Fraud Command Center',
-    subtitle: 'Real-time surveillance and threat mitigation engine.',
-    eyebrow: 'Security Intelligence',
+    title: '',
+    subtitle: '',
+    eyebrow: '',
     variant: 'dashboard',
     cta: 'Export Report',
     secondary: 'Filter View',

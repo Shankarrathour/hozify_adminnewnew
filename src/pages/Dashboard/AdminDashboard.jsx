@@ -113,18 +113,18 @@ function StatCard({ icon: Icon, iconBg, iconColor, value, label, trend, trendUp,
           <Icon size={24} color={iconColor} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <div className="admin-dash-stat-label" style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>{label}</div>
+          <div className="admin-dash-stat-label" style={{ fontSize: '13px', color: '#334155', fontWeight: 700 }}>{label}</div>
           <div className="admin-dash-stat-value" style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px' }}>{value}</div>
         </div>
       </div>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-        <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>{bottomLabel}</div>
+        <div style={{ fontSize: '12px', color: '#475569', fontWeight: 700 }}>{bottomLabel}</div>
         {trend && (
-          <div className={`admin-dash-stat-trend ${trendUp ? 'up' : 'down'}`} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600, color: trendUp ? '#16a34a' : '#dc2626' }}>
+          <div className={`admin-dash-stat-trend ${trendUp ? 'up' : 'down'}`} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 700, color: trendUp ? '#16a34a' : '#dc2626' }}>
             {trendUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
             <span>{trend}</span>
-            <span className="trend-vs" style={{ color: '#94a3b8', fontWeight: 500 }}>{trendLabel}</span>
+            <span className="trend-vs" style={{ color: '#475569', fontWeight: 600 }}>{trendLabel}</span>
           </div>
         )}
       </div>
@@ -355,9 +355,9 @@ export default function AdminDashboard() {
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={getChartData()} margin={{ top: 8, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" vertical={false} />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#334155', fontWeight: 600 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#334155', fontWeight: 600 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
                 <Line
                   type="monotone"

@@ -3,7 +3,7 @@ import {
   Wallet, Clock, UserCircle, CheckCircle2, Building2, CheckSquare,
   Truck, CheckCircle, Percent, Award, Receipt, ShieldCheck, FileText,
   Undo2, BarChart3, TrendingUp, TrendingDown, ChevronDown, ChevronRight,
-  ChevronLeft, Info, Download, ArrowDown, Share2, Layers
+  ChevronLeft, Info, Download, ArrowDown, Share2, Layers, X, Search
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
 import StatusBadge from '../../components/common/StatusBadge';
@@ -64,6 +64,11 @@ const spSettlements = [
   { id: 'BK-250601-0003', name: 'Sri Electricals', payout: '₹1,750', type: 'Daily', status: 'Completed', date: '01 Jun 2026 11:30 AM' },
   { id: 'BK-250601-0004', name: 'TechFix Services', payout: '₹1,100', type: 'Weekly', status: 'Pending', date: '01 Jun 2026 12:20 PM' },
   { id: 'BK-250601-0005', name: 'Quick Home Care', payout: '₹2,200', type: 'Instant', status: 'Completed', date: '01 Jun 2026 12:45 PM' },
+  { id: 'BK-250601-0006', name: 'Metro Plumbing Co', payout: '₹1,850', type: 'Weekly', status: 'Completed', date: '01 Jun 2026 01:10 PM' },
+  { id: 'BK-250601-0007', name: 'Apex Appliance Repair', payout: '₹3,400', type: 'Instant', status: 'Pending', date: '01 Jun 2026 01:30 PM' },
+  { id: 'BK-250601-0008', name: 'Urban Cleaners', payout: '₹1,250', type: 'Daily', status: 'Completed', date: '01 Jun 2026 02:00 PM' },
+  { id: 'BK-250601-0009', name: 'Safe Locksmiths', payout: '₹800', type: 'Instant', status: 'Completed', date: '01 Jun 2026 02:25 PM' },
+  { id: 'BK-250601-0010', name: 'Elite Electricians', payout: '₹2,150', type: 'Weekly', status: 'Pending', date: '01 Jun 2026 02:50 PM' },
 ];
 
 const sellerSettlements = [
@@ -72,6 +77,11 @@ const sellerSettlements = [
   { id: 'BK-250601-0003', name: 'Sai Home Store', amt: '₹600', type: 'Daily', status: 'Completed', date: '01 Jun 2026 12:05 PM' },
   { id: 'BK-250601-0004', name: 'BuildMart', amt: '₹450', type: 'Manual', status: 'Pending', date: '-' },
   { id: 'BK-250601-0005', name: 'Shree Hardware', amt: '₹800', type: 'On Delivery Confirmation', status: 'Pending', date: '-' },
+  { id: 'BK-250601-0006', name: 'Supreme Sanitary', amt: '₹1,350', type: 'Weekly', status: 'Completed', date: '01 Jun 2026 01:15 PM' },
+  { id: 'BK-250601-0007', name: 'Royal Electricals', amt: '₹920', type: 'Daily', status: 'Completed', date: '01 Jun 2026 01:40 PM' },
+  { id: 'BK-250601-0008', name: 'Kisan Spare Parts', amt: '₹680', type: 'Manual', status: 'Pending', date: '-' },
+  { id: 'BK-250601-0009', name: 'Delta Traders', amt: '₹1,150', type: 'Weekly', status: 'Completed', date: '01 Jun 2026 02:10 PM' },
+  { id: 'BK-250601-0010', name: 'Vanguard Supplies', amt: '₹540', type: 'Daily', status: 'Pending', date: '01 Jun 2026 02:45 PM' },
 ];
 
 const deliverySettlements = [
@@ -80,6 +90,11 @@ const deliverySettlements = [
   { id: 'BK-250601-0003', name: 'Service Provider', charge: '₹250', type: 'Weekly', status: 'Pending', date: '01 Jun 2026 11:30 AM' },
   { id: 'BK-250601-0004', name: 'Sabar Delivery', charge: '₹100', type: 'Weekly', status: 'Pending', date: '-' },
   { id: 'BK-250601-0005', name: 'Service Provider', charge: '₹200', type: 'Instant', status: 'Completed', date: '01 Jun 2026 12:45 PM' },
+  { id: 'BK-250601-0006', name: 'Express Logistics', charge: '₹180', type: 'Instant', status: 'Completed', date: '01 Jun 2026 01:10 PM' },
+  { id: 'BK-250601-0007', name: 'Swift Delivery', charge: '₹120', type: 'Daily', status: 'Pending', date: '01 Jun 2026 01:50 PM' },
+  { id: 'BK-250601-0008', name: 'Gaurav Delivery', charge: '₹90', type: 'Weekly', status: 'Completed', date: '01 Jun 2026 02:15 PM' },
+  { id: 'BK-250601-0009', name: 'Urban Express', charge: '₹220', type: 'Instant', status: 'Completed', date: '01 Jun 2026 02:40 PM' },
+  { id: 'BK-250601-0010', name: 'Service Provider', charge: '₹160', type: 'Daily', status: 'Pending', date: '-' },
 ];
 
 const recentBookings = [
@@ -88,6 +103,11 @@ const recentBookings = [
   { id: 'BK-250601-0003', order: 'OR-10003', user: 'Arun Singh', cat: 'Electrical', type: 'Wallet', amt: '₹3,200', pStatus: 'Success', pDate: '01 Jun 2026 11:45 AM', txn: 'WL5566677788', method: 'Wallet', spType: 'Daily', sellerType: 'Daily', tAmt: '₹3,200', status: 'Completed' },
   { id: 'BK-250601-0004', order: 'OR-10004', user: 'Pooja Patel', cat: 'Cleaning', type: 'Net Banking', amt: '₹2,100', pStatus: 'Success', pDate: '01 Jun 2026 12:20 PM', txn: 'NB1122334455', method: 'Net Banking', spType: 'Weekly', sellerType: 'Manual', tAmt: '₹2,100', status: 'Completed' },
   { id: 'BK-250601-0005', order: 'OR-10005', user: 'Vikram Rao', cat: 'Appliance Repair', type: 'UPI', amt: '₹4,300', pStatus: 'Pending', pDate: '01 Jun 2026 12:40 PM', txn: 'UPI9988776655', method: 'UPI', spType: 'Instant', sellerType: 'On Delivery Confirmation', tAmt: '₹4,300', status: 'Pending' },
+  { id: 'BK-250601-0006', order: 'OR-10006', user: 'Ananya Sharma', cat: 'Painting', type: 'Credit Card', amt: '₹8,500', pStatus: 'Success', pDate: '01 Jun 2026 01:15 PM', txn: 'CC4433221100', method: 'Credit Card', spType: 'Instant', sellerType: 'Weekly', tAmt: '₹8,500', status: 'Completed' },
+  { id: 'BK-250601-0007', order: 'OR-10007', user: 'Manish Verma', cat: 'Pest Control', type: 'UPI', amt: '₹1,800', pStatus: 'Success', pDate: '01 Jun 2026 01:45 PM', txn: 'UPI7766554433', method: 'UPI', spType: 'Daily', sellerType: 'Daily', tAmt: '₹1,800', status: 'Completed' },
+  { id: 'BK-250601-0008', order: 'OR-10008', user: 'Kavita Joshi', cat: 'Carpentry', type: 'Net Banking', amt: '₹3,600', pStatus: 'Pending', pDate: '01 Jun 2026 02:10 PM', txn: 'NB9988112233', method: 'Net Banking', spType: 'Weekly', sellerType: 'Manual', tAmt: '₹3,600', status: 'Pending' },
+  { id: 'BK-250601-0009', order: 'OR-10009', user: 'Sanjay Dutt', cat: 'Plumbing', type: 'Wallet', amt: '₹1,450', pStatus: 'Success', pDate: '01 Jun 2026 02:30 PM', txn: 'WL1144778899', method: 'Wallet', spType: 'Instant', sellerType: 'Weekly', tAmt: '₹1,450', status: 'Completed' },
+  { id: 'BK-250601-0010', order: 'OR-10010', user: 'Deepak Mishra', cat: 'AC Service', type: 'UPI', amt: '₹2,900', pStatus: 'Success', pDate: '01 Jun 2026 03:00 PM', txn: 'UPI3322114455', method: 'UPI', spType: 'Daily', sellerType: 'Daily', tAmt: '₹2,900', status: 'Completed' },
 ];
 
 /* ═══════════════════════════ COMPONENTS ═══════════════════════════ */
@@ -219,14 +239,50 @@ const CSS = `
   .pd-view-all:hover { text-decoration: underline; }
 
   /* Full Width Table */
-  .pd-full-table-wrap { overflow-x: auto; overflow-y: auto; max-height: 400px; margin-bottom: 16px; width: 100%; }
-  .pd-full-table { width: 100%; border-collapse: collapse; font-size: 11.5px; min-width: 1300px; }
-  .pd-full-table th { 
-    text-align: left; padding: 12px 10px; font-weight: 600; color: #64748b !important; 
-    border-bottom: 1.5px solid #e2e8f0; white-space: nowrap; background: #f8fafc !important; 
-    position: sticky; top: 0; z-index: 10; text-transform: none !important;
+  .pd-full-table-wrap { 
+    overflow-x: auto !important; 
+    overflow-y: visible !important; 
+    width: 100%; 
+    padding-bottom: 10px;
+    margin-bottom: 4px;
   }
-  .pd-full-table td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; color: #0f172a; font-weight: 500; }
+  .pd-full-table-wrap::-webkit-scrollbar {
+    height: 8px;
+  }
+  .pd-full-table-wrap::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+  }
+  .pd-full-table-wrap::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  .pd-full-table-wrap::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+  .pd-full-table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    font-size: 11.5px; 
+    min-width: 1350px; 
+  }
+  .pd-full-table th { 
+    text-align: left; 
+    padding: 10px 12px !important; 
+    font-weight: 600; 
+    color: #64748b !important; 
+    border-bottom: 1.5px solid #e2e8f0; 
+    white-space: nowrap !important; 
+    background: #f8fafc !important; 
+    text-transform: none !important;
+  }
+  .pd-full-table td { 
+    padding: 11px 12px !important; 
+    border-bottom: 1px solid #f1f5f9; 
+    color: #0f172a; 
+    font-weight: 500; 
+    white-space: nowrap !important; 
+  }
   
   /* Footer Note & Button */
   .pd-bottom-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-wrap: wrap; gap: 16px; }
@@ -270,6 +326,8 @@ function KPI({ data }) {
 
 export default function PaymentDashboard() {
   const [period, setPeriod] = useState('Monthly');
+  const [activeModal, setActiveModal] = useState(null); // 'sp' | 'seller' | 'delivery' | 'recent'
+  const [modalSearch, setModalSearch] = useState('');
 
   return (
     <AdminShell
@@ -514,7 +572,7 @@ export default function PaymentDashboard() {
           <div className="pd-card">
             <div className="pd-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 className="pd-card-title">Service Provider Settlements</h3>
-              <button className="pd-view-all">View All</button>
+              <button className="pd-view-all" onClick={() => { setActiveModal('sp'); setModalSearch(''); }}>View All</button>
             </div>
             <div className="pd-card-body" style={{ padding: 0, overflowX: 'auto', maxHeight: 220, overflowY: 'auto' }}>
               <table className="pd-settle-table">
@@ -529,7 +587,7 @@ export default function PaymentDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {spSettlements.map((r, i) => (
+                  {spSettlements.slice(0, 5).map((r, i) => (
                     <tr key={i}>
                       <td style={{ color: '#3b82f6', fontWeight: 600 }}>{r.id}</td>
                       <td>{r.name}</td>
@@ -557,7 +615,7 @@ export default function PaymentDashboard() {
           <div className="pd-card">
             <div className="pd-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 className="pd-card-title">Seller Settlements</h3>
-              <button className="pd-view-all">View All</button>
+              <button className="pd-view-all" onClick={() => { setActiveModal('seller'); setModalSearch(''); }}>View All</button>
             </div>
             <div className="pd-card-body" style={{ padding: 0, overflowX: 'auto', maxHeight: 220, overflowY: 'auto' }}>
               <table className="pd-settle-table">
@@ -572,7 +630,7 @@ export default function PaymentDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sellerSettlements.map((r, i) => (
+                  {sellerSettlements.slice(0, 5).map((r, i) => (
                     <tr key={i}>
                       <td style={{ color: '#3b82f6', fontWeight: 600 }}>{r.id}</td>
                       <td>{r.name}</td>
@@ -600,7 +658,7 @@ export default function PaymentDashboard() {
           <div className="pd-card">
             <div className="pd-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 className="pd-card-title">Delivery Charges Settlements</h3>
-              <button className="pd-view-all">View All</button>
+              <button className="pd-view-all" onClick={() => { setActiveModal('delivery'); setModalSearch(''); }}>View All</button>
             </div>
             <div className="pd-card-body" style={{ padding: 0, overflowX: 'auto', maxHeight: 220, overflowY: 'auto' }}>
               <table className="pd-settle-table">
@@ -615,7 +673,7 @@ export default function PaymentDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {deliverySettlements.map((r, i) => (
+                  {deliverySettlements.slice(0, 5).map((r, i) => (
                     <tr key={i}>
                       <td style={{ color: '#3b82f6', fontWeight: 600 }}>{r.id}</td>
                       <td>{r.name}</td>
@@ -646,7 +704,7 @@ export default function PaymentDashboard() {
         <div className="pd-card" style={{ marginBottom: 16 }}>
           <div className="pd-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3 className="pd-card-title">Recent Booking Payments <span style={{color: '#64748b', fontSize: 12, fontWeight: 500}}>(Customer Payments)</span></h3>
-            <button className="pd-view-all">View All</button>
+            <button className="pd-view-all" onClick={() => { setActiveModal('recent'); setModalSearch(''); }}>View All</button>
           </div>
           <div className="pd-full-table-wrap" style={{ position: 'relative' }}>
             <table className="pd-full-table">
@@ -669,7 +727,7 @@ export default function PaymentDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {recentBookings.map((r, i) => (
+                {recentBookings.slice(0, 5).map((r, i) => (
                   <tr key={i}>
                     <td style={{ color: '#3b82f6', fontWeight: 600 }}>{r.id}</td>
                     <td style={{ color: '#3b82f6', fontWeight: 600 }}>{r.order}</td>
@@ -702,6 +760,217 @@ export default function PaymentDashboard() {
             <Download size={16} /> Export Reports <ChevronDown size={16} />
           </button>
         </div>
+
+        {/* 7. VIEW ALL MODAL POPUP */}
+        {activeModal && (
+          <div 
+            onClick={() => setActiveModal(null)}
+            style={{
+              position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+              background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)',
+              zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: 20
+            }}
+          >
+            <div 
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: '#fff', borderRadius: 16, width: '100%', maxWidth: 1100,
+                maxHeight: '85vh', display: 'flex', flexDirection: 'column',
+                boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', overflow: 'hidden'
+              }}
+            >
+              {/* Modal Header */}
+              <div style={{ padding: '18px 24px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fafbfc' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
+                    {activeModal === 'sp' && 'All Service Provider Settlements'}
+                    {activeModal === 'seller' && 'All Seller Settlements'}
+                    {activeModal === 'delivery' && 'All Delivery Charges Settlements'}
+                    {activeModal === 'recent' && 'All Recent Booking Payments'}
+                  </h3>
+                  <span style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
+                    Detailed records & status breakdown
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ position: 'relative' }}>
+                    <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                    <input 
+                      type="text"
+                      placeholder="Search records..."
+                      value={modalSearch}
+                      onChange={e => setModalSearch(e.target.value)}
+                      style={{
+                        padding: '6px 12px 6px 30px', fontSize: 12, borderRadius: 8,
+                        border: '1.5px solid #e2e8f0', outline: 'none', width: 200,
+                        fontFamily: 'Inter, sans-serif'
+                      }}
+                    />
+                  </div>
+
+                  <button 
+                    onClick={() => setActiveModal(null)}
+                    style={{ background: '#f1f5f9', border: 'none', color: '#64748b', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Content Table */}
+              <div style={{ padding: 20, overflowY: 'auto', flex: 1 }}>
+                {activeModal === 'sp' && (
+                  <table className="pd-settle-table" style={{ width: '100%' }}>
+                    <thead>
+                      <tr>
+                        <th>Booking ID</th>
+                        <th>Service Provider</th>
+                        <th>Payout Amt</th>
+                        <th>Settlement Type</th>
+                        <th>Status</th>
+                        <th>Settlement Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {spSettlements
+                        .filter(r => r.id.toLowerCase().includes(modalSearch.toLowerCase()) || r.name.toLowerCase().includes(modalSearch.toLowerCase()) || r.type.toLowerCase().includes(modalSearch.toLowerCase()))
+                        .map((r, i) => (
+                          <tr key={i}>
+                            <td style={{ color: '#3b82f6', fontWeight: 600 }}>{r.id}</td>
+                            <td style={{ fontWeight: 600 }}>{r.name}</td>
+                            <td style={{ fontWeight: 700 }}>{r.payout}</td>
+                            <td>{r.type}</td>
+                            <td><StatusBadge status={r.status} /></td>
+                            <td style={{ color: '#64748b' }}>{r.date}</td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                )}
+
+                {activeModal === 'seller' && (
+                  <table className="pd-settle-table" style={{ width: '100%' }}>
+                    <thead>
+                      <tr>
+                        <th>Booking ID</th>
+                        <th>Seller</th>
+                        <th>Material Amount</th>
+                        <th>Settlement Type</th>
+                        <th>Status</th>
+                        <th>Settlement Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sellerSettlements
+                        .filter(r => r.id.toLowerCase().includes(modalSearch.toLowerCase()) || r.name.toLowerCase().includes(modalSearch.toLowerCase()) || r.type.toLowerCase().includes(modalSearch.toLowerCase()))
+                        .map((r, i) => (
+                          <tr key={i}>
+                            <td style={{ color: '#3b82f6', fontWeight: 600 }}>{r.id}</td>
+                            <td style={{ fontWeight: 600 }}>{r.name}</td>
+                            <td style={{ fontWeight: 700 }}>{r.amt}</td>
+                            <td>{r.type}</td>
+                            <td><StatusBadge status={r.status} /></td>
+                            <td style={{ color: '#64748b' }}>{r.date}</td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                )}
+
+                {activeModal === 'delivery' && (
+                  <table className="pd-settle-table" style={{ width: '100%' }}>
+                    <thead>
+                      <tr>
+                        <th>Booking ID</th>
+                        <th>Delivered By</th>
+                        <th>Delivery Charge</th>
+                        <th>Settlement Type</th>
+                        <th>Status</th>
+                        <th>Settlement Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {deliverySettlements
+                        .filter(r => r.id.toLowerCase().includes(modalSearch.toLowerCase()) || r.name.toLowerCase().includes(modalSearch.toLowerCase()) || r.type.toLowerCase().includes(modalSearch.toLowerCase()))
+                        .map((r, i) => (
+                          <tr key={i}>
+                            <td style={{ color: '#3b82f6', fontWeight: 600 }}>{r.id}</td>
+                            <td style={{ fontWeight: 600 }}>{r.name}</td>
+                            <td style={{ fontWeight: 700 }}>{r.charge}</td>
+                            <td>{r.type}</td>
+                            <td><StatusBadge status={r.status} /></td>
+                            <td style={{ color: '#64748b' }}>{r.date}</td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                )}
+
+                {activeModal === 'recent' && (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table className="pd-full-table" style={{ minWidth: 1200 }}>
+                      <thead>
+                        <tr>
+                          <th>Booking ID</th>
+                          <th>Order ID</th>
+                          <th>Customer</th>
+                          <th>Service Category</th>
+                          <th>Payment Type</th>
+                          <th>Amount (₹)</th>
+                          <th>Payment Status</th>
+                          <th>Payment Date & Time</th>
+                          <th>Transaction ID</th>
+                          <th>Payment Method</th>
+                          <th>SP Settlement Type</th>
+                          <th>Seller Settlement Type</th>
+                          <th style={{ textAlign: 'right' }}>Total Amount (₹)</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {recentBookings
+                          .filter(r => r.id.toLowerCase().includes(modalSearch.toLowerCase()) || r.user.toLowerCase().includes(modalSearch.toLowerCase()) || r.cat.toLowerCase().includes(modalSearch.toLowerCase()))
+                          .map((r, i) => (
+                            <tr key={i}>
+                              <td style={{ color: '#3b82f6', fontWeight: 600 }}>{r.id}</td>
+                              <td style={{ color: '#3b82f6', fontWeight: 600 }}>{r.order}</td>
+                              <td style={{ fontWeight: 600 }}>{r.user}</td>
+                              <td>{r.cat}</td>
+                              <td>{r.type}</td>
+                              <td style={{ fontWeight: 700 }}>{r.amt}</td>
+                              <td><span style={{ color: r.pStatus==='Success'?'#16a34a':'#f59e0b', fontWeight: 600 }}>{r.pStatus}</span></td>
+                              <td style={{ color: '#64748b' }}>{r.pDate}</td>
+                              <td style={{ fontFamily: 'monospace', fontSize: 11, color: '#64748b' }}>{r.txn}</td>
+                              <td>{r.method}</td>
+                              <td>{r.spType}</td>
+                              <td>{r.sellerType}</td>
+                              <td style={{ textAlign: 'right', fontWeight: 700 }}>{r.tAmt}</td>
+                              <td><StatusBadge status={r.status} /></td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div style={{ padding: '12px 24px', borderTop: '1px solid #e2e8f0', background: '#fafbfc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
+                  Showing all records
+                </span>
+                <button 
+                  onClick={() => setActiveModal(null)}
+                  style={{ background: '#0f172a', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </AdminShell>
