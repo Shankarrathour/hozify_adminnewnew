@@ -1,607 +1,706 @@
-import React, { useState, useMemo } from 'react';
-import toast from 'react-hot-toast';
+import React, { useState } from 'react';
 import {
-  CreditCard,
-  CheckCircle2,
-  XCircle,
-  RotateCcw,
-  TrendingUp,
-  TrendingDown,
-  Clock,
-  RefreshCw,
-  Download,
-  ChevronDown,
-  ChevronRight,
-  Eye,
-  Zap
+  Wallet, Clock, UserCircle, CheckCircle2, Building2, CheckSquare,
+  Truck, CheckCircle, Percent, Award, Receipt, ShieldCheck, FileText,
+  Undo2, BarChart3, TrendingUp, TrendingDown, ChevronDown, ChevronRight,
+  ChevronLeft, Info, Download, ArrowDown, Share2, Layers
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
 import StatusBadge from '../../components/common/StatusBadge';
-import Avatar from '../../components/common/Avatar';
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer
 } from 'recharts';
+import toast from 'react-hot-toast';
 
-/* ───────────────────── Mock Data ───────────────────── */
+/* ═══════════════════════════ MOCK DATA ═══════════════════════════ */
 
-const paymentVolumeData = [
-  { date: '01 May', volume: 152000 },
-  { date: '03 May', volume: 185000 },
-  { date: '05 May', volume: 140000 },
-  { date: '08 May', volume: 220000 },
-  { date: '10 May', volume: 190000 },
-  { date: '13 May', volume: 250000 },
-  { date: '15 May', volume: 210000 },
-  { date: '18 May', volume: 280000 },
-  { date: '20 May', volume: 230000 },
-  { date: '23 May', volume: 310000 },
-  { date: '25 May', volume: 260000 },
-  { date: '28 May', volume: 340000 },
-  { date: '31 May', volume: 290000 },
+const kpiData = [
+  { label: 'Total Booking Payments Received', value: '₹24,58,760', trend: '+12.45%', trendUp: true, icon: Wallet, iconBg: '#eff6ff', iconColor: '#3b82f6' },
+  { label: 'Customer Payments Pending', value: '₹3,25,430', trend: '+8.21%', trendUp: true, icon: Clock, iconBg: '#fff7ed', iconColor: '#f97316' },
+  { label: 'Service Provider Settlement Pending', value: '₹3,20,110', trend: '+9.84%', trendUp: true, icon: UserCircle, iconBg: '#ecfdf5', iconColor: '#10b981' },
+  { label: 'Service Provider Settlement Completed', value: '₹7,05,320', trend: '+15.23%', trendUp: true, icon: CheckCircle2, iconBg: '#ecfdf5', iconColor: '#10b981' },
+  { label: 'Seller Settlement Pending', value: '₹2,34,780', trend: '+11.21%', trendUp: true, icon: Building2, iconBg: '#fff7ed', iconColor: '#f97316' },
+
+  { label: 'Seller Settlement Completed', value: '₹6,21,430', trend: '+12.01%', trendUp: true, icon: CheckSquare, iconBg: '#fff7ed', iconColor: '#f97316' },
+  { label: 'Delivery Charges Pending', value: '₹40,220', trend: '+6.91%', trendUp: true, icon: Truck, iconBg: '#e0f2fe', iconColor: '#0ea5e9' },
+  { label: 'Delivery Charges Collected', value: '₹1,45,980', trend: '+8.91%', trendUp: true, icon: CheckCircle, iconBg: '#e0f2fe', iconColor: '#0ea5e9' },
+  { label: 'Platform Fee Collected (18%)', value: '₹3,42,660', trend: '+13.24%', trendUp: true, icon: Percent, iconBg: '#f3e8ff', iconColor: '#8b5cf6' },
+  { label: 'Commission Collected (5%)', value: '₹88,480', trend: '+9.21%', trendUp: true, icon: Award, iconBg: '#eff6ff', iconColor: '#3b82f6' },
+
+  { label: 'GST Total Collected', value: '₹1,82,340', trend: '+10.11%', trendUp: true, icon: Receipt, iconBg: '#fef2f2', iconColor: '#ef4444' },
+  { label: 'TDS Total Collected', value: '₹68,250', trend: '+6.72%', trendUp: true, icon: ShieldCheck, iconBg: '#fef2f2', iconColor: '#ef4444' },
+  { label: 'TCS Total Collected', value: '₹31,420', trend: '+5.63%', trendUp: true, icon: FileText, iconBg: '#fff7ed', iconColor: '#f97316' },
+  { label: 'Refund Amount', value: '₹56,230', trend: '+4.32%', trendUp: false, icon: Undo2, iconBg: '#fef2f2', iconColor: '#ef4444', trendColor: '#ef4444' },
+  { label: 'Net Platform Revenue', value: '₹1,73,730', trend: '+14.22%', trendUp: true, icon: BarChart3, iconBg: '#ecfdf5', iconColor: '#10b981' },
 ];
 
-const methodData = [
-  { name: 'UPI', value: 44, color: '#4f46e5' },
-  { name: 'Card', value: 28, color: '#8b5cf6' },
-  { name: 'NetBanking', value: 14, color: '#10b981' },
-  { name: 'Wallet', value: 9, color: '#f59e0b' },
-  { name: 'COD', value: 5, color: '#64748b' },
+const donutData = [
+  { name: 'UPI', value: 845000, color: '#3b82f6' },
+  { name: 'Credit Card', value: 675000, color: '#f59e0b' },
+  { name: 'Debit Card', value: 410000, color: '#10b981' },
+  { name: 'Net Banking', value: 230000, color: '#8b5cf6' },
+  { name: 'Wallet', value: 105000, color: '#0ea5e9' },
+  { name: 'Cash', value: 95000, color: '#ef4444' },
 ];
 
-const statusData = [
-  { name: 'Successful', value: 91.8, color: '#22c55e' },
-  { name: 'Pending', value: 5.4, color: '#eab308' },
-  { name: 'Failed', value: 1.8, color: '#ef4444' },
-  { name: 'Refunded', value: 1.0, color: '#f97316' },
+const barData = donutData.map(d => ({
+  name: d.name,
+  amount: d.value,
+  color: d.color,
+  label: d.value >= 100000 ? `₹${(d.value/100000).toFixed(2)}L` : `₹${(d.value/1000)}k`
+}));
+
+const splitData = [
+  { component: 'Service Provider Share', amount: 41.71, pct: 41.71, color: '#10b981' },
+  { component: 'Seller Share', amount: 34.83, pct: 34.83, color: '#f59e0b' },
+  { component: 'Platform Fee (18%)', amount: 13.94, pct: 13.94, color: '#3b82f6' },
+  { component: 'Delivery Charges', amount: 5.93, pct: 5.93, color: '#0ea5e9' },
+  { component: 'Commission (5%)', amount: 3.59, pct: 3.59, color: '#f97316' },
 ];
 
-const recentTransactions = [
-  { id: 'TXN-7281', user: 'Amit Kumar', initials: 'AK', amount: '₹4,500', method: 'UPI', gateway: 'Razorpay', status: 'Successful', date: '31 May 2026, 14:30' },
-  { id: 'TXN-7282', user: 'Neha Sharma', initials: 'NS', amount: '₹12,000', method: 'Credit Card', gateway: 'Stripe', status: 'Pending', date: '31 May 2026, 14:15' },
-  { id: 'TXN-7283', user: 'Rahul Verma', initials: 'RV', amount: '₹2,500', method: 'Wallet', gateway: 'Paytm', status: 'Failed', date: '31 May 2026, 13:45' },
-  { id: 'TXN-7284', user: 'Priya Singh', initials: 'PS', amount: '₹8,900', method: 'NetBanking', gateway: 'Razorpay', status: 'Successful', date: '31 May 2026, 13:10' },
-  { id: 'TXN-7285', user: 'Vikram Patel', initials: 'VP', amount: '₹1,200', method: 'UPI', gateway: 'Razorpay', status: 'Successful', date: '31 May 2026, 12:55' },
+const spSettlements = [
+  { id: 'BK-250601-0001', name: 'RT CLOUD Solutions', payout: '₹1,500', type: 'Instant', status: 'Completed', date: '01 Jun 2026 12:15 PM' },
+  { id: 'BK-250601-0002', name: 'Ramu Services', payout: '₹950', type: 'Weekly', status: 'Pending', date: '01 Jun 2026 11:45 AM' },
+  { id: 'BK-250601-0003', name: 'Sri Electricals', payout: '₹1,750', type: 'Daily', status: 'Completed', date: '01 Jun 2026 11:30 AM' },
+  { id: 'BK-250601-0004', name: 'TechFix Services', payout: '₹1,100', type: 'Weekly', status: 'Pending', date: '01 Jun 2026 12:20 PM' },
+  { id: 'BK-250601-0005', name: 'Quick Home Care', payout: '₹2,200', type: 'Instant', status: 'Completed', date: '01 Jun 2026 12:45 PM' },
 ];
 
-const gatewayPerformance = [
-  { name: 'Razorpay', successRate: '94.2%', avgTime: '1.2s', totalVol: '₹32,45,000', status: 'Optimal' },
-  { name: 'Paytm', successRate: '89.5%', avgTime: '2.1s', totalVol: '₹18,20,000', status: 'Degraded' },
-  { name: 'Stripe', successRate: '96.8%', avgTime: '0.8s', totalVol: '₹11,49,820', status: 'Optimal' },
+const sellerSettlements = [
+  { id: 'BK-250601-0001', name: 'EBC Enterprise', amt: '₹750', type: 'Weekly', status: 'Completed', date: '01 Jun 2026 12:15 PM' },
+  { id: 'BK-250601-0002', name: 'Moti E-marts', amt: '₹420', type: 'Weekly', status: 'Pending', date: '01 Jun 2026 11:45 AM' },
+  { id: 'BK-250601-0003', name: 'Sai Home Store', amt: '₹600', type: 'Daily', status: 'Completed', date: '01 Jun 2026 12:05 PM' },
+  { id: 'BK-250601-0004', name: 'BuildMart', amt: '₹450', type: 'Manual', status: 'Pending', date: '-' },
+  { id: 'BK-250601-0005', name: 'Shree Hardware', amt: '₹800', type: 'On Delivery Confirmation', status: 'Pending', date: '-' },
 ];
 
-const refundRequests = [
-  { id: 'REF-091', origTxn: 'TXN-6102', amount: '₹4,500', user: 'Sanjay Gupta', reason: 'Service Cancelled', status: 'Processing' },
-  { id: 'REF-092', origTxn: 'TXN-6054', amount: '₹12,000', user: 'Anita Desai', reason: 'Duplicate Charge', status: 'Approved' },
-  { id: 'REF-093', origTxn: 'TXN-5921', amount: '₹2,500', user: 'Karan Mehra', reason: 'Dissatisfied', status: 'Rejected' },
+const deliverySettlements = [
+  { id: 'BK-250601-0001', name: 'Gaurav Delivery', charge: '₹150', type: 'Instant', status: 'Completed', date: '01 Jun 2026 12:15 PM' },
+  { id: 'BK-250601-0002', name: 'Sabar Delivery', charge: '₹80', type: 'Weekly', status: 'Pending', date: '01 Jun 2026 11:45 AM' },
+  { id: 'BK-250601-0003', name: 'Service Provider', charge: '₹250', type: 'Weekly', status: 'Pending', date: '01 Jun 2026 11:30 AM' },
+  { id: 'BK-250601-0004', name: 'Sabar Delivery', charge: '₹100', type: 'Weekly', status: 'Pending', date: '-' },
+  { id: 'BK-250601-0005', name: 'Service Provider', charge: '₹200', type: 'Instant', status: 'Completed', date: '01 Jun 2026 12:45 PM' },
 ];
 
-const chargebackSummary = [
-  { id: 'CB-44', origTxn: 'TXN-5011', amount: '₹18,500', user: 'Meena Iyer', gateway: 'Stripe', status: 'Disputed' },
-  { id: 'CB-45', origTxn: 'TXN-4890', amount: '₹6,200', user: 'Rohan Das', gateway: 'Razorpay', status: 'Lost' },
-  { id: 'CB-46', origTxn: 'TXN-4812', amount: '₹9,000', user: 'Shruti Jain', gateway: 'Paytm', status: 'Won' },
+const recentBookings = [
+  { id: 'BK-250601-0001', order: 'OR-10001', user: 'Ramesh Kumar', cat: 'AC Repair', type: 'UPI', amt: '₹2,500', pStatus: 'Success', pDate: '01 Jun 2026 12:30 PM', txn: 'UPI1234567890', method: 'UPI', spType: 'Instant', sellerType: 'Weekly', tAmt: '₹2,500', status: 'Completed' },
+  { id: 'BK-250601-0002', order: 'OR-10002', user: 'Sunita Devi', cat: 'Plumbing', type: 'Credit Card', amt: '₹1,000', pStatus: 'Success', pDate: '01 Jun 2026 11:15 AM', txn: 'CC9876543210', method: 'Credit Card', spType: 'Weekly', sellerType: 'Weekly', tAmt: '₹1,000', status: 'Completed' },
+  { id: 'BK-250601-0003', order: 'OR-10003', user: 'Arun Singh', cat: 'Electrical', type: 'Wallet', amt: '₹3,200', pStatus: 'Success', pDate: '01 Jun 2026 11:45 AM', txn: 'WL5566677788', method: 'Wallet', spType: 'Daily', sellerType: 'Daily', tAmt: '₹3,200', status: 'Completed' },
+  { id: 'BK-250601-0004', order: 'OR-10004', user: 'Pooja Patel', cat: 'Cleaning', type: 'Net Banking', amt: '₹2,100', pStatus: 'Success', pDate: '01 Jun 2026 12:20 PM', txn: 'NB1122334455', method: 'Net Banking', spType: 'Weekly', sellerType: 'Manual', tAmt: '₹2,100', status: 'Completed' },
+  { id: 'BK-250601-0005', order: 'OR-10005', user: 'Vikram Rao', cat: 'Appliance Repair', type: 'UPI', amt: '₹4,300', pStatus: 'Pending', pDate: '01 Jun 2026 12:40 PM', txn: 'UPI9988776655', method: 'UPI', spType: 'Instant', sellerType: 'On Delivery Confirmation', tAmt: '₹4,300', status: 'Pending' },
 ];
 
-/* ───────────────────── Sub-components ───────────────────── */
+/* ═══════════════════════════ COMPONENTS ═══════════════════════════ */
 
-function StatCard({ icon: Icon, iconBg, iconColor, value, label, sublabel, trend, trendUp, trendLabel }) {
-  return (
-    <div className="pay-dash-stat-card">
-      <div className="pay-dash-stat-icon" style={{ background: iconBg }}>
-        <Icon size={22} color={iconColor} />
-      </div>
-      <div className="pay-dash-stat-body">
-        <div className="pay-dash-stat-value">{value}</div>
-        <div className="pay-dash-stat-label">{label}</div>
-        {sublabel && <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 400 }}>{sublabel}</div>}
-        {trend && (
-          <div className={`pay-dash-stat-trend ${trendUp ? 'up' : 'down'}`}>
-            {trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-            <span>{trend}</span>
-            <span className="trend-vs">{trendLabel}</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+const CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-function CustomTooltip({ active, payload, label }) {
-  if (active && payload && payload.length) {
-    return (
-      <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 14px', color: '#f1f5f9', fontSize: 13 }}>
-        <p style={{ margin: 0, color: '#94a3b8', marginBottom: 4 }}>{label}</p>
-        <p style={{ margin: 0, fontWeight: 600 }}>₹{payload[0].value.toLocaleString()}</p>
-      </div>
-    );
+  .pd-root {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #f8fafc;
+    min-height: 100%;
+    color: #0f172a;
+    padding-bottom: 24px;
   }
-  return null;
-}
+  
+  /* Filter Bar */
+  .pd-filters {
+    background: #fff;
+    border: 1px solid #e8edf3;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 4px rgba(15,23,42,0.03);
+  }
+  .pd-filter-row {
+    display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .pd-filter-row:last-child { margin-bottom: 0; }
+  .pd-filter-label { font-size: 11px; font-weight: 600; color: #64748b; margin-bottom: 6px; display: block; }
+  .pd-select-wrap { position: relative; }
+  .pd-select {
+    appearance: none; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 8px;
+    padding: 8px 30px 8px 12px; font-size: 13px; font-weight: 600; color: #1e293b;
+    outline: none; cursor: pointer; font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+  }
+  .pd-select:focus { border-color: #3b82f6; }
+  .pd-arr { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #64748b; pointer-events: none; }
+  
+  .pd-pbtn {
+    background: #fff; border: 1.5px solid #e2e8f0; padding: 8px 16px; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.2s;
+  }
+  .pd-pbtn:first-child { border-radius: 8px 0 0 8px; border-right: none; }
+  .pd-pbtn:last-child { border-radius: 0 8px 8px 0; border-left: none; }
+  .pd-pbtn:not(:first-child):not(:last-child) { border-right: none; }
+  .pd-pbtn.active { background: #0f172a; color: #fff; border-color: #0f172a; border-right: 1.5px solid #0f172a; }
+  
+  .pd-btn-apply { background: #0f172a; color: #fff; border: none; border-radius: 8px; padding: 8px 24px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+  .pd-btn-apply:hover { opacity: 0.9; }
+  .pd-btn-reset { background: #fff; color: #0f172a; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 24px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+  .pd-btn-reset:hover { background: #f8fafc; }
 
-function DonutLegend({ data }) {
-  const total = data.reduce((s, d) => s + d.value, 0);
+  /* KPI Grid 5x3 */
+  .pd-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .pd-kpi-card {
+    background: #fff; border: 1px solid #e8edf3; border-radius: 12px; padding: 16px;
+    box-shadow: 0 1px 4px rgba(15,23,42,0.03); display: flex; align-items: flex-start; gap: 12px;
+  }
+  .pd-kpi-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pd-kpi-body { flex: 1; min-width: 0; }
+  .pd-kpi-label { font-size: 11px; font-weight: 600; color: #64748b; margin-bottom: 6px; line-height: 1.3; }
+  .pd-kpi-val { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+  .pd-kpi-trend { font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 2px; }
+  .pd-kpi-vs { color: #94a3b8; font-size: 10px; margin-left: 2px; font-weight: 500; }
+
+  /* 4-Col Analytics Row */
+  .pd-4col-row {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px;
+  }
+  .pd-card {
+    background: #fff; border: 1px solid #e8edf3; border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(15,23,42,0.03); display: flex; flex-direction: column; overflow: hidden;
+  }
+  .pd-card-header { padding: 16px 16px 12px; border-bottom: 1px solid #f1f5f9; }
+  .pd-card-title { font-size: 14px; font-weight: 700; color: #0f172a; margin: 0; }
+  .pd-card-sub { font-size: 11px; color: #64748b; font-weight: 500; margin-top: 2px; }
+  .pd-card-body { padding: 16px; flex: 1; }
+
+  /* Donut specific */
+  .pd-donut-wrap { position: relative; display: flex; justify-content: center; }
+  .pd-donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+  .pd-donut-val { font-size: 16px; font-weight: 800; color: #0f172a; display: block; }
+  .pd-donut-lbl { font-size: 10px; color: #64748b; font-weight: 600; }
+  
+  .pd-legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 16px; }
+  .pd-legend-item { display: flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 600; }
+  .pd-legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  
+  /* Split Table */
+  .pd-split-table { width: 100%; border-collapse: collapse; font-size: 11.5px; table-layout: fixed; }
+  .pd-split-table th { 
+    text-align: left; padding: 10px 8px; font-weight: 600; color: #64748b !important; 
+    border-bottom: 1px solid #e2e8f0; background: #fff !important; text-transform: none !important;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .pd-split-table td { padding: 10px 8px; font-weight: 600; border-bottom: 1px solid #f1f5f9; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pd-split-table tr:last-child td { border-bottom: none; }
+
+  /* Settlement Flow */
+  .pd-flow-wrap { display: flex; flex-direction: column; gap: 6px; height: 100%; justify-content: center; }
+  .pd-flow-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; }
+  .pd-flow-num { width: 18px; height: 18px; border-radius: 50%; background: #e0e7ff; color: #4f46e5; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .pd-flow-title { font-size: 11.5px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+  .pd-flow-desc { font-size: 10.5px; color: #64748b; font-weight: 500; line-height: 1.3; }
+  .pd-flow-arr { display: flex; justify-content: center; color: #cbd5e1; margin: -2px 0; }
+  .pd-flow-split { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pd-flow-box-sm { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+
+  /* 3-Col Settlements Row */
+  .pd-3col-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .pd-settle-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .pd-settle-table th { 
+    text-align: left; padding: 10px 8px; font-weight: 600; color: #64748b !important; 
+    border-bottom: 1.5px solid #e2e8f0; white-space: nowrap; position: sticky; top: 0; 
+    background: #fff !important; text-transform: none !important; z-index: 10;
+  }
+  .pd-settle-table td { padding: 10px 8px; border-bottom: 1px solid #f1f5f9; color: #0f172a; font-weight: 500; }
+  
+  .pd-card-footer { border-top: 1px solid #e2e8f0; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; background: #fafbfc; border-radius: 0 0 12px 12px; }
+  .pd-footer-stat { display: flex; flex-direction: column; }
+  .pd-footer-lbl { font-size: 10.5px; color: #64748b; font-weight: 600; margin-bottom: 2px; }
+  .pd-footer-val { font-size: 14px; color: #0f172a; font-weight: 700; }
+  .pd-view-all { font-size: 11.5px; font-weight: 700; color: #3b82f6; text-decoration: none; display: flex; align-items: center; gap: 2px; cursor: pointer; border: none; background: transparent; }
+  .pd-view-all:hover { text-decoration: underline; }
+
+  /* Full Width Table */
+  .pd-full-table-wrap { overflow-x: auto; overflow-y: auto; max-height: 400px; margin-bottom: 16px; width: 100%; }
+  .pd-full-table { width: 100%; border-collapse: collapse; font-size: 11.5px; min-width: 1300px; }
+  .pd-full-table th { 
+    text-align: left; padding: 12px 10px; font-weight: 600; color: #64748b !important; 
+    border-bottom: 1.5px solid #e2e8f0; white-space: nowrap; background: #f8fafc !important; 
+    position: sticky; top: 0; z-index: 10; text-transform: none !important;
+  }
+  .pd-full-table td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; color: #0f172a; font-weight: 500; }
+  
+  /* Footer Note & Button */
+  .pd-bottom-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-wrap: wrap; gap: 16px; }
+  .pd-note { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 500; color: #475569; background: #f1f5f9; padding: 8px 12px; border-radius: 8px; }
+  .pd-export-btn { background: #0f172a; color: #fff; display: flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(15,23,42,0.1); }
+  .pd-export-btn:hover { background: #1e293b; }
+
+  @media (max-width: 1400px) {
+    .pd-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    .pd-4col-row { grid-template-columns: repeat(2, 1fr); }
+    .pd-3col-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 900px) {
+    .pd-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .pd-4col-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .pd-kpi-grid { grid-template-columns: 1fr; }
+  }
+`;
+
+function KPI({ data }) {
+  const isPos = data.trend.startsWith('+');
+  const tColor = data.trendColor || (isPos ? '#16a34a' : '#ef4444');
   return (
-    <div className="pay-donut-legend">
-      {data.map(d => (
-        <div key={d.name} className="pay-donut-legend-item">
-          <span className="pay-donut-legend-dot" style={{ background: d.color }} />
-          <span className="pay-donut-legend-name">{d.name}</span>
-          <span className="pay-donut-legend-val">{d.value}%</span>
+    <div className="pd-kpi-card">
+      <div className="pd-kpi-icon" style={{ background: data.iconBg }}>
+        <data.icon size={20} color={data.iconColor} />
+      </div>
+      <div className="pd-kpi-body">
+        <div className="pd-kpi-label">{data.label}</div>
+        <div className="pd-kpi-val">{data.value}</div>
+        <div className="pd-kpi-trend" style={{ color: tColor }}>
+          {isPos ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+          {data.trend} <span className="pd-kpi-vs">vs Apr 2026</span>
         </div>
-      ))}
+      </div>
     </div>
   );
 }
-
-/* ───────────────────── Main Component ───────────────────── */
 
 export default function PaymentDashboard() {
-  const [dateRange, setDateRange] = useState('01 May 2026 - 31 May 2026');
-  const [method, setMethod] = useState('All Methods');
-  const [statusFilter, setStatusFilter] = useState('All Status');
-  const [gateway, setGateway] = useState('All Gateways');
-  const [activeGatewayTab, setActiveGatewayTab] = useState('All');
-  const [filterTrigger, setFilterTrigger] = useState(0);
-
-  const m = dateRange === 'This Year' ? 12 : dateRange === 'Last 7 Days' ? 0.25 : dateRange === 'Today' ? 0.03 : 1;
-
-  const dynPaymentVolumeData = useMemo(() => paymentVolumeData.map(d => ({ ...d, volume: Math.floor(d.volume * m) })), [m, filterTrigger]);
-  const dynMethodData = useMemo(() => methodData.map(d => ({ ...d, value: parseFloat((d.value).toFixed(1)) })), [m, filterTrigger]);
-  const dynStatusData = useMemo(() => statusData.map(d => ({ ...d, value: parseFloat((d.value).toFixed(1)) })), [m, filterTrigger]);
-  const dynRecentTransactions = useMemo(() => recentTransactions.slice(0, Math.max(1, Math.floor(recentTransactions.length * (m >= 1 ? 1 : m * 2)))), [m, filterTrigger]);
-  const dynGatewayPerformance = useMemo(() => gatewayPerformance.slice(0, Math.max(1, Math.floor(gatewayPerformance.length * (m >= 1 ? 1 : m * 2)))), [m, filterTrigger]);
-  const dynRefundRequests = useMemo(() => refundRequests.slice(0, Math.max(1, Math.floor(refundRequests.length * (m >= 1 ? 1 : m * 2)))), [m, filterTrigger]);
-  const dynChargebackSummary = useMemo(() => chargebackSummary.slice(0, Math.max(1, Math.floor(chargebackSummary.length * (m >= 1 ? 1 : m * 2)))), [m, filterTrigger]);
-
-  const txnColumns = [
-    { header: 'Txn ID', accessor: 'id', render: (row) => <span style={{fontWeight: 600, color: '#4f46e5'}}>{row.id}</span> },
-    { header: 'User', accessor: 'user', render: (row) => (
-      <div className="avatar-cell">
-        <Avatar name={row.user} size={32} />
-        <span className="avatar-cell-name">{row.user}</span>
-      </div>
-    ) },
-    { header: 'Amount', accessor: 'amount', render: (row) => <span style={{fontWeight: 600}}>{row.amount}</span> },
-    { header: 'Method', accessor: 'method', render: (row) => <span className="premium-chip premium-chip-indigo">{row.method}</span> },
-    { header: 'Gateway', accessor: 'gateway' },
-    { header: 'Status', accessor: 'status', render: (row) => <StatusBadge status={row.status} /> },
-    { header: 'Date & Time', accessor: 'date' }
-  ];
-
-  const gatewayColumns = [
-    { header: 'Gateway', accessor: 'name', render: (row) => (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <div style={{ width: 28, height: 28, borderRadius: 6, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Zap size={14} color="#4f46e5" />
-        </div>
-        <span style={{ fontWeight: 600 }}>{row.name}</span>
-      </div>
-    ) },
-    { header: 'Success Rate', accessor: 'successRate', render: (row) => <span style={{fontWeight: 600, color: '#16a34a'}}>{row.successRate}</span> },
-    { header: 'Avg Response', accessor: 'avgTime' },
-    { header: 'Total Vol', accessor: 'totalVol', render: (row) => <span style={{fontWeight: 600}}>{row.totalVol}</span> },
-    { header: 'Status', accessor: 'status', render: (row) => <StatusBadge status={row.status} /> }
-  ];
-
-  const refundColumns = [
-    { header: 'Refund ID', accessor: 'id', render: (row) => <span style={{fontWeight: 600, color: '#4f46e5'}}>{row.id}</span> },
-    { header: 'Orig Txn', accessor: 'origTxn', render: (row) => <span style={{color: '#64748b'}}>{row.origTxn}</span> },
-    { header: 'Amount', accessor: 'amount', render: (row) => <span style={{fontWeight: 600}}>{row.amount}</span> },
-    { header: 'User', accessor: 'user', render: (row) => <span style={{fontWeight: 500}}>{row.user}</span> },
-    { header: 'Reason', accessor: 'reason' },
-    { header: 'Status', accessor: 'status', render: (row) => <StatusBadge status={row.status} /> }
-  ];
-
-  const cbColumns = [
-    { header: 'CB ID', accessor: 'id', render: (row) => <span style={{fontWeight: 600, color: '#4f46e5'}}>{row.id}</span> },
-    { header: 'Orig Txn', accessor: 'origTxn', render: (row) => <span style={{color: '#64748b'}}>{row.origTxn}</span> },
-    { header: 'Amount', accessor: 'amount', render: (row) => <span style={{fontWeight: 600}}>{row.amount}</span> },
-    { header: 'User', accessor: 'user', render: (row) => <span style={{fontWeight: 500}}>{row.user}</span> },
-    { header: 'Gateway', accessor: 'gateway' },
-    { header: 'Status', accessor: 'status', render: (row) => <StatusBadge status={row.status} /> }
-  ];
-
-  const renderActions = (row) => (
-    <div className="action-btn-group">
-      <button className="action-icon-btn" title="View Details" onClick={() => toast.success('Viewing Details')}><Eye size={16} /></button>
-    </div>
-  );
-
-  const handleApply = () => {
-    setFilterTrigger(prev => prev + 1);
-    toast.success('Filters applied successfully');
-  };
-
-  const handleReset = () => {
-    setDateRange('01 May 2026 - 31 May 2026');
-    setMethod('All Methods');
-    setStatusFilter('All Status');
-    setGateway('All Gateways');
-    setFilterTrigger(0);
-    toast.success('Filters reset to default');
-  };
-
-  const fmtCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+  const [period, setPeriod] = useState('Monthly');
 
   return (
     <AdminShell
-      activeTab="Payment Management"
+      activeTab="Payment Dashboard"
       pageTitle="Payment Dashboard"
-      pageSubtitle="Payment Transactions & Gateway Analytics"
+      pageSubtitle=""
+      showGlobalExport={true}
     >
-      <div className="pay-dash-root">
+      <div className="pd-root">
+        <style>{CSS}</style>
 
-        {/* ── Header Filters ── */}
-        <div className="pay-dash-filters">
-          <div className="pay-filter-group" style={{ position: 'relative' }}>
-            <label>Date Range</label>
-            <div style={{ position: 'relative' }}>
-              <select className="pay-filter-select" style={{ appearance: 'none', background: 'transparent', cursor: 'pointer', paddingRight: '24px' }} value={dateRange} onChange={e => setDateRange(e.target.value)}>
-                <option>01 May 2026 - 31 May 2026</option>
-                <option>Today</option>
-                <option>Last 7 Days</option>
-                <option>This Year</option>
-              </select>
-              <ChevronDown size={14} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-            </div>
-          </div>
-          <div className="pay-filter-group" style={{ position: 'relative' }}>
-            <label>Payment Method</label>
-            <div style={{ position: 'relative' }}>
-              <select className="pay-filter-select" style={{ appearance: 'none', background: 'transparent', cursor: 'pointer', paddingRight: '24px' }} value={method} onChange={e => setMethod(e.target.value)}>
-                <option>All Methods</option>
-                <option>UPI</option>
-                <option>Credit Card</option>
-                <option>Wallet</option>
-                <option>NetBanking</option>
-              </select>
-              <ChevronDown size={14} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-            </div>
-          </div>
-          <div className="pay-filter-group" style={{ position: 'relative' }}>
-            <label>Status</label>
-            <div style={{ position: 'relative' }}>
-              <select className="pay-filter-select" style={{ appearance: 'none', background: 'transparent', cursor: 'pointer', paddingRight: '24px' }} value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-                <option>All Status</option>
-                <option>Successful</option>
-                <option>Pending</option>
-                <option>Failed</option>
-              </select>
-              <ChevronDown size={14} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-            </div>
-          </div>
-          <div className="pay-filter-group" style={{ position: 'relative' }}>
-            <label>Gateway</label>
-            <div style={{ position: 'relative' }}>
-              <select className="pay-filter-select" style={{ appearance: 'none', background: 'transparent', cursor: 'pointer', paddingRight: '24px' }} value={gateway} onChange={e => setGateway(e.target.value)}>
-                <option>All Gateways</option>
-                <option>Razorpay</option>
-                <option>Paytm</option>
-                <option>Stripe</option>
-              </select>
-              <ChevronDown size={14} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-            </div>
-          </div>
-          <div className="pay-filter-actions">
-            <button className="pay-filter-btn-refresh" onClick={handleReset} style={{ color: '#4f46e5', background: '#eef2ff' }}>
-              <RotateCcw size={15} /> Reset
-            </button>
-            <button className="pay-filter-btn-refresh" onClick={handleApply}>
-              <RefreshCw size={15} /> Apply
-            </button>
-            <button className="pay-filter-btn-export" onClick={() => toast.success('Report exporting started')}>
-              <Download size={15} /> Export Report
-            </button>
-          </div>
-        </div>
-
-        {/* ── Stat Cards Row ── */}
-        <div className="pay-dash-stats-grid">
-          <StatCard
-            icon={CreditCard}
-            iconBg="#eff6ff" iconColor="#2563eb"
-            value={fmtCurrency(Math.floor(6214820 * m))} label="Total Payments"
-            sublabel="This Range"
-            trend="+21.3%" trendUp={true} trendLabel="vs prev"
-          />
-          <StatCard
-            icon={CheckCircle2}
-            iconBg="#f0fdf4" iconColor="#16a34a"
-            value={(Math.floor(18420 * m)).toLocaleString()} label="Successful Payments"
-            sublabel="This Range"
-            trend="+15.8%" trendUp={true} trendLabel="vs prev"
-          />
-          <StatCard
-            icon={XCircle}
-            iconBg="#fff1f2" iconColor="#e11d48"
-            value={(Math.floor(342 * m)).toLocaleString()} label="Failed Payments"
-            sublabel="This Range"
-            trend="-28.4%" trendUp={false} trendLabel="vs prev"
-          />
-          <StatCard
-            icon={RotateCcw}
-            iconBg="#fff7ed" iconColor="#ea580c"
-            value={fmtCurrency(Math.floor(124500 * m))} label="Refunds Processed"
-            sublabel="This Range"
-            trend="+4.2%" trendUp={true} trendLabel="vs prev"
-          />
-          <StatCard
-            icon={TrendingUp}
-            iconBg="#faf5ff" iconColor="#9333ea"
-            value={fmtCurrency(Math.floor(3374 * (m > 1 ? 1 : Math.max(0.7, m))))} label="Avg Transaction"
-            sublabel="Per Transaction"
-            trend="+5.6%" trendUp={true} trendLabel="vs prev"
-          />
-          <StatCard
-            icon={Clock}
-            iconBg="#fefce8" iconColor="#ca8a04"
-            value={fmtCurrency(Math.floor(842180 * m))} label="Pending Settlements"
-            sublabel="Awaiting Clearance"
-            trend="-12.1%" trendUp={false} trendLabel="vs prev"
-          />
-        </div>
-
-        {/* ── Charts Row ── */}
-        <div className="pay-dash-charts-row">
-
-          {/* Volume Chart */}
-          <div className="pay-dash-card pay-dash-volume-chart">
-            <div className="pay-dash-card-header">
-              <div>
-                <h3>Payment Volume</h3>
+        {/* 1. FILTER BAR */}
+        <div className="pd-filters">
+          <div className="pd-filter-row">
+            <div style={{ flex: 1, minWidth: 150 }}>
+              <span className="pd-filter-label">State</span>
+              <div className="pd-select-wrap">
+                <select className="pd-select" style={{ width: '100%' }}><option>All States</option></select>
+                <ChevronDown size={14} className="pd-arr" />
               </div>
-              <div className="pay-chart-freq">
-                {['All', 'Razorpay', 'Paytm', 'Stripe'].map(f => (
-                  <button
-                    key={f}
-                    className={`pay-chart-freq-btn ${activeGatewayTab === f ? 'active' : ''}`}
-                    onClick={() => setActiveGatewayTab(f)}
-                  >
-                    {f}
-                  </button>
+            </div>
+            <div style={{ flex: 1, minWidth: 150 }}>
+              <span className="pd-filter-label">City</span>
+              <div className="pd-select-wrap">
+                <select className="pd-select" style={{ width: '100%' }}><option>All Cities</option></select>
+                <ChevronDown size={14} className="pd-arr" />
+              </div>
+            </div>
+            <div style={{ flex: 1, minWidth: 150 }}>
+              <span className="pd-filter-label">District</span>
+              <div className="pd-select-wrap">
+                <select className="pd-select" style={{ width: '100%' }}><option>All Districts</option></select>
+                <ChevronDown size={14} className="pd-arr" />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', marginLeft: 'auto' }}>
+              {['Daily','Weekly','Monthly','Yearly'].map(p => (
+                <button key={p} className={`pd-pbtn ${period===p?'active':''}`} onClick={() => setPeriod(p)}>{p}</button>
+              ))}
+            </div>
+            
+            {period === 'Monthly' && (
+              <div className="pd-select-wrap" style={{ width: 100 }}>
+                <select className="pd-select" style={{ width: '100%' }}><option>May</option></select>
+                <ChevronDown size={14} className="pd-arr" />
+              </div>
+            )}
+            {(period === 'Monthly' || period === 'Yearly') && (
+              <div className="pd-select-wrap" style={{ width: 100 }}>
+                <select className="pd-select" style={{ width: '100%' }}><option>2026</option></select>
+                <ChevronDown size={14} className="pd-arr" />
+              </div>
+            )}
+
+            <button className="pd-btn-apply" onClick={() => toast.success('Filters Applied')}>Apply</button>
+            <button className="pd-btn-reset">Reset</button>
+          </div>
+
+          <div className="pd-filter-row">
+            <div style={{ flex: 1, minWidth: 180, maxWidth: 250 }}>
+              <span className="pd-filter-label">Service Category</span>
+              <div className="pd-select-wrap">
+                <select className="pd-select" style={{ width: '100%' }}><option>All Service Categories</option></select>
+                <ChevronDown size={14} className="pd-arr" />
+              </div>
+            </div>
+            <div style={{ flex: 1, minWidth: 180, maxWidth: 250 }}>
+              <span className="pd-filter-label">Sub Category</span>
+              <div className="pd-select-wrap">
+                <select className="pd-select" style={{ width: '100%' }}><option>All Sub Categories</option></select>
+                <ChevronDown size={14} className="pd-arr" />
+              </div>
+            </div>
+            <div style={{ flex: 1, minWidth: 150, maxWidth: 200 }}>
+              <span className="pd-filter-label">Location Type</span>
+              <div className="pd-select-wrap">
+                <select className="pd-select" style={{ width: '100%' }}><option>All</option></select>
+                <ChevronDown size={14} className="pd-arr" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. KPI GRID (5x3) */}
+        <div className="pd-kpi-grid">
+          {kpiData.map((d, i) => <KPI key={i} data={d} />)}
+        </div>
+
+        {/* 3. 4-COL ANALYTICS ROW */}
+        <div className="pd-4col-row">
+          
+          {/* Customer Payment Types */}
+          <div className="pd-card">
+            <div className="pd-card-header">
+              <h3 className="pd-card-title">Customer Payment Types <span style={{color: '#64748b', fontSize: 12, fontWeight: 500}}>(By Amount)</span></h3>
+            </div>
+            <div className="pd-card-body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div className="pd-donut-wrap">
+                <PieChart width={160} height={160}>
+                  <Pie data={donutData} cx={80} cy={80} innerRadius={50} outerRadius={75} stroke="none" dataKey="value" startAngle={90} endAngle={-270}>
+                    {donutData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
+                  </Pie>
+                </PieChart>
+                <div className="pd-donut-center">
+                  <span className="pd-donut-lbl">Total</span>
+                  <span className="pd-donut-val">₹24,58,760</span>
+                </div>
+              </div>
+              <div className="pd-legend-grid">
+                {donutData.map(d => (
+                  <div key={d.name} className="pd-legend-item">
+                    <span className="pd-legend-dot" style={{ background: d.color }}></span>
+                    <span style={{ color: '#0f172a' }}>{d.name}</span>
+                    <span style={{ color: '#64748b', fontWeight: 500, fontSize: 9 }}>₹{(d.value/100000).toFixed(2)}L ({(d.value/2458760*100).toFixed(2)}%)</span>
+                  </div>
                 ))}
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={dynPaymentVolumeData} margin={{ top: 8, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="payAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#4f46e5" stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                <Tooltip content={<CustomTooltip />} />
-                <Area
-                  type="monotone"
-                  dataKey="volume"
-                  stroke="#4f46e5"
-                  strokeWidth={2.5}
-                  fill="url(#payAreaGrad)"
-                  dot={false}
-                  activeDot={{ r: 5, fill: '#4f46e5' }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
           </div>
 
-          {/* Method Donut */}
-          <div className="pay-dash-card pay-dash-donut">
-            <div className="pay-dash-card-header">
-              <h3>Payment by Method</h3>
+          {/* Amount by Payment Type */}
+          <div className="pd-card">
+            <div className="pd-card-header">
+              <h3 className="pd-card-title">Amount by Payment Type</h3>
             </div>
-            <div className="pay-donut-content">
-              <div className="pay-donut-wrap">
-                <PieChart width={160} height={160}>
-                  <Pie data={dynMethodData} cx={75} cy={75} innerRadius={50} outerRadius={72} dataKey="value" startAngle={90} endAngle={-270} stroke="none">
-                    {dynMethodData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                  </Pie>
-                </PieChart>
-                <div style={{ position: 'absolute', textAlign: 'center', pointerEvents: 'none' }}>
-                  <span style={{ display: 'block', fontSize: '20px', fontWeight: 800, color: '#1e293b' }}>5</span>
-                  <span style={{ display: 'block', fontSize: '10px', color: '#64748b', fontWeight: 600 }}>Methods</span>
-                </div>
-              </div>
-              <DonutLegend data={dynMethodData} />
+            <div className="pd-card-body" style={{ padding: '24px 16px 16px', display: 'flex', alignItems: 'flex-end' }}>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={barData} margin={{ top: 15, right: 0, left: -25, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#64748b', fontWeight: 600 }} axisLine={false} tickLine={false} interval={0} />
+                  <YAxis tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v/100000}L`} />
+                  <Bar dataKey="amount" radius={[4,4,0,0]} barSize={24}>
+                    {barData.map((entry, index) => (
+                      <Cell key={index} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Status Donut */}
-          <div className="pay-dash-card pay-dash-donut">
-            <div className="pay-dash-card-header">
-              <h3>Payment Status</h3>
+          {/* Booking-wise Split */}
+          <div className="pd-card">
+            <div className="pd-card-header">
+              <h3 className="pd-card-title">Booking-wise Payment Split <span style={{color: '#64748b', fontSize: 11, fontWeight: 500}}>(How ₹100 from a booking is distributed)</span></h3>
             </div>
-            <div className="pay-donut-content">
-              <div className="pay-donut-wrap">
-                <PieChart width={160} height={160}>
-                  <Pie data={dynStatusData} cx={75} cy={75} innerRadius={50} outerRadius={72} dataKey="value" startAngle={90} endAngle={-270} stroke="none">
-                    {dynStatusData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                  </Pie>
-                </PieChart>
-                <div style={{ position: 'absolute', textAlign: 'center', pointerEvents: 'none' }}>
-                  <span style={{ display: 'block', fontSize: '20px', fontWeight: 800, color: '#1e293b' }}>91.8%</span>
-                  <span style={{ display: 'block', fontSize: '10px', color: '#64748b', fontWeight: 600 }}>Success</span>
-                </div>
-              </div>
-              <DonutLegend data={dynStatusData} />
-            </div>
-          </div>
-        </div>
-
-        {/* ── Mid Row ── */}
-        <div className="pay-dash-mid-row">
-
-          {/* Recent Transactions Table */}
-          <div className="admin-dash-card">
-            <div className="admin-dash-card-header">
-              <h3>Recent Transactions</h3>
-            </div>
-            <div style={{ overflowX: 'auto', width: '100%' }}>
-            <table className="rev-dash-table" style={{ width: '100%', minWidth: '800px' }}>
-              <thead>
-                <tr>
-                  <th>Txn ID</th>
-                  <th>User</th>
-                  <th>Amount</th>
-                  <th>Method</th>
-                  <th>Gateway</th>
-                  <th>Status</th>
-                  <th>Date & Time</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dynRecentTransactions.map((t, i) => (
-                  <tr key={i}>
-                    <td><span style={{fontWeight: 600, color: '#4f46e5'}}>{t.id}</span></td>
-                    <td>
-                      <div className="avatar-cell">
-                        <Avatar name={t.user} size={32} />
-                        <span className="avatar-cell-name">{t.user}</span>
-                      </div>
-                    </td>
-                    <td><span style={{fontWeight: 600}}>{t.amount}</span></td>
-                    <td><span className="premium-chip premium-chip-indigo">{t.method}</span></td>
-                    <td>{t.gateway}</td>
-                    <td><StatusBadge status={t.status} /></td>
-                    <td>{t.date}</td>
-                    <td>{renderActions(t)}</td>
+            <div className="pd-card-body" style={{ padding: '0 16px', overflowX: 'auto' }}>
+              <table className="pd-split-table" style={{ marginTop: 10 }}>
+                <thead>
+                  <tr>
+                    <th>Component</th>
+                    <th style={{ textAlign: 'right' }}>Amount (₹)</th>
+                    <th style={{ textAlign: 'right' }}>Percentage (%)</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            </div>
-            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-              <button onClick={() => toast.success('Navigating to All Transactions')}>View All Transactions <ChevronRight size={14} /></button>
-            </div>
-          </div>
-
-          {/* Gateway Performance Table */}
-          <div className="admin-dash-card">
-            <div className="admin-dash-card-header">
-              <h3>Gateway Performance</h3>
-            </div>
-            <div style={{ overflowX: 'auto', width: '100%' }}>
-            <table className="rev-dash-table" style={{ width: '100%', minWidth: '600px' }}>
-              <thead>
-                <tr>
-                  <th>Gateway</th>
-                  <th>Success Rate</th>
-                  <th>Avg Response</th>
-                  <th>Total Vol</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dynGatewayPerformance.map((g, i) => (
-                  <tr key={i}>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: 28, height: 28, borderRadius: 6, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Zap size={14} color="#4f46e5" />
+                </thead>
+                <tbody>
+                  {splitData.map((s, i) => (
+                    <tr key={i}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color }}></span>
+                          {s.component}
                         </div>
-                        <span style={{ fontWeight: 600 }}>{g.name}</span>
-                      </div>
-                    </td>
-                    <td><span style={{fontWeight: 600, color: '#16a34a'}}>{g.successRate}</span></td>
-                    <td>{g.avgTime}</td>
-                    <td><span style={{fontWeight: 600}}>{g.totalVol}</span></td>
-                    <td><StatusBadge status={g.status} /></td>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>{s.amount.toFixed(2)}</td>
+                      <td style={{ textAlign: 'right' }}>{s.pct.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                  <tr>
+                    <td style={{ color: '#0f172a', fontWeight: 800 }}>Total</td>
+                    <td style={{ textAlign: 'right', color: '#0f172a', fontWeight: 800 }}>100.00</td>
+                    <td style={{ textAlign: 'right', color: '#0f172a', fontWeight: 800 }}>100.00</td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            </div>
-            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-              <button onClick={() => toast.success('Navigating to Gateway Performance')}>View Full Performance <ChevronRight size={14} /></button>
+                </tbody>
+              </table>
             </div>
           </div>
+
+          {/* Flow Diagram */}
+          <div className="pd-card">
+            <div className="pd-card-header">
+              <h3 className="pd-card-title">Payment & Settlement Flow</h3>
+            </div>
+            <div className="pd-card-body">
+              <div className="pd-flow-wrap">
+                <div className="pd-flow-box">
+                  <div className="pd-flow-num" style={{ background: '#dcfce7', color: '#16a34a' }}><CheckCircle2 size={12} /></div>
+                  <div>
+                    <div className="pd-flow-title">1. Customer Payment Received</div>
+                    <div className="pd-flow-desc">From customer via chosen method</div>
+                  </div>
+                </div>
+                <div className="pd-flow-arr"><ArrowDown size={16} /></div>
+                
+                <div className="pd-flow-box">
+                  <div className="pd-flow-num" style={{ background: '#f3e8ff', color: '#8b5cf6' }}><Share2 size={10} /></div>
+                  <div>
+                    <div className="pd-flow-title">2. Amount Split Automatically</div>
+                    <div className="pd-flow-desc">Platform Fee, Commission, GST, TDS, TCS, Delivery Charges, SP & Seller share</div>
+                  </div>
+                </div>
+                <div className="pd-flow-arr"><ArrowDown size={16} /></div>
+
+                <div className="pd-flow-box">
+                  <div className="pd-flow-num" style={{ background: '#e0f2fe', color: '#0ea5e9' }}><Layers size={10} /></div>
+                  <div>
+                    <div className="pd-flow-title">3. Settlement Queued</div>
+                    <div className="pd-flow-desc">Based on settlement type & cycle</div>
+                  </div>
+                </div>
+                <div className="pd-flow-arr"><ArrowDown size={16} /></div>
+
+                <div className="pd-flow-split">
+                  <div className="pd-flow-box-sm">
+                    <div style={{ color: '#10b981', fontWeight: 700, fontSize: 10, marginBottom: 4 }}><UserCircle size={14} style={{ marginBottom: -3, marginRight: 2 }}/>4A. Service Provider</div>
+                    <div className="pd-flow-title" style={{ fontSize: 10 }}>Payout to Service Provider</div>
+                  </div>
+                  <div className="pd-flow-box-sm">
+                    <div style={{ color: '#f97316', fontWeight: 700, fontSize: 10, marginBottom: 4 }}><Building2 size={14} style={{ marginBottom: -3, marginRight: 2 }}/>4B. Seller</div>
+                    <div className="pd-flow-title" style={{ fontSize: 10 }}>Payout to Seller</div>
+                  </div>
+                </div>
+                <div className="pd-flow-arr"><ArrowDown size={16} /></div>
+
+                <div className="pd-flow-box" style={{ padding: '8px 12px' }}>
+                  <div className="pd-flow-num" style={{ background: '#16a34a', color: '#fff', padding: 2 }}><CheckCircle2 size={14} /></div>
+                  <div>
+                    <div className="pd-flow-title">5. Completed</div>
+                    <div className="pd-flow-desc">Settlement completed & recorded</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        {/* ── Bottom Row ── */}
-        <div className="pay-dash-bottom-row">
-
-          {/* Refund Requests Table */}
-          <div className="admin-dash-card">
-            <div className="admin-dash-card-header">
-              <h3>Refund Requests</h3>
+        {/* 4. 3-COL SETTLEMENTS ROW */}
+        <div className="pd-3col-row">
+          
+          <div className="pd-card">
+            <div className="pd-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 className="pd-card-title">Service Provider Settlements</h3>
+              <button className="pd-view-all">View All</button>
             </div>
-            <div style={{ overflowX: 'auto', width: '100%' }}>
-            <table className="rev-dash-table" style={{ width: '100%', minWidth: '600px' }}>
+            <div className="pd-card-body" style={{ padding: 0, overflowX: 'auto', maxHeight: 220, overflowY: 'auto' }}>
+              <table className="pd-settle-table">
+                <thead>
+                  <tr>
+                    <th>Booking ID</th>
+                    <th>Service Provider</th>
+                    <th>Payout Amt</th>
+                    <th>Settlement Type</th>
+                    <th>Status</th>
+                    <th>Settlement Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {spSettlements.map((r, i) => (
+                    <tr key={i}>
+                      <td style={{ color: '#3b82f6', fontWeight: 600 }}>{r.id}</td>
+                      <td>{r.name}</td>
+                      <td style={{ fontWeight: 700 }}>{r.payout}</td>
+                      <td>{r.type}</td>
+                      <td><StatusBadge status={r.status} /></td>
+                      <td style={{ color: '#64748b' }}>{r.date}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="pd-card-footer">
+              <div className="pd-footer-stat">
+                <span className="pd-footer-lbl">Total Pending Amount</span>
+                <span className="pd-footer-val">₹3,20,110</span>
+              </div>
+              <div className="pd-footer-stat">
+                <span className="pd-footer-lbl">Total Transactions</span>
+                <span className="pd-footer-val">138</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="pd-card">
+            <div className="pd-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 className="pd-card-title">Seller Settlements</h3>
+              <button className="pd-view-all">View All</button>
+            </div>
+            <div className="pd-card-body" style={{ padding: 0, overflowX: 'auto', maxHeight: 220, overflowY: 'auto' }}>
+              <table className="pd-settle-table">
+                <thead>
+                  <tr>
+                    <th>Booking ID</th>
+                    <th>Seller</th>
+                    <th>Material Amount</th>
+                    <th>Settlement Type</th>
+                    <th>Status</th>
+                    <th>Settlement Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sellerSettlements.map((r, i) => (
+                    <tr key={i}>
+                      <td style={{ color: '#3b82f6', fontWeight: 600 }}>{r.id}</td>
+                      <td>{r.name}</td>
+                      <td style={{ fontWeight: 700 }}>{r.amt}</td>
+                      <td>{r.type}</td>
+                      <td><StatusBadge status={r.status} /></td>
+                      <td style={{ color: '#64748b' }}>{r.date}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="pd-card-footer">
+              <div className="pd-footer-stat">
+                <span className="pd-footer-lbl">Total Pending Amount</span>
+                <span className="pd-footer-val">₹2,34,780</span>
+              </div>
+              <div className="pd-footer-stat">
+                <span className="pd-footer-lbl">Total Transactions</span>
+                <span className="pd-footer-val">122</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="pd-card">
+            <div className="pd-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 className="pd-card-title">Delivery Charges Settlements</h3>
+              <button className="pd-view-all">View All</button>
+            </div>
+            <div className="pd-card-body" style={{ padding: 0, overflowX: 'auto', maxHeight: 220, overflowY: 'auto' }}>
+              <table className="pd-settle-table">
+                <thead>
+                  <tr>
+                    <th>Booking ID</th>
+                    <th>Delivered By</th>
+                    <th>Delivery Charge</th>
+                    <th>Settlement Type</th>
+                    <th>Status</th>
+                    <th>Settlement Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {deliverySettlements.map((r, i) => (
+                    <tr key={i}>
+                      <td style={{ color: '#3b82f6', fontWeight: 600 }}>{r.id}</td>
+                      <td>{r.name}</td>
+                      <td style={{ fontWeight: 700 }}>{r.charge}</td>
+                      <td>{r.type}</td>
+                      <td><StatusBadge status={r.status} /></td>
+                      <td style={{ color: '#64748b' }}>{r.date}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="pd-card-footer">
+              <div className="pd-footer-stat">
+                <span className="pd-footer-lbl">Total Pending Amount</span>
+                <span className="pd-footer-val">₹40,220</span>
+              </div>
+              <div className="pd-footer-stat">
+                <span className="pd-footer-lbl">Total Transactions</span>
+                <span className="pd-footer-val">96</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* 5. FULL WIDTH TABLE */}
+        <div className="pd-card" style={{ marginBottom: 16 }}>
+          <div className="pd-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 className="pd-card-title">Recent Booking Payments <span style={{color: '#64748b', fontSize: 12, fontWeight: 500}}>(Customer Payments)</span></h3>
+            <button className="pd-view-all">View All</button>
+          </div>
+          <div className="pd-full-table-wrap" style={{ position: 'relative' }}>
+            <table className="pd-full-table">
               <thead>
                 <tr>
-                  <th>Refund ID</th>
-                  <th>Orig Txn</th>
-                  <th>Amount</th>
-                  <th>User</th>
-                  <th>Reason</th>
+                  <th>Booking ID</th>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Service Category</th>
+                  <th>Payment Type</th>
+                  <th>Amount (₹)</th>
+                  <th>Payment Status</th>
+                  <th>Payment Date & Time</th>
+                  <th>Transaction ID</th>
+                  <th>Payment Method</th>
+                  <th>SP Settlement Type</th>
+                  <th>Seller Settlement Type</th>
+                  <th style={{ textAlign: 'right' }}>Total Amount (₹)</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
-                {dynRefundRequests.map((r, i) => (
+                {recentBookings.map((r, i) => (
                   <tr key={i}>
-                    <td><span style={{fontWeight: 600, color: '#4f46e5'}}>{r.id}</span></td>
-                    <td><span style={{color: '#64748b'}}>{r.origTxn}</span></td>
-                    <td><span style={{fontWeight: 600}}>{r.amount}</span></td>
-                    <td><span style={{fontWeight: 500}}>{r.user}</span></td>
-                    <td>{r.reason}</td>
+                    <td style={{ color: '#3b82f6', fontWeight: 600 }}>{r.id}</td>
+                    <td style={{ color: '#3b82f6', fontWeight: 600 }}>{r.order}</td>
+                    <td style={{ fontWeight: 600 }}>{r.user}</td>
+                    <td>{r.cat}</td>
+                    <td>{r.type}</td>
+                    <td style={{ fontWeight: 700 }}>{r.amt}</td>
+                    <td><span style={{ color: r.pStatus==='Success'?'#16a34a':'#f59e0b', fontWeight: 600 }}>{r.pStatus}</span></td>
+                    <td style={{ color: '#64748b' }}>{r.pDate}</td>
+                    <td style={{ fontFamily: 'monospace', fontSize: 11, color: '#64748b' }}>{r.txn}</td>
+                    <td>{r.method}</td>
+                    <td>{r.spType}</td>
+                    <td>{r.sellerType}</td>
+                    <td style={{ textAlign: 'right', fontWeight: 700 }}>{r.tAmt}</td>
                     <td><StatusBadge status={r.status} /></td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            </div>
-            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-              <button onClick={() => toast.success('Navigating to All Refunds')}>View All Refunds <ChevronRight size={14} /></button>
-            </div>
           </div>
+        </div>
 
-          {/* Chargeback Summary Table */}
-          <div className="admin-dash-card">
-            <div className="admin-dash-card-header">
-              <h3>Chargeback Summary</h3>
-            </div>
-            <div style={{ overflowX: 'auto', width: '100%' }}>
-            <table className="rev-dash-table" style={{ width: '100%', minWidth: '600px' }}>
-              <thead>
-                <tr>
-                  <th>CB ID</th>
-                  <th>Orig Txn</th>
-                  <th>Amount</th>
-                  <th>User</th>
-                  <th>Gateway</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dynChargebackSummary.map((c, i) => (
-                  <tr key={i}>
-                    <td><span style={{fontWeight: 600, color: '#4f46e5'}}>{c.id}</span></td>
-                    <td><span style={{color: '#64748b'}}>{c.origTxn}</span></td>
-                    <td><span style={{fontWeight: 600}}>{c.amount}</span></td>
-                    <td><span style={{fontWeight: 500}}>{c.user}</span></td>
-                    <td>{c.gateway}</td>
-                    <td><StatusBadge status={c.status} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            </div>
-            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-              <button onClick={() => toast.success('Navigating to Chargebacks')}>View All Chargebacks <ChevronRight size={14} /></button>
-            </div>
+        {/* 6. FOOTER INFO & EXPORT */}
+        <div className="pd-bottom-bar">
+          <div className="pd-note">
+            <Info size={16} color="#3b82f6" />
+            Note: All amounts are in INR. Payments received from customers include Advance, Partial, and Full payments. Service Provider and Seller settlements are processed according to the selected settlement cycle.
           </div>
+          <button className="pd-export-btn" onClick={() => toast.success('Exporting report...')}>
+            <Download size={16} /> Export Reports <ChevronDown size={16} />
+          </button>
         </div>
 
       </div>

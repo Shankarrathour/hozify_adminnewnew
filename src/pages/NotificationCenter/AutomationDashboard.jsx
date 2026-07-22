@@ -80,7 +80,7 @@ export default function AutomationDashboard({ activeTab = 'Notification Center' 
   );
 
   return (
-    <AdminShell
+    <AdminShell showGlobalExport={true}
       activeTab={activeTab}
       brandText="HOZIFY"
       brandSubText="Enterprise Admin"

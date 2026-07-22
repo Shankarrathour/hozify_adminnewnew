@@ -517,7 +517,7 @@ export default function SupportOperationsList({ activeTab = 'Support Center', de
 
         {/* Tickets Queue Table */}
         <div className="panel" style={{ padding: '0', background: '#fff', overflow: 'hidden' }}>
-          <div style={{ overflowX: 'auto' }}>
+          <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
             <div className="table-responsive-wrapper">
 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13.5px', textAlign: 'left', minWidth: '850px' }}>
               <thead>

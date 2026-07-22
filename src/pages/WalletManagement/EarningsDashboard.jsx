@@ -19,7 +19,7 @@ export default function EarningsDashboard() {
   const totalPayouts = mockWallets.reduce((sum, w) => sum + w.lifetimeWithdrawals, 0);
 
   return (
-    <AdminShell
+    <AdminShell showGlobalExport={true}
       activeTab="Wallet Management"
       brandText="HOZIFY Wallet"
       brandSubText="Global Ledger v1.2"

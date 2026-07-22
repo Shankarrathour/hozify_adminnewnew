@@ -104,7 +104,7 @@ export default function Services({ defaultTab }) {
   // 1. Wizard View (renders full-screen inside AdminShell)
   if (activeTab === 'wizard') {
     return (
-      <AdminShell activeTab="Services" headerTitle={getHeaderTitle(activeTab)} searchPlaceholder="Search catalog...">
+      <AdminShell showGlobalExport={true} activeTab="Services" headerTitle={getHeaderTitle(activeTab)} searchPlaceholder="Search catalog...">
         <NewServiceWizard onClose={closeWizard} />
       </AdminShell>
     );
@@ -113,7 +113,7 @@ export default function Services({ defaultTab }) {
   // 2. Service Profile sub-view
   if (activeTab === 'profile') {
     return (
-      <AdminShell activeTab="Services" headerTitle={getHeaderTitle(activeTab)} searchPlaceholder="Search profile details...">
+      <AdminShell showGlobalExport={true} activeTab="Services" headerTitle={getHeaderTitle(activeTab)} searchPlaceholder="Search profile details...">
         <ServiceProfile onClose={showCatalog} />
       </AdminShell>
     );
@@ -122,7 +122,7 @@ export default function Services({ defaultTab }) {
   // 3. Approvals Queue sub-view
   if (activeTab === 'approvals') {
     return (
-      <AdminShell activeTab="Services" headerTitle={getHeaderTitle(activeTab)} searchPlaceholder="Search approval requests...">
+      <AdminShell showGlobalExport={true} activeTab="Services" headerTitle={getHeaderTitle(activeTab)} searchPlaceholder="Search approval requests...">
         <ApprovalsList onViewDetails={showApprovalDetails} onClose={showCatalog} />
       </AdminShell>
     );
@@ -131,7 +131,7 @@ export default function Services({ defaultTab }) {
   // 4. Approval Details sub-view
   if (activeTab === 'approval-details') {
     return (
-      <AdminShell activeTab="Services" headerTitle={getHeaderTitle(activeTab)} searchPlaceholder="Search specs, risk score...">
+      <AdminShell showGlobalExport={true} activeTab="Services" headerTitle={getHeaderTitle(activeTab)} searchPlaceholder="Search specs, risk score...">
         <ApprovalDetails requestId={selectedApprovalId} onBack={showApprovalsList} />
       </AdminShell>
     );
@@ -183,7 +183,7 @@ export default function Services({ defaultTab }) {
   };
 
   return (
-    <AdminShell
+    <AdminShell showGlobalExport={true}
       activeTab="Services"
       headerTitle={getHeaderTitle(activeTab)}
       searchPlaceholder={
@@ -215,7 +215,7 @@ export default function Services({ defaultTab }) {
           gap: 'var(--spacing-section)',
           borderBottom: '1.5px solid #25108f',
           marginBottom: '24px',
-          overflowX: 'auto',
+          overflowY: 'auto', maxHeight: '400px',
           whiteSpace: 'nowrap'
         }}
       >

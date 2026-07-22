@@ -102,7 +102,7 @@ export default function MaterialRequests() {
   };
 
   return (
-    <AdminShell
+    <AdminShell showGlobalExport={true}
       activeTab="Material Requests"
       brandText="Hozify Procurement"
       brandSubText="EXECUTIVE COMMAND"
@@ -395,7 +395,7 @@ export default function MaterialRequests() {
 
         {/* Requests Table Panel */}
         <div className="panel" style={{ background: '#ffffff', border: '1.5px solid #25108f', borderRadius: '12px', padding: '20px' }}>
-          <div style={{ overflowX: 'auto' }}>
+          <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
             <div className="table-responsive-wrapper">
 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
               <thead>

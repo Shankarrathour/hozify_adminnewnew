@@ -11718,26 +11718,94 @@ table thead th {
   font-size: 11.5px;
 }
 
-/* ── Mid Row (Teams + Activity) ── */
-.admin-dash-mid-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-@media (max-width: 1100px) {
-  .admin-dash-mid-row { grid-template-columns: 1fr; }
-}
-
-/* ── Bottom Row (Modules + Security) ── */
+/* ── Mid & Bottom Rows (Vertical Layout Optimization) ── */
+.admin-dash-mid-row,
 .admin-dash-bottom-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
-@media (max-width: 1100px) {
-  .admin-dash-bottom-row { grid-template-columns: 1fr; }
+.admin-dash-card.admin-table-card {
+  padding: 16px 20px 12px;
+  background: #ffffff;
+  border: 1px solid #e8edf3;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.admin-dash-card.admin-table-card .admin-dash-card-header {
+  margin-bottom: 12px;
+}
+
+.admin-table-container {
+  overflow-x: auto;
+  overflow-y: visible;
+  width: 100%;
+  position: relative;
+  border-radius: 8px;
+}
+
+.admin-card-footer-action {
+  padding-top: 10px;
+  margin-top: 4px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.admin-card-footer-action button {
+  background: transparent;
+  border: none;
+  color: #3b82f6;
+  font-size: 12.5px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.admin-card-footer-action button:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* ── Admin Specific Table Styles ── */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.admin-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f8fafc !important;
+  color: #475569 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em;
+  padding: 10px 12px !important;
+  border-bottom: 1.5px solid #e2e8f0 !important;
+  z-index: 5;
+  white-space: nowrap;
+}
+
+.admin-table tbody td {
+  padding: 10px 12px !important;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tbody tr:hover {
+  background-color: #fafafa;
 }
 
 /* ── Tables ── */
@@ -14576,4 +14644,30 @@ table thead th {
 
 .ref-modal-table tr:hover td {
   background: #f8fafc;
+}
+
+
+/* ── Global Sticky Headers for Dashboard Tables ── */
+.rev-dash-table thead th,
+.bkd-table thead th,
+.admin-dash-table thead th,
+.sd-rtable thead th,
+.partner-table thead th,
+.approval-queue-table thead th,
+table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: inherit;
+}
+
+/* Ensure background color is solid for sticky headers if they don't have one */
+.rev-dash-table thead tr,
+.bkd-table thead tr,
+.admin-dash-table thead tr,
+.sd-rtable thead tr,
+.partner-table thead tr,
+.approval-queue-table thead tr,
+table thead tr {
+  background-color: #f8fafc; /* Default dashboard header background */
 }

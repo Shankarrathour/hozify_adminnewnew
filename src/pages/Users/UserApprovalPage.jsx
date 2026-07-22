@@ -511,7 +511,7 @@ export default function UserApprovalPage() {
         </div>
 
         {/* TABLE */}
-        <div className="table-wrap" style={{ overflowX: "auto" }}>
+        <div className="table-wrap" style={{ overflowY: 'auto', maxHeight: '400px' }}>
           <div className="table-responsive-wrapper">
 <table className="materio-table" style={{ width: "100%", borderCollapse: 'collapse', minWidth: "900px" }}>
             <thead>

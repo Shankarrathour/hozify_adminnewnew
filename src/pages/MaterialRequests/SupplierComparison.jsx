@@ -167,7 +167,7 @@ export default function SupplierComparison() {
 
         {/* Evaluation Attribute Matrix Table */}
         <div className="panel" style={{ background: '#ffffff', border: '1.5px solid #25108f', borderRadius: '12px', overflow: 'hidden' }}>
-          <div style={{ overflowX: 'auto' }}>
+          <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
             <div className="table-responsive-wrapper">
 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
               <thead>

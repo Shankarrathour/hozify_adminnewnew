@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { useApp } from '../../hooks/useApp';
+import { ROUTES } from '../../config/routes';
 import toast from 'react-hot-toast';
 import {
   Users,
@@ -20,9 +22,11 @@ import {
   Settings2,
   Database,
   BarChart2,
-  Server
+  Server,
+  X
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
+import { teamsOverview, recentActivity, moduleAccess, securityAlerts } from '../../data/AdminData';
 import ExportReportModal from '../../components/common/ExportReportModal';
 import PremiumTable from '../../components/ui/PremiumTable';
 import StatusBadge from '../../components/common/StatusBadge';
@@ -91,39 +95,13 @@ const teamData = [
   { name: 'Others', value: 14, color: '#94a3b8' },
 ];
 
-const teamsOverview = [
-  { name: 'Operations Team', lead: 'Priya Sharma', members: 48, active: 42, status: 'Active' },
-  { name: 'Support Team', lead: 'Ramesh Kumar', members: 32, active: 28, status: 'Active' },
-  { name: 'Finance Team', lead: 'Anil Verma', members: 24, active: 20, status: 'Active' },
-  { name: 'Analytics Team', lead: 'Neha Singh', members: 20, active: 17, status: 'Active' },
-  { name: 'IT Team', lead: 'Vikram Patel', members: 18, active: 15, status: 'Active' },
-  { name: 'Compliance Team', lead: 'Sanjay Reddy', members: 14, active: 9, status: 'Inactive' },
-];
 
-const recentActivity = [
-  { name: 'Ramesh Kumar', team: 'Support Team', action: 'Viewed', module: 'User Management', ip: '192.168.1.45', time: '31 May 2026 10:24 AM', actionType: 'view' },
-  { name: 'Priya Sharma', team: 'Operations Team', action: 'Updated', module: 'Partner Dashboard', ip: '192.168.1.12', time: '31 May 2026 10:05 AM', actionType: 'update' },
-  { name: 'Anil Verma', team: 'Finance Team', action: 'Deleted', module: 'Transaction Logs', ip: '192.168.1.33', time: '31 May 2026 09:30 AM', actionType: 'delete' },
-  { name: 'Neha Singh', team: 'Analytics Team', action: 'Exported', module: 'Reports & Analytics', ip: '192.168.1.67', time: '31 May 2026 08:55 AM', actionType: 'export' },
-  { name: 'Vikram Patel', team: 'IT Team', action: 'Created', module: 'System Settings', ip: '192.168.1.21', time: '31 May 2026 08:30 AM', actionType: 'create' },
-];
 
-const moduleAccess = [
-  { name: 'User Management', icon: Users, totalRoles: 15, totalAdmins: 98, active: 90, inactive: 8 },
-  { name: 'Partner Management', icon: UserCheck, totalRoles: 14, totalAdmins: 87, active: 78, inactive: 9 },
-  { name: 'Bookings Management', icon: FileBarChart2, totalRoles: 12, totalAdmins: 74, active: 66, inactive: 8 },
-  { name: 'Finance & Wallet', icon: Database, totalRoles: 10, totalAdmins: 62, active: 56, inactive: 6 },
-  { name: 'Reports & Analytics', icon: BarChart2, totalRoles: 12, totalAdmins: 71, active: 64, inactive: 7 },
-  { name: 'System Settings', icon: Settings2, totalRoles: 8, totalAdmins: 45, active: 38, inactive: 7 },
-];
 
-const securityAlerts = [
-  { type: 'Failed Login Attempts', icon: Lock, desc: 'Multiple failed login attempts', count: 12, status: 'High', time: '31 May 2026 10:18 AM' },
-  { type: 'Unusual Login Location', icon: AlertTriangle, desc: 'Login from unrecognized location', count: 5, status: 'Medium', time: '31 May 2026 09:32 AM' },
-  { type: 'Permission Changes', icon: Shield, desc: 'Critical permission changes', count: 3, status: 'Medium', time: '31 May 2026 08:41 AM' },
-  { type: 'Data Export', icon: Download, desc: 'Bulk data export activity', count: 2, status: 'Low', time: '31 May 2026 07:55 AM' },
-  { type: 'Account Locked', icon: UserX, desc: 'Admin account locked', count: 1, status: 'High', time: '31 May 2026 07:20 AM' },
-];
+
+
+
+
 
 /* ───────────────────── Sub-components ───────────────────── */
 
@@ -186,13 +164,16 @@ function DonutLegend({ data }) {
 
 export default function AdminDashboard() {
   const { addToast } = useToast();
+  const { navigate } = useApp();
   const [dateRange, setDateRange] = useState('01 May 2026 - 31 May 2026');
+  const [viewAllModal, setViewAllModal] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(null);
   const [team, setTeam] = useState('All Teams');
   const [role, setRole] = useState('All Roles');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [chartFreq, setChartFreq] = useState('Daily');
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-
+  
   const [filterTrigger, setFilterTrigger] = useState(0);
 
   const m = dateRange === '01 Jun 2026 - 30 Jun 2026' ? 0.8 : dateRange === '01 Jul 2026 - 31 Jul 2026' ? 1.5 : 1;
@@ -397,11 +378,11 @@ export default function AdminDashboard() {
             </div>
             <div className="admin-donut-content">
               <div className="admin-donut-wrap">
-                <PieChart width={220} height={220}>
+                <PieChart width={180} height={180}>
                   <Pie
                     data={dynStatusData}
-                    cx={80}
-                    cy={80}
+                    cx={90}
+                    cy={90}
                     innerRadius={52}
                     outerRadius={78}
                     dataKey="value"
@@ -430,11 +411,11 @@ export default function AdminDashboard() {
             </div>
             <div className="admin-donut-content">
               <div className="admin-donut-wrap">
-                <PieChart width={220} height={220}>
+                <PieChart width={180} height={180}>
                   <Pie
                     data={dynTeamData}
-                    cx={80}
-                    cy={80}
+                    cx={90}
+                    cy={90}
                     innerRadius={52}
                     outerRadius={78}
                     dataKey="value"
@@ -461,12 +442,12 @@ export default function AdminDashboard() {
         <div className="admin-dash-mid-row">
 
           {/* Teams Overview Table */}
-          <div className="admin-dash-card">
+          <div className="admin-dash-card admin-table-card">
             <div className="admin-dash-card-header">
               <h3>Teams Overview</h3>
             </div>
-            <div style={{ overflowX: 'auto', width: '100%' }}>
-            <table className="rev-dash-table" style={{ width: '100%', minWidth: '600px' }}>
+            <div className="admin-table-container">
+            <table className="rev-dash-table admin-table" style={{ width: '100%' }}>
               <thead>
                 <tr>
                   <th>Team Name</th>
@@ -474,7 +455,7 @@ export default function AdminDashboard() {
                   <th>Members</th>
                   <th>Active Admins</th>
                   <th>Status</th>
-                  <th>Actions</th>
+                  <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -483,31 +464,31 @@ export default function AdminDashboard() {
                     <td className="rev-bold-cell">{t.name}</td>
                     <td>
                       <div className="avatar-cell">
-                        <Avatar name={t.lead} size={32} />
+                        <Avatar name={t.lead} size={28} />
                         <span className="avatar-cell-name">{t.lead}</span>
                       </div>
                     </td>
                     <td>{t.members}</td>
                     <td>{t.active}</td>
                     <td><StatusBadge status={t.status} /></td>
-                    <td>{renderActions(t)}</td>
+                    <td style={{ textAlign: 'right' }}>{renderActions(t)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             </div>
-            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-              <button onClick={() => toast.success('Navigating to All Teams')}>View All Teams <ChevronRight size={14} /></button>
+            <div className="admin-card-footer-action">
+              <button onClick={() => { setViewAllModal('teams'); setSelectedRow(null); }}>View All Teams <ChevronRight size={14} /></button>
             </div>
           </div>
 
           {/* Recent Activity Table */}
-          <div className="admin-dash-card">
+          <div className="admin-dash-card admin-table-card">
             <div className="admin-dash-card-header">
               <h3>Recent Admin Activity</h3>
             </div>
-            <div style={{ overflowX: 'auto', width: '100%' }}>
-            <table className="rev-dash-table" style={{ width: '100%', minWidth: '700px' }}>
+            <div className="admin-table-container">
+            <table className="rev-dash-table admin-table" style={{ width: '100%' }}>
               <thead>
                 <tr>
                   <th>Admin Name</th>
@@ -523,7 +504,7 @@ export default function AdminDashboard() {
                   <tr key={i}>
                     <td>
                       <div className="avatar-cell">
-                        <Avatar name={r.name} size={32} />
+                        <Avatar name={r.name} size={28} />
                         <span className="avatar-cell-name">{r.name}</span>
                       </div>
                     </td>
@@ -537,8 +518,8 @@ export default function AdminDashboard() {
               </tbody>
             </table>
             </div>
-            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-              <button onClick={() => toast.success('Navigating to All Activity')}>View All Activity <ChevronRight size={14} /></button>
+            <div className="admin-card-footer-action">
+              <button onClick={() => { setViewAllModal('activity'); setSelectedRow(null); }}>View All Activity <ChevronRight size={14} /></button>
             </div>
           </div>
         </div>
@@ -547,12 +528,12 @@ export default function AdminDashboard() {
         <div className="admin-dash-bottom-row">
 
           {/* Module Access Table */}
-          <div className="admin-dash-card">
+          <div className="admin-dash-card admin-table-card">
             <div className="admin-dash-card-header">
               <h3>Admin Access Summary by Module</h3>
             </div>
-            <div style={{ overflowX: 'auto', width: '100%' }}>
-            <table className="rev-dash-table" style={{ width: '100%', minWidth: '600px' }}>
+            <div className="admin-table-container">
+            <table className="rev-dash-table admin-table" style={{ width: '100%' }}>
               <thead>
                 <tr>
                   <th>Module / Section</th>
@@ -584,18 +565,18 @@ export default function AdminDashboard() {
               </tbody>
             </table>
             </div>
-            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-              <button onClick={() => toast.success('Navigating to All Modules')}>View All Modules <ChevronRight size={14} /></button>
+            <div className="admin-card-footer-action">
+              <button onClick={() => { setViewAllModal('modules'); setSelectedRow(null); }}>View All Modules <ChevronRight size={14} /></button>
             </div>
           </div>
 
           {/* Security Alerts Table */}
-          <div className="admin-dash-card">
+          <div className="admin-dash-card admin-table-card">
             <div className="admin-dash-card-header">
               <h3>Security Alerts (This Month)</h3>
             </div>
-            <div style={{ overflowX: 'auto', width: '100%' }}>
-            <table className="rev-dash-table" style={{ width: '100%', minWidth: '550px' }}>
+            <div className="admin-table-container">
+            <table className="rev-dash-table admin-table" style={{ width: '100%' }}>
               <thead>
                 <tr>
                   <th>Alert Type</th>
@@ -623,8 +604,8 @@ export default function AdminDashboard() {
               </tbody>
             </table>
             </div>
-            <div className="rev-dash-view-all" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-              <button onClick={() => toast.success('Navigating to All Alerts')}>View All Alerts <ChevronRight size={14} /></button>
+            <div className="admin-card-footer-action">
+              <button onClick={() => { setViewAllModal('alerts'); setSelectedRow(null); }}>View All Alerts <ChevronRight size={14} /></button>
             </div>
           </div>
         </div>
@@ -636,6 +617,121 @@ export default function AdminDashboard() {
         entityName="Admin Report"
         data={teamsOverview}
       />
+    
+      
+      {/* ════════════════════ MODAL ════════════════════ */}
+      {viewAllModal && (
+        <div className="sd-modal-overlay" onClick={() => { setViewAllModal(null); setSelectedRow(null); }} style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(15,23,42,0.6)',backdropFilter:'blur(4px)',zIndex:99999,display:'flex',alignItems:'center',justifyContent:'center',padding:20,animation:'fadeIn 0.2s ease-out'}}>
+          <div className="sd-modal-content" onClick={e => e.stopPropagation()} style={{background:'#fff',borderRadius:16,width:'100%',maxWidth: selectedRow ? 600 : 900,maxHeight:'90vh',display:'flex',flexDirection:'column',boxShadow:'0 25px 50px -12px rgba(0,0,0,0.25)',animation:'slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1)'}}>
+            
+            <div className="sd-modal-header" style={{padding:'20px 24px',borderBottom:'1px solid #e2e8f0',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div style={{display:'flex',alignItems:'center',gap:12}}>
+                {selectedRow && (
+                  <button onClick={() => setSelectedRow(null)} style={{background:'#f1f5f9',color:'#475569',border:'none',borderRadius:8,padding:'6px 12px',fontSize:13,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:4}}>
+                    ← Back
+                  </button>
+                )}
+                <h3 className="sd-modal-title" style={{margin:0,fontSize:18,fontWeight:700,color:'#0f172a'}}>
+                  {selectedRow ? 'Record Details' : (
+                    viewAllModal === 'teams' ? 'All Teams' :
+                    viewAllModal === 'activity' ? 'All Recent Admin Activity' :
+                    viewAllModal === 'modules' ? 'All System Modules' :
+                    viewAllModal === 'alerts' ? 'All Security Alerts' : 'Details'
+                  )}
+                </h3>
+              </div>
+              <button className="sd-modal-close" onClick={() => { setViewAllModal(null); setSelectedRow(null); }} style={{background:'transparent',border:'none',color:'#64748b',cursor:'pointer'}}><X size={18} /></button>
+            </div>
+            
+            <div className="sd-modal-body" style={{padding:24,overflowY:'auto',flex:1}}>
+              {selectedRow ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {Object.keys(selectedRow).map(k => {
+                    if (k === 'icon') return null;
+                    return (
+                      <div key={k} style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingBottom: 16, borderBottom: '1px dashed #e2e8f0' }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          {k.replace(/([A-Z])/g, ' $1').trim()}
+                        </span>
+                        <span style={{ fontSize: 15, fontWeight: 500, color: '#1e293b' }}>
+                          {typeof selectedRow[k] === 'boolean' ? (selectedRow[k] ? 'Yes' : 'No') : selectedRow[k]}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
+                  <table className="sd-rtable" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    {(() => {
+                      let data = [];
+                      if (viewAllModal === 'teams') data = teamsOverview;
+                      else if (viewAllModal === 'activity') data = recentActivity;
+                      else if (viewAllModal === 'modules') data = moduleAccess;
+                      else if (viewAllModal === 'alerts') data = securityAlerts;
+
+                      if (!data.length) return <tbody><tr><td style={{padding: 20, textAlign: 'center'}}>No data available</td></tr></tbody>;
+
+                      const keys = Object.keys(data[0]);
+                      return (
+                        <>
+                          <thead>
+                            <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                              {keys.map(k => <th key={k} style={{ textTransform: 'capitalize', padding: '12px 16px', color: '#475569', fontSize: 13, fontWeight: 600 }}>{k.replace(/([A-Z])/g, ' $1').trim()}</th>)}
+                              <th style={{ padding: '12px 16px', color: '#475569', fontSize: 13, fontWeight: 600, textAlign: 'right' }}>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {data.map((r, i) => (
+                              <tr key={i} style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer', transition: 'background 0.2s' }}
+                                  onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                  onClick={() => setSelectedRow(r)}>
+                                {keys.map(k => {
+                                  if (k === 'icon') {
+                                    const IconComp = r[k];
+                                    return (
+                                      <td key={k} style={{ padding: '12px 16px' }}>
+                                        {IconComp && <IconComp size={16} color="#64748b" />}
+                                      </td>
+                                    );
+                                  }
+                                  return (
+                                    <td key={k} style={{ padding: '12px 16px', fontSize: 13, color: '#1e293b', fontWeight: typeof r[k] === 'number' ? 700 : 500 }}>
+                                      {typeof r[k] === 'boolean' ? (r[k] ? 'Yes' : 'No') : r[k]}
+                                    </td>
+                                  );
+                                })}
+                                <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); setSelectedRow(r); }}
+                                    style={{
+                                      background: '#e0e7ff', color: '#4f46e5', border: 'none', borderRadius: 6,
+                                      padding: '6px 12px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                                      display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'all 0.2s'
+                                    }}
+                                  >
+                                    <Eye size={14} /> View
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </>
+                      );
+                    })()}
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+      `}</style>
+
     </AdminShell>
   );
 }

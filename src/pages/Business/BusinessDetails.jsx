@@ -884,7 +884,7 @@ export default function BusinessDetails() {
         </div>
 
         {/* Tab Selection Row */}
-        <div style={{ display: 'flex', borderBottom: '1.5px solid #25108f', gap: 'var(--spacing-section)', overflowX: 'auto', paddingBottom: '2px' }}>
+        <div style={{ display: 'flex', borderBottom: '1.5px solid #25108f', gap: 'var(--spacing-section)', overflowY: 'auto', maxHeight: '400px', paddingBottom: '2px' }}>
           {subTabs.map((tab) => {
             const isActive = activeSubTab === tab;
             return (

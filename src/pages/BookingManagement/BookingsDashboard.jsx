@@ -6,7 +6,7 @@ import {
 import {
   ChevronDown, Eye, CalendarDays, CalendarPlus, Handshake, UserX, CalendarClock,
   Wrench, CheckCircle2, XCircle, MinusCircle, Package, FileText, IndianRupee,
-  Wallet, Truck, TrendingUp, TrendingDown, X
+  Wallet, Truck, TrendingUp, TrendingDown, X, Download
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ROUTES as AppRoutes } from '../../config/routes';
@@ -223,7 +223,7 @@ const CSS = `
   .bkd-apply-btn {
     background: linear-gradient(135deg,#1e293b 0%,#334155 100%);
     color: #fff; border: none; border-radius: 8px;
-    padding: 8px 22px; font-size: 13px; font-weight: 700;
+    padding: 8px 32px; min-width: 110px; font-size: 13px; font-weight: 700;
     cursor: pointer; transition: all 0.18s;
     font-family: 'Inter', sans-serif;
     box-shadow: 0 2px 8px rgba(15,23,42,0.25);
@@ -231,7 +231,7 @@ const CSS = `
   .bkd-apply-btn:hover { box-shadow: 0 4px 14px rgba(15,23,42,0.35); transform: translateY(-1px); }
   .bkd-reset-btn {
     background: #fff; color: #475569; border: 1.5px solid #e2e8f0;
-    border-radius: 8px; padding: 8px 22px; font-size: 13px; font-weight: 600;
+    border-radius: 8px; padding: 8px 32px; min-width: 110px; font-size: 13px; font-weight: 600;
     cursor: pointer; transition: all 0.18s; font-family: 'Inter', sans-serif;
   }
   .bkd-reset-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
@@ -567,7 +567,7 @@ export default function BookingsDashboard({ bookings, handlers = {}, navigate: p
           </div>
 
           {/* Apply / Reset */}
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+          <div style={{ marginLeft: 8, display: 'flex', gap: 8, alignItems: 'flex-end' }}>
             <span className="bkd-filter-label" style={{ opacity: 0 }}>.</span>
             <button className="bkd-apply-btn" onClick={() => { setFilterTrigger(prev => prev + 1); toast.success('Filters applied!'); }}>Apply</button>
             <button className="bkd-reset-btn" onClick={() => { 
@@ -579,6 +579,9 @@ export default function BookingsDashboard({ bookings, handlers = {}, navigate: p
               setFilterTrigger(0);
               toast.success('Filters reset!'); 
             }}>Reset</button>
+            <button className="bkd-apply-btn" style={{ background: '#0f172a', display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px' }} onClick={() => toast.success('Generating report... Download will start shortly.')}>
+              <Download size={14} /> Export Report
+            </button>
           </div>
         </div>
 
@@ -809,7 +812,7 @@ export default function BookingsDashboard({ bookings, handlers = {}, navigate: p
             </div>
           </div>
 
-          <div style={{ overflowX: 'auto' }}>
+          <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
             <table className="bkd-table">
               <thead>
                 <tr>
@@ -962,7 +965,7 @@ export default function BookingsDashboard({ bookings, handlers = {}, navigate: p
             </div>
             <div className="bkd-modal-body">
               {viewAllModal === 'bookings' && (
-                <div style={{ overflowX: 'auto' }}>
+                <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
                   <table className="bkd-table">
                     <thead>
                       <tr>
@@ -994,7 +997,7 @@ export default function BookingsDashboard({ bookings, handlers = {}, navigate: p
                 </div>
               )}
               {viewAllModal === 'categories' && (
-                <div style={{ overflowX: 'auto' }}>
+                <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
                   <table className="bkd-table">
                     <thead>
                       <tr>

@@ -112,7 +112,7 @@ export default function VendorRecommendation() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-section)' }}>
           
           {/* Left: Best Value Suggestions */}
-          <div className="panel" style={{ flex: '1 1 65%', minWidth: '350px', background: '#ffffff', border: '1.5px solid #25108f', borderRadius: '12px', padding: 'var(--spacing-section)', overflowX: 'auto' }}>
+          <div className="panel" style={{ flex: '1 1 65%', minWidth: '350px', background: '#ffffff', border: '1.5px solid #25108f', borderRadius: '12px', padding: 'var(--spacing-section)', overflowY: 'auto', maxHeight: '400px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Zap size={16} style={{ color: 'var(--primary)' }} />
@@ -125,7 +125,7 @@ export default function VendorRecommendation() {
               </span>
             </div>
 
-            <div style={{ overflowX: 'auto' }}>
+            <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
               <div className="table-responsive-wrapper">
 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '550px' }}>
                 <thead>

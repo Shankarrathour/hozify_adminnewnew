@@ -178,7 +178,7 @@ export default function ServiceActivation() {
 
         {/* Table Section - Padding aur horizontal spacing standard fix kar di */}
         <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px 24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ overflowX: 'auto' }}>
+          <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
             <div className="table-responsive-wrapper">
 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>

@@ -252,7 +252,7 @@ export default function RevenueReports() {
             </button>
           </div>
           
-          <div style={{ overflowX: 'auto', padding: '0 8px 8px' }}>
+          <div style={{ overflowY: 'auto', maxHeight: '400px', padding: '0 8px 8px' }}>
             <div className="table-responsive-wrapper">
 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>

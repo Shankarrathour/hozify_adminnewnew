@@ -1633,7 +1633,7 @@ function ReportsListing({ nav, setModal }) {
       <Card className="has-table">
         <div
           style={{
-            overflowX: "auto",
+            overflowY: 'auto', maxHeight: '400px',
             width: "100%",
             WebkitOverflowScrolling: "touch",
             scrollbarWidth: "thin",
@@ -2122,7 +2122,7 @@ function EmergencyReports({ setModal }) {
         <Card>
           <h3>Recent Exports</h3>
           <div style={{
-            overflowX: "auto",
+            overflowY: 'auto', maxHeight: '400px',
             overflowY: "auto",
             margin: "12px -24px 0",
             WebkitOverflowScrolling: "touch",

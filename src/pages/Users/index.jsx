@@ -252,7 +252,7 @@ export default function Users() {
             </div>
           </div>
 
-          <div style={{ overflowX: 'auto' }}>
+          <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
             <div className="table-responsive-wrapper">
 <table className="materio-table">
               <thead>

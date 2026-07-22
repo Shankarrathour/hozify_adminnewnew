@@ -11,7 +11,7 @@ export default function ServiceAreas({ mode = 'areas' }) {
   const [activeSubTab, setActiveSubTab] = React.useState('GIS Mapper');
 
   return (
-    <AdminShell
+    <AdminShell showGlobalExport={true}
       activeTab="Service Areas"
       headerTitle="Branch Manager"
       searchPlaceholder="Search areas..."

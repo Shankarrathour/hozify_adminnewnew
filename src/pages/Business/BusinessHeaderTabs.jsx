@@ -13,7 +13,7 @@ export default function BusinessHeaderTabs({ activeTab }) {
   ];
 
   return (
-    <div style={{ display: 'flex', gap: '8px', background: 'rgba(255, 255, 255, 0.15)', padding: '4px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', overflowX: 'auto', maxWidth: '100%' }}>
+    <div style={{ display: 'flex', gap: '8px', background: 'rgba(255, 255, 255, 0.15)', padding: '4px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', overflowY: 'auto', maxHeight: '400px', maxWidth: '100%' }}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.label;
         return (

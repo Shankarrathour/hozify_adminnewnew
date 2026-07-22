@@ -253,7 +253,7 @@ export default function MarketingReports() {
               <span onClick={() => addToast('Opening all campaigns...', 'info')} style={{ fontSize: '12px', fontWeight: '600', color: '#4f46e5', cursor: 'pointer' }}>View All →</span>
             </div>
 
-            <div style={{ overflowX: 'auto' }}>
+            <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
               <div className="table-responsive-wrapper">
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                   <thead>

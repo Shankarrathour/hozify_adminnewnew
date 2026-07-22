@@ -168,7 +168,7 @@ export default function CommunicationsCenter() {
   };
 
   return (
-    <AdminShell
+    <AdminShell showGlobalExport={true}
       activeTab="Communications"
       brandText="Hozify"
       brandSubText="EXECUTIVE COMMAND"

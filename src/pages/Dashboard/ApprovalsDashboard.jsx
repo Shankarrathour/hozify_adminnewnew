@@ -52,7 +52,7 @@ export default function ApprovalsDashboard({ activeTab = 'Dashboard' }) {
   };
 
   return (
-    <AdminShell
+    <AdminShell showGlobalExport={true}
       activeTab={activeTab}
       brandText="HOZIFY"
       brandSubText="Enterprise Admin"
@@ -107,7 +107,7 @@ export default function ApprovalsDashboard({ activeTab = 'Dashboard' }) {
         </div>
 
         {/* Tab Selection Navigation Bar */}
-        <div style={{ borderBottom: '1.5px solid #25108f', display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
+        <div style={{ borderBottom: '1.5px solid #25108f', display: 'flex', gap: '8px', overflowY: 'auto', maxHeight: '400px', paddingBottom: '2px' }}>
           {subTabs.map((tab) => (
             <button
               key={tab}

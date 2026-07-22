@@ -60,7 +60,7 @@ export default function Branches({ defaultTab }) {
   };
 
   return (
-    <AdminShell
+    <AdminShell showGlobalExport={true}
       activeTab="Branches"
       headerTitle={
         activeTab === 'Directory' ? 'Branch Directory' :
@@ -73,7 +73,7 @@ export default function Branches({ defaultTab }) {
       searchPlaceholder="Search in branch suite..."
     >
       {/* Sub-tab selection bar */}
-      <div style={{ display: 'flex', gap: '16px', borderBottom: '1.5px solid #25108f', marginBottom: '24px', overflowX: 'auto', whiteSpace: 'nowrap' }}>
+      <div style={{ display: 'flex', gap: '16px', borderBottom: '1.5px solid #25108f', marginBottom: '24px', overflowY: 'auto', maxHeight: '400px', whiteSpace: 'nowrap' }}>
         {[
           { id: 'Directory', label: 'Directory' },
           { id: 'Performance', label: 'Performance Overview' },

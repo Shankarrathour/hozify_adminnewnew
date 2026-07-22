@@ -139,9 +139,9 @@ const CSS = `
   .od-period-btn.active { background: #1e293b; color: #fff; box-shadow: 0 2px 6px rgba(15,23,42,0.2); }
   .od-period-btn:hover:not(.active) { background: #e2e8f0; color: #1e293b; }
   
-  .od-apply-btn { background: #1e293b; color: #fff; border: none; border-radius: 8px; padding: 8px 22px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: all 0.18s; }
+  .od-apply-btn { background: #1e293b; color: #fff; border: none; border-radius: 8px; padding: 8px 32px; min-width: 110px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: all 0.18s; }
   .od-apply-btn:hover { background: #0f172a; box-shadow: 0 4px 12px rgba(15,23,42,0.2); }
-  .od-reset-btn { background: #fff; color: #475569; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 22px; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.18s; }
+  .od-reset-btn { background: #fff; color: #475569; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 32px; min-width: 110px; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.18s; }
   .od-reset-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
 
   /* KPI GRID */
@@ -349,7 +349,7 @@ export default function OrderDashboard({ activeTab = 'Order Dashboard' }) {
   const [viewAllModal, setViewAllModal] = useState(null);
   
   return (
-    <AdminShell activeTab={activeTab} headerTitle="Order Dashboard" searchPlaceholder="Search pages, modules...">
+    <AdminShell showGlobalExport={true} activeTab={activeTab} headerTitle="Order Dashboard" searchPlaceholder="Search pages, modules...">
       <style>{CSS}</style>
       <div className="od-root">
         
@@ -365,7 +365,7 @@ export default function OrderDashboard({ activeTab = 'Order Dashboard' }) {
                 </div>
               </div>
             ))}
-            <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+            <div style={{ marginLeft: 8, display: 'flex', gap: 10, alignItems: 'flex-end' }}>
               <div className="od-period-group">
                 {['Daily','Weekly','Monthly','Yearly'].map(p => (
                   <button key={p} className={`od-period-btn${period === p ? ' active' : ''}`} onClick={() => setPeriod(p)}>{p}</button>
@@ -381,6 +381,9 @@ export default function OrderDashboard({ activeTab = 'Order Dashboard' }) {
               </div>
               <button className="od-apply-btn">Apply</button>
               <button className="od-reset-btn">Reset</button>
+              <button className="od-apply-btn" style={{ background: '#0f172a', display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px' }} onClick={() => alert('Generating report... Download will start shortly.')}>
+                <Download size={14} /> Export Report
+              </button>
             </div>
           </div>
           <div className="od-filter-row">
@@ -691,7 +694,7 @@ export default function OrderDashboard({ activeTab = 'Order Dashboard' }) {
                 <button className="od-modal-close" onClick={() => setViewAllModal(null)}><X size={18} /></button>
               </div>
               <div className="od-modal-body">
-                <div style={{ overflowX: 'auto' }}>
+                <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
                   {viewAllModal === 'attention' ? (
                     <table className="od-table">
                       <thead>

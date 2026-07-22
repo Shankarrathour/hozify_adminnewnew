@@ -181,7 +181,7 @@ export default function BookingReports() {
                   <button style={{ width: '34px', height: '34px', borderRadius: '8px', border: '1.5px solid #e2e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><SlidersHorizontal size={15} color="#64748b" /></button>
                 </div>
               </div>
-              <div style={{ overflowX: 'auto' }}>
+              <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
                 <div className="table-responsive-wrapper">
 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                   <thead>

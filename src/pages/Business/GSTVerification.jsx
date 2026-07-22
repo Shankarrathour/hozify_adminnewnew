@@ -233,7 +233,7 @@ export default function GSTVerification() {
         
         {/* Selection pills and Search Block */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px', position: 'relative' }}>
-          <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', maxWidth: '100%', paddingBottom: '4px' }}>
+          <div style={{ display: 'flex', gap: '10px', overflowY: 'auto', maxHeight: '400px', maxWidth: '100%', paddingBottom: '4px' }}>
             {MOCK_BUSINESSES.map(b => {
               const isSelected = selectedBusiness.id === b.id;
               const status = statuses[b.id]?.state || 'pending';

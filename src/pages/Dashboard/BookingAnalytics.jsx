@@ -317,7 +317,7 @@ export default function BookingAnalytics({ activeTab = 'Bookings Dashboard' }) {
   const dynChart = (chartFreq === 'Weekly' ? chartW : chartFreq === 'Monthly' ? chartM : bookingsOverTime).map(d => ({ ...d, total: Math.floor(d.total * m), completed: Math.floor(d.completed * m), pending: Math.floor(d.pending * m) }));
 
   return (
-    <AdminShell activeTab={activeTab} headerTitle="Bookings Dashboard" searchPlaceholder="Search pages, modules...">
+    <AdminShell showGlobalExport={true} activeTab={activeTab} headerTitle="Bookings Dashboard" searchPlaceholder="Search pages, modules...">
       <style>{CSS}</style>
       <div className="ba-root">
 

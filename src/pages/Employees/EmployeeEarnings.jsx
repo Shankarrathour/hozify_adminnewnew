@@ -148,7 +148,7 @@ export default function EmployeeEarnings() {
               </div>
             </div>
 
-            <div className="table-wrap" style={{ overflowX: 'auto' }}>
+            <div className="table-wrap" style={{ overflowY: 'auto', maxHeight: '400px' }}>
               <div className="table-responsive-wrapper">
 <table className="partner-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
                 <thead>

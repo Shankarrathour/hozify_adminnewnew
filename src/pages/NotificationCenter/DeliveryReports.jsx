@@ -334,7 +334,7 @@ export default function DeliveryReports({ activeTab = 'Notification Center' }) {
               </div>
             </div>
 
-            <div style={{ overflowX: 'auto', flex: 1 }}>
+            <div style={{ overflowY: 'auto', maxHeight: '400px', flex: 1 }}>
               <div className="table-responsive-wrapper">
 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left', minWidth: '600px' }}>
                 <thead>

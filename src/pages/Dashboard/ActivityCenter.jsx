@@ -45,7 +45,7 @@ export default function ActivityCenter({ activeTab = 'Dashboard' }) {
   };
 
   return (
-    <AdminShell
+    <AdminShell showGlobalExport={true}
       activeTab={activeTab}
       brandText="HOZIFY"
       brandSubText="Enterprise Admin"

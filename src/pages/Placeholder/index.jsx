@@ -3,7 +3,7 @@ import AdminShell from '../../components/layouts/AdminShell';
 
 export default function Placeholder({ title, activeTab }) {
   return (
-    <AdminShell
+    <AdminShell showGlobalExport={true}
       activeTab={activeTab || title}
       headerTitle={`${title} Console`}
       searchPlaceholder={`Search in ${title.toLowerCase()}...`}

@@ -212,7 +212,7 @@ export default function KYCApprovals() {
           
           {/* DESKTOP VIEW */}
           <div className="hidden lg:block">
-            <div className="table-responsive" style={{ overflowX: 'auto', width: '100%', WebkitOverflowScrolling: 'touch' }}><table className="w-full text-left border-collapse min-w-[900px]">
+            <div className="table-responsive" style={{ overflowY: 'auto', maxHeight: '400px', width: '100%', WebkitOverflowScrolling: 'touch' }}><table className="w-full text-left border-collapse min-w-[900px]">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50/70 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
                   <th className="px-6 py-4">Partner Details</th>

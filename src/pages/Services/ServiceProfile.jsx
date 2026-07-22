@@ -204,7 +204,7 @@ export default function ServiceProfile({ onClose }) {
       </div>
 
       {/* Internal View Tab Row */}
-      <div style={{ display: 'flex', gap: '16px', borderBottom: '1.5px solid #25108f', overflowX: 'auto', whiteSpace: 'nowrap' }}>
+      <div style={{ display: 'flex', gap: '16px', borderBottom: '1.5px solid #25108f', overflowY: 'auto', maxHeight: '400px', whiteSpace: 'nowrap' }}>
         {['Overview', 'Pricing', 'Availability', 'Requirements', 'Team', 'Documentation', 'Reviews'].map((tab) => (
           <button
             key={tab}
@@ -268,7 +268,7 @@ export default function ServiceProfile({ onClose }) {
               </a>
             </div>
 
-            <div style={{ overflowX: 'auto' }}>
+            <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
               <div className="table-responsive-wrapper">
 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>

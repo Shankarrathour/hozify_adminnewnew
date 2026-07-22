@@ -147,7 +147,7 @@ export default function EmployeeProfile({ employee, onBack }) {
       </div>
 
       {/* Profile Navigation sub-tabs */}
-      <div style={{ borderBottom: '1.5px solid #25108f', marginBottom: '24px', display: 'flex', gap: 'var(--spacing-section)', overflowX: 'auto' }}>
+      <div style={{ borderBottom: '1.5px solid #25108f', marginBottom: '24px', display: 'flex', gap: 'var(--spacing-section)', overflowY: 'auto', maxHeight: '400px' }}>
         {tabs.map((tab) => (
           <button
             key={tab}

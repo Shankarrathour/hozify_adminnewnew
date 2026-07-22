@@ -335,14 +335,14 @@ export default function Employees({ defaultTab }) {
   ].includes(activeTab);
 
   return (
-    <AdminShell
+    <AdminShell showGlobalExport={true}
       activeTab="Employees"
       headerTitle="Employee Management"
       searchPlaceholder="Search in employee suite..."
     >
       {/* Sub-tab selection bar */}
       {showTabHeader && (
-        <div style={{ display: 'flex', gap: '16px', borderBottom: '1.5px solid #25108f', marginBottom: '24px', overflowX: 'auto', whiteSpace: 'nowrap' }}>
+        <div style={{ display: 'flex', gap: '16px', borderBottom: '1.5px solid #25108f', marginBottom: '24px', overflowY: 'auto', maxHeight: '400px', whiteSpace: 'nowrap' }}>
           {[
             { id: 'Overview', label: 'Overview' },
             { id: 'Workforce', label: 'Workforce Directory' },

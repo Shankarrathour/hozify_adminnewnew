@@ -333,7 +333,7 @@ export default function BranchPerformance() {
 
       </div>
       {/* Bottom Table Section (Operational Audit) */}
-      <section className="panel partner-directory-panel" style={{ padding: 'var(--spacing-section)', background: '#fff', border: '1px solid #d1d5db', borderRadius: '8px', overflowX: 'auto' }}>
+      <section className="panel partner-directory-panel" style={{ padding: 'var(--spacing-section)', background: '#fff', border: '1px solid #d1d5db', borderRadius: '8px', overflowY: 'auto', maxHeight: '400px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', minWidth: '600px' }}>
           <h2 style={{ fontSize: '15px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text)', margin: '0' }}>
             Operational Audit — Regional Branches

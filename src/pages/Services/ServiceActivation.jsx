@@ -158,8 +158,8 @@ export default function ServiceActivation() {
 
       {/* Table Section */}
       <div className="panel" style={{ background: '#ffffff', border: '1.5px solid #25108f', borderRadius: '12px', padding: 'var(--spacing-section)' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <div style={{ overflowX: 'auto', width: '100%' }}>
+        <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
+          <div style={{ overflowY: 'auto', maxHeight: '400px', width: '100%' }}>
             <div className="table-responsive-wrapper">
 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>

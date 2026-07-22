@@ -19,7 +19,8 @@ import {
   RefreshCw,
   LogOut,
   X,
-  ArrowLeft
+  ArrowLeft,
+  Download
 } from 'lucide-react';
 import { useApp } from '../../hooks/useApp';
 import { sidebarNavigation } from '../../config/sidebarNavigation';
@@ -501,6 +502,34 @@ export default function GlobalAdminShell({ children }) {
 
           {/* Right Actions Combo */}
           <div className="dash-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '16px', flex: '0 0 auto' }}>
+
+            {/* Global Export Button */}
+            {shellProps?.showGlobalExport && (
+              <button
+                className="header-icon-btn global-export-btn"
+                type="button"
+                onClick={() => addToast('Generating report... Download will start shortly.', 'success')}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px', 
+                  padding: '6px 14px', 
+                  background: 'rgba(255, 255, 255, 0.1)', 
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '6px',
+                  color: '#ffffff',
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; }}
+              >
+                <Download size={14} /> Export Report
+              </button>
+            )}
 
             {/* Fullscreen Button */}
             <button

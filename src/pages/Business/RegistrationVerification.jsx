@@ -251,7 +251,7 @@ export default function RegistrationVerification() {
         
         {/* Selection pills row */}
         <div style={{ display: 'flex', alignItems: 'center', justifySelf: 'stretch', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>
-          <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', maxWidth: '100%', paddingBottom: '4px' }}>
+          <div style={{ display: 'flex', gap: '10px', overflowY: 'auto', maxHeight: '400px', maxWidth: '100%', paddingBottom: '4px' }}>
             {RECORDS.map(r => {
               const isSelected = selectedRecord.id === r.id;
               const status = statuses[r.id] || "pending";

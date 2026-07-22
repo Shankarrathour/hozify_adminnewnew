@@ -114,7 +114,7 @@ export default function BranchProfile() {
         </div>
 
         {/* Sub-tab menu selectors */}
-        <div style={{ display: 'flex', gap: '16px', borderBottom: '1.5px solid #25108f', marginBottom: '24px', overflowX: 'auto', whiteSpace: 'nowrap' }}>
+        <div style={{ display: 'flex', gap: '16px', borderBottom: '1.5px solid #25108f', marginBottom: '24px', overflowY: 'auto', maxHeight: '400px', whiteSpace: 'nowrap' }}>
           {[
             'Overview',
             'Services',

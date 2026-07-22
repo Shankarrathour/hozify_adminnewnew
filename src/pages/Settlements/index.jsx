@@ -134,7 +134,7 @@ export default function Settlements() {
   });
 
   return (
-    <AdminShell
+    <AdminShell showGlobalExport={true}
       activeTab="Settlements"
       searchPlaceholder="Search banks, transactions, or account IDs..."
       headerTitle="Financial Ledger Services"

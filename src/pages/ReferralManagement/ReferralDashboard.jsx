@@ -248,7 +248,7 @@ export default function ReferralDashboard({ activeTab = 'Referral Dashboard' }) 
 
 
   return (
-    <AdminShell activeTab={activeTab} headerTitle="Referral Dashboard" searchPlaceholder="Search pages, modules...">
+    <AdminShell showGlobalExport={true} activeTab={activeTab} headerTitle="Referral Dashboard" searchPlaceholder="Search pages, modules...">
       <div className="ref-dash-root">
 
         {/* ── Filter Bar (Combined Card) ── */}
@@ -659,7 +659,7 @@ export default function ReferralDashboard({ activeTab = 'Referral Dashboard' }) 
             <div className="ref-card-header">
               <h3 className="ref-card-title">Reward Types Performance</h3>
             </div>
-            <div style={{ overflowX: 'auto', width: '100%' }}>
+            <div style={{ overflowY: 'auto', maxHeight: '400px', width: '100%' }}>
               <table className="ref-reward-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '450px' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid #e2e8f0' }}>

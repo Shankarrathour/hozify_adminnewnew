@@ -533,7 +533,7 @@ export default function Dashboard() {
                   </button>
                 </div>
 
-                <div style={{ overflowX: 'auto' }}>
+                <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
                   <div className="table-responsive-wrapper">
 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
@@ -1003,7 +1003,7 @@ export default function Dashboard() {
                 Top Supplier Performance
               </h2>
 
-              <div style={{ overflowX: 'auto' }}>
+              <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
                 <div className="table-responsive-wrapper">
 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '550px' }}>
                   <thead>

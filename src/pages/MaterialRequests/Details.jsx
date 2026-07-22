@@ -529,7 +529,7 @@ export default function MaterialRequestDetails() {
         </div>
 
         {/* Tab Sub-navigation */}
-        <div style={{ borderBottom: '1.5px solid #25108f', display: 'flex', gap: 'var(--spacing-section)', overflowX: 'auto', paddingBottom: '2px' }}>
+        <div style={{ borderBottom: '1.5px solid #25108f', display: 'flex', gap: 'var(--spacing-section)', overflowY: 'auto', maxHeight: '400px', paddingBottom: '2px' }}>
           {tabs.map((tab) => (
             <button
               key={tab}
@@ -659,7 +659,7 @@ export default function MaterialRequestDetails() {
                 </button>
               </div>
 
-              <div style={{ overflowX: 'auto' }}>
+              <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
                 <div className="table-responsive-wrapper">
 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '580px' }}>
                   <thead>

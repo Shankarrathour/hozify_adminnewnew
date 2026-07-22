@@ -181,7 +181,7 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
   const dynRewardPerformance = rewardPerformance.map(d => ({ ...d, total: Math.floor(d.total * m), used: Math.floor(d.used * m), usage: Math.floor(d.usage * m) }));
 
   return (
-    <AdminShell activeTab={activeTab} headerTitle="Quotation Dashboard" searchPlaceholder="Search pages, modules...">
+    <AdminShell showGlobalExport={true} activeTab={activeTab} headerTitle="Quotation Dashboard" searchPlaceholder="Search pages, modules...">
       <div style={{ padding:'20px 24px 48px', background:'#f8fafc', minHeight:'100vh', fontFamily:"'Inter',-apple-system,sans-serif" }}>
 
         
@@ -685,7 +685,7 @@ export default function QuotationDashboard({ activeTab = 'Quotation Dashboard' }
         </div>
 
         {/* ── ROW 5: Main Table ── */}
-        <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2', overflowX:'auto' }}>
+        <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2', overflowY: 'auto', maxHeight: '400px' }}>
           <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 12px' }}>Referral Codes Performance</h2>
           <table style={{ width:'100%', borderCollapse:'collapse', fontSize:10, minWidth:900 }}>
             <thead>

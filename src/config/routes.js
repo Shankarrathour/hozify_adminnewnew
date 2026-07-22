@@ -65,6 +65,10 @@ export const ROUTES = {
 
   // Dashboard sub-routes
   adminDashboard: '/admin-management/dashboard',
+  adminTeams: '/admin-management/teams',
+  adminActivity: '/admin-management/activity',
+  adminModules: '/admin-management/modules',
+  adminAlerts: '/admin-management/alerts',
   dashboardRevenue: '/dashboard/revenue',
   dashboardBookings: '/dashboard/bookings',
   dashboardUsers: '/dashboard/users-analytics',

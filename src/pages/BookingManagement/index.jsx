@@ -1179,7 +1179,7 @@ function _OriginalDashboardScreenUnused({ bookings, handlers }) {
         </div>
 
         {/* ── ROW 5: Main Table ── */}
-        <div style={{ margin: '0 24px', background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2', overflowX:'auto' }}>
+        <div style={{ margin: '0 24px', background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2', overflowY: 'auto', maxHeight: '400px' }}>
           <h2 style={{ fontSize:13, fontWeight:800, color:'#0f172a', margin:'0 0 12px' }}>Detailed Booking Logs</h2>
           <table style={{ width:'100%', borderCollapse:'collapse', fontSize:10, minWidth:900 }}>
             <thead>

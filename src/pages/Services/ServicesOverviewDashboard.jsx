@@ -352,7 +352,7 @@ export default function ServicesOverviewDashboard({ activeTab = 'Services Dashbo
   const [viewAllModal, setViewAllModal] = useState(null);
 
   return (
-    <AdminShell activeTab={activeTab} headerTitle="Services Dashboard" searchPlaceholder="Search pages, modules...">
+    <AdminShell showGlobalExport={true} activeTab={activeTab} headerTitle="Services Dashboard" searchPlaceholder="Search pages, modules...">
       <style>{CSS}</style>
       <div className="sd-root">
 
@@ -392,6 +392,9 @@ export default function ServicesOverviewDashboard({ activeTab = 'Services Dashbo
               )}
               <button className="sd-apply">Apply</button>
               <button className="sd-reset">Reset</button>
+              <button className="sd-apply" style={{ background: '#0f172a', display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px' }} onClick={() => alert('Generating report... Download will start shortly.')}>
+                <Download size={14} /> Export Report
+              </button>
             </div>
           </div>
           <div className="sd-filter-row" style={{ marginTop:12 }}>
@@ -823,7 +826,7 @@ export default function ServicesOverviewDashboard({ activeTab = 'Services Dashbo
                 <button className="sd-modal-close" onClick={() => setViewAllModal(null)}><X size={18} /></button>
               </div>
               <div className="sd-modal-body">
-                <div style={{ overflowX: 'auto' }}>
+                <div style={{ overflowY: 'auto', maxHeight: '400px' }}>
                   <table className="sd-rtable" style={{ minWidth: 800 }}>
                     {(() => {
                       let data = [];

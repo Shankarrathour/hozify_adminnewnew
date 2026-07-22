@@ -64,7 +64,7 @@ export default function MyProfile() {
   ];
 
   return (
-    <AdminShell activeTab="Profile" headerTitle="My Profile Console">
+    <AdminShell showGlobalExport={true} activeTab="Profile" headerTitle="My Profile Console">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)', paddingBottom: '40px', maxWidth: '1200px', margin: '0 auto' }}>
         
         {/* Breadcrumb */}
