@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AdminShell from '../../components/layouts/AdminShell';
+import ExportReportModal from '../../components/common/ExportReportModal';
 import {
   Search, ChevronDown, ChevronLeft, ChevronRight, FileText, CheckCircle2,
   Clock, PackageCheck, Truck, RotateCcw, XCircle, AlertCircle, RefreshCcw,
@@ -347,6 +348,7 @@ function CustomTooltip({ active, payload, label }) {
 export default function OrderDashboard({ activeTab = 'Order Dashboard' }) {
   const [period, setPeriod] = useState('Monthly');
   const [viewAllModal, setViewAllModal] = useState(null);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   
   return (
     <AdminShell showGlobalExport={true} activeTab={activeTab} headerTitle="Order Dashboard" searchPlaceholder="Search pages, modules...">
@@ -381,7 +383,7 @@ export default function OrderDashboard({ activeTab = 'Order Dashboard' }) {
               </div>
               <button className="od-apply-btn">Apply</button>
               <button className="od-reset-btn">Reset</button>
-              <button className="od-apply-btn" style={{ background: '#0f172a', display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px' }} onClick={() => alert('Generating report... Download will start shortly.')}>
+              <button className="od-apply-btn" style={{ background: '#2563eb', display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px', cursor: 'pointer' }} onClick={() => setIsExportOpen(true)}>
                 <Download size={14} /> Export Report
               </button>
             </div>
@@ -761,6 +763,7 @@ export default function OrderDashboard({ activeTab = 'Order Dashboard' }) {
         )}
 
       </div>
+      <ExportReportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} entityName="Order Dashboard Report" data={KPI_DATA} />
     </AdminShell>
   );
 }

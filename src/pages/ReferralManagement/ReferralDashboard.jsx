@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
 import { useToast } from '../../components/common/ToastNotification';
+import ExportReportModal from '../../components/common/ExportReportModal';
 import {
   LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -147,30 +148,34 @@ function DonutCenterLabel({ viewBox, value, label }) {
 
 function DonutCard({ title, data, centerValue, centerLabel }) {
   return (
-    <div className="ref-card ref-donut-card">
-      <div className="ref-card-header">
-        <h3 className="ref-card-title">{title}</h3>
+    <div className="ref-card ref-donut-card" style={{ background: '#fff', borderRadius: 12, padding: '16px 20px', border: '1px solid #e8edf2', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div className="ref-card-header" style={{ marginBottom: 12 }}>
+        <h3 className="ref-card-title" style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#0f172a' }}>{title}</h3>
       </div>
-      <div className="ref-donut-body">
-        <PieChart width={130} height={130}>
+      <div className="ref-donut-body" style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1 }}>
+        <PieChart width={120} height={120}>
           <Pie
-            data={data} cx={65} cy={65}
-            innerRadius={38} outerRadius={60}
+            data={data} cx={60} cy={60}
+            innerRadius={36} outerRadius={56}
             paddingAngle={2} dataKey="value"
             startAngle={90} endAngle={-270}
           >
             {data.map((e, i) => <Cell key={i} fill={e.color} />)}
-            <DonutCenterLabel viewBox={{ cx: 65, cy: 65 }} value={centerValue} label={centerLabel} />
+            <DonutCenterLabel viewBox={{ cx: 60, cy: 60 }} value={centerValue} label={centerLabel} />
           </Pie>
           <Tooltip formatter={v => fmtNum(v)} />
         </PieChart>
-        <div className="ref-donut-legend">
+        <div className="ref-donut-legend" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
           {data.map((item, i) => (
-            <div key={i} className="ref-donut-legend-row">
-              <span className="ref-donut-dot" style={{ background: item.color }} />
-              <span className="ref-donut-name">{item.name}</span>
-              <span className="ref-donut-val">{fmtNum(item.value)}</span>
-              <span className="ref-donut-pct">({item.pct})</span>
+            <div key={i} className="ref-donut-legend-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span className="ref-donut-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, display: 'inline-block', flexShrink: 0 }} />
+                <span style={{ fontWeight: 600, color: '#334155', whiteSpace: 'nowrap' }}>{item.name}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ fontWeight: 700, color: '#0f172a' }}>{fmtNum(item.value)}</span>
+                <span style={{ color: '#94a3b8', fontSize: 11 }}>({item.pct})</span>
+              </div>
             </div>
           ))}
         </div>
@@ -187,6 +192,7 @@ export default function ReferralDashboard({ activeTab = 'Referral Dashboard' }) 
   const [chartFreq, setChartFreq] = useState('Daily');
   const [viewAllModal, setViewAllModal] = useState(null);
   const [filterTrigger, setFilterTrigger] = useState(0);
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   const m = filterTrigger === 0 ? 1 : 1 + ((filterTrigger % 5) * 0.15); // cycle modifiers
 
@@ -337,7 +343,7 @@ export default function ReferralDashboard({ activeTab = 'Referral Dashboard' }) 
               </div>
             </div>
 
-            {/* Apply + Reset pushed right */}
+            {/* Apply + Reset + Export pushed right */}
             <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignSelf: 'flex-end' }}>
               <button
                 className="ref-btn-primary"
@@ -347,6 +353,17 @@ export default function ReferralDashboard({ activeTab = 'Referral Dashboard' }) 
                 className="ref-btn-secondary"
                 onClick={() => { setPeriod('Monthly'); setFilterTrigger(0); addToast('Filters reset', 'info'); }}
               >Reset</button>
+              <button
+                onClick={() => setIsExportOpen(true)}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '7px 16px', borderRadius: 6, border: 'none',
+                  background: '#2563eb', color: '#fff', fontSize: 12, fontWeight: 600,
+                  cursor: 'pointer', transition: 'background 0.15s'
+                }}
+              >
+                <Download size={14} /> Export Report
+              </button>
             </div>
           </div>
 
@@ -433,41 +450,51 @@ export default function ReferralDashboard({ activeTab = 'Referral Dashboard' }) 
           })}
         </div>
 
-        {/* ── Sub KPIs + Top Performers ── */}
-        <div className="ref-mid-row">
-          {/* Sub KPI Cards — horizontal unified row */}
-          <div className="ref-sub-kpi-row">
-            {dynSubKpis.map((k, i) => {
-              const Icon = k.icon;
-              return (
-                <div key={i} className="ref-sub-kpi-card">
-                  <div className="ref-sub-kpi-left">
-                    <div className="ref-sub-kpi-icon" style={{ background: k.iconBg }}>
-                      <Icon size={15} color={k.iconColor} />
-                    </div>
-                    <div className="ref-sub-kpi-info">
-                      <div className="ref-sub-kpi-label">{k.label}</div>
-                      <div className="ref-sub-kpi-value">{fmtNum(k.value)}</div>
-                      <div className="ref-sub-kpi-sub">{k.sub}</div>
-                    </div>
+        {/* ── Sub KPI 3 Cards Grid (Matching Image 1) ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 20 }}>
+          {dynSubKpis.map((k, i) => {
+            const Icon = k.icon;
+            return (
+              <div key={i} style={{
+                background: '#fff', borderRadius: 12, padding: '18px 20px',
+                border: '1px solid #e8edf2', boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+              }}>
+                {/* Left Side */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{
+                    width: 44, height: 44, borderRadius: '50%', background: k.iconBg,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                  }}>
+                    <Icon size={20} color={k.iconColor} />
                   </div>
-                  <div className="ref-sub-kpi-divider" />
-                  <div className="ref-sub-kpi-right">
-                    <div className="ref-sub-kpi-unused-label">Unused Codes</div>
-                    <div className="ref-sub-kpi-unused-val">{k.unused}</div>
-                    <div className="ref-sub-kpi-unused-sub">({k.unusedPct} of total)</div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>{k.label}</div>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>{fmtNum(k.value)}</div>
+                    <div style={{ fontSize: 11, color: '#64748b', marginTop: 4, fontWeight: 500 }}>{k.sub}</div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+
+                {/* Vertical Divider */}
+                <div style={{ width: 1, height: 48, background: '#e2e8f0', margin: '0 12px', flexShrink: 0 }} />
+
+                {/* Right Side */}
+                <div style={{ display: 'flex', flexDirection: 'column', minWidth: 90 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', marginBottom: 4, whiteSpace: 'nowrap' }}>Unused Codes</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>{k.unused}</div>
+                  <div style={{ fontSize: 11, color: '#64748b', marginTop: 4, fontWeight: 500 }}>({k.unusedPct} of total)</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
           {/* Top Performer Statistics */}
-          <div className="ref-top-performers">
+          <div className="ref-top-performers" style={{ overflowX: 'visible', width: '100%' }}>
             <h3 className="ref-card-title" style={{ marginBottom: '12px', fontSize: '13px' }}>Top Performer Statistics</h3>
-            <div className="ref-performers-grid">
+            <div className="ref-performers-grid" style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
               {/* Top Referred Users */}
-              <div className="ref-perf-card">
+              <div className="ref-perf-card" style={{ width: '100%', minWidth: 0, flex: '1 1 100%' }}>
                 <div className="ref-performer-header">
                   <span className="ref-performer-title">
                     <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -564,10 +591,9 @@ export default function ReferralDashboard({ activeTab = 'Referral Dashboard' }) 
               </div>
             </div>
           </div>
-        </div>
 
-        {/* ── Donut Charts Row ── */}
-        <div className="ref-donuts-row">
+        {/* ── Row 1: 3 Donut Cards ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 20 }}>
           <DonutCard
             title="Referral Codes Generated by"
             data={dynGenByDist}
@@ -586,48 +612,25 @@ export default function ReferralDashboard({ activeTab = 'Referral Dashboard' }) 
             centerValue={fmtNum(Math.floor(2568 * m))}
             centerLabel="Total Codes"
           />
-
-          {/* Codes Going to Expire */}
-          <div className="ref-card ref-expire-card">
-            <div className="ref-card-header">
-              <h3 className="ref-card-title">Codes Going to Expire</h3>
-              <a href="#" className="ref-view-all-link">View All</a>
-            </div>
-            <table className="ref-expire-table">
-              <thead>
-                <tr>
-                  <th>Referral Code</th>
-                  <th>Expires On</th>
-                  <th>Generated By</th>
-                  <th>Days Left</th>
-                </tr>
-              </thead>
-              <tbody>
-                {expiringCodes.map(c => (
-                  <tr key={c.code}>
-                    <td className="ref-code-cell">{c.code}</td>
-                    <td>{c.expires}</td>
-                    <td>{c.generatedBy}</td>
-                    <td className="ref-days-cell">{c.daysLeft} days</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </div>
 
-        {/* ── Line Chart + Reward Donut + Reward Table ── */}
-        <div className="ref-charts-row">
+        {/* ── Row 2: Line Chart + Top Reward Types Donut ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '2.2fr 1fr', gap: 16, marginBottom: 20 }}>
           {/* Line Chart */}
-          <div className="ref-card ref-line-chart-card">
-            <div className="ref-card-header">
-              <h3 className="ref-card-title">Referral Members Over Time</h3>
-              <div className="ref-freq-btns">
+          <div className="ref-card ref-line-chart-card" style={{ background: '#fff', borderRadius: 12, padding: '16px 20px', border: '1px solid #e8edf2', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+            <div className="ref-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h3 className="ref-card-title" style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#0f172a' }}>Referral Members Over Time</h3>
+              <div className="ref-freq-btns" style={{ display: 'flex', background: '#f1f5f9', padding: 2, borderRadius: 6 }}>
                 {['Daily', 'Weekly', 'Monthly'].map(f => (
                   <button
                     key={f}
                     className={`ref-freq-btn${chartFreq === f ? ' active' : ''}`}
                     onClick={() => setChartFreq(f)}
+                    style={{
+                      border: 'none', background: chartFreq === f ? '#fff' : 'transparent',
+                      color: chartFreq === f ? '#0f172a' : '#64748b', fontSize: 12, fontWeight: 600,
+                      padding: '4px 10px', borderRadius: 4, cursor: 'pointer'
+                    }}
                   >{f}</button>
                 ))}
               </div>
@@ -646,15 +649,16 @@ export default function ReferralDashboard({ activeTab = 'Referral Dashboard' }) 
             </ResponsiveContainer>
           </div>
 
-          {/* Top Reward Types Donut */}
           <DonutCard
             title="Top Reward Types"
             data={dynRewardDist}
             centerValue={fmtNum(Math.floor(8642 * m))}
             centerLabel="Total Usage"
           />
+        </div>
 
-          {/* Reward Types Performance */}
+        {/* ── Reward Types Performance + Expiring Codes Row ── */}
+        <div className="ref-charts-row" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 20 }}>
           <div className="ref-card ref-reward-perf-card">
             <div className="ref-card-header">
               <h3 className="ref-card-title">Reward Types Performance</h3>
@@ -848,6 +852,8 @@ export default function ReferralDashboard({ activeTab = 'Referral Dashboard' }) 
           </div>
         </div>
       )}
+      {/* ── Export Report Modal ── */}
+      <ExportReportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} entityName="Referral Dashboard Report" data={dynCodesPerf} />
     </AdminShell>
   );
 }

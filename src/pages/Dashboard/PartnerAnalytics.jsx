@@ -6,6 +6,7 @@ import {
   ShoppingBag, GitBranch, Star
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
+import ExportReportModal from '../../components/common/ExportReportModal';
 import { useToast } from '../../components/common/ToastNotification';
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
@@ -183,6 +184,7 @@ function KPICard({ icon: Icon, iconBg, iconColor, label, value, sub, pct, up, cm
 export default function PartnerAnalytics({ activeTab = 'Dashboard' }) {
   const { addToast } = useToast();
   const [viewAllModal, setViewAllModal] = useState(null);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
   const [period, setPeriod] = useState('Monthly');
   const [locationType, setLocationType] = useState('All');
@@ -657,6 +659,7 @@ export default function PartnerAnalytics({ activeTab = 'Dashboard' }) {
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
       `}</style>
 
+      <ExportReportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} entityName="Partner Analytics Report" data={recentRegistrations} />
     </AdminShell>
   );
 }

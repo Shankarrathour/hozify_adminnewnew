@@ -128,8 +128,8 @@ const CSS = `
   .sd-filter-row { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; }
   .sd-filter-row+.sd-filter-row { margin-top:12px; }
   .sd-flabel { font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; display:block; margin-bottom:5px; }
-  .sd-sel-wrap { position:relative; }
-  .sd-sel { appearance:none; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:8px 32px 8px 12px; font-size:12.5px; font-weight:600; color:#1e293b; cursor:pointer; outline:none; font-family:'Inter',sans-serif; transition:border-color .18s; }
+  .sd-sel-wrap { position:relative; width:100%; }
+  .sd-sel { appearance:none; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:8px 32px 8px 12px; font-size:12.5px; font-weight:600; color:#1e293b; cursor:pointer; outline:none; font-family:'Inter',sans-serif; transition:border-color .18s; width:100%; }
   .sd-sel:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.1); }
   .sd-arr { position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:#94a3b8; }
   .sd-period { display:flex; background:#f1f5f9; border-radius:9px; padding:3px; gap:2px; border:1.5px solid #e2e8f0; }
@@ -358,9 +358,17 @@ export default function ServicesOverviewDashboard({ activeTab = 'Services Dashbo
 
         {/* ── FILTER ── */}
         <div className="sd-filter">
-          <div className="sd-filter-row">
-            {[['State',['All States','Maharashtra','Delhi']],['City',['All Cities','Mumbai','Delhi']],['District',['All Districts','Andheri']],['Service',['All Services']],['Partner Wise',['All Partners']]].map(([l,opts]) => (
-              <div key={l} style={{ flex:1, minWidth:130 }}>
+          {/* Row 1: Filter Dropdowns Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14, width: '100%', marginBottom: 14 }}>
+            {[
+              ['State', ['All States','Maharashtra','Delhi']],
+              ['City', ['All Cities','Mumbai','Delhi']],
+              ['District', ['All Districts','Andheri']],
+              ['Service', ['All Services','AC Repair','Plumbing','Electrical']],
+              ['Partner Wise', ['All Partners','B2B Partner','Sales Rep']],
+              ['Location Type', ['All','Urban','Rural']]
+            ].map(([l, opts]) => (
+              <div key={l} style={{ width: '100%' }}>
                 <span className="sd-flabel">{l}</span>
                 <div className="sd-sel-wrap">
                   <select className="sd-sel">{opts.map(o => <option key={o}>{o}</option>)}</select>
@@ -368,14 +376,18 @@ export default function ServicesOverviewDashboard({ activeTab = 'Services Dashbo
                 </div>
               </div>
             ))}
-            <div style={{ marginLeft:'auto', display:'flex', gap:10, alignItems:'flex-end', flexWrap: 'wrap' }}>
+          </div>
+
+          {/* Row 2: Period Controls + Apply & Reset Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, paddingTop: 12, borderTop: '1px dashed #e2e8f0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <div className="sd-period">
                 {['Daily','Weekly','Monthly','Yearly'].map(p => (
                   <button key={p} className={`sd-pbtn${period===p?' active':''}`} onClick={() => setPeriod(p)}>{p}</button>
                 ))}
               </div>
               {period === 'Monthly' && (
-                <div className="sd-sel-wrap" style={{ width:90 }}>
+                <div className="sd-sel-wrap" style={{ width: 100 }}>
                   <select className="sd-sel">
                     {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map(m => <option key={m}>{m}</option>)}
                   </select>
@@ -383,27 +395,18 @@ export default function ServicesOverviewDashboard({ activeTab = 'Services Dashbo
                 </div>
               )}
               {(period === 'Monthly' || period === 'Yearly') && (
-                <div className="sd-sel-wrap" style={{ width:90 }}>
+                <div className="sd-sel-wrap" style={{ width: 100 }}>
                   <select className="sd-sel">
                     {[2026,2027,2028,2029,2030,2031,2032,2033,2034,2035].map(y => <option key={y}>{y}</option>)}
                   </select>
                   <ChevronDown size={13} className="sd-arr" />
                 </div>
               )}
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginLeft: 'auto' }}>
               <button className="sd-apply">Apply</button>
               <button className="sd-reset">Reset</button>
-              <button className="sd-apply" style={{ background: '#0f172a', display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px' }} onClick={() => alert('Generating report... Download will start shortly.')}>
-                <Download size={14} /> Export Report
-              </button>
-            </div>
-          </div>
-          <div className="sd-filter-row" style={{ marginTop:12 }}>
-            <div style={{ flex:'0 0 220px' }}>
-              <span className="sd-flabel">Location Type</span>
-              <div className="sd-sel-wrap">
-                <select className="sd-sel"><option>All</option><option>Urban</option><option>Rural</option></select>
-                <ChevronDown size={13} className="sd-arr" />
-              </div>
             </div>
           </div>
         </div>

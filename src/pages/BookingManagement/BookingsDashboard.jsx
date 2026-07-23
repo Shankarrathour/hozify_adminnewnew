@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import { ROUTES as AppRoutes } from '../../config/routes';
 import { useApp } from '../../hooks/useApp';
 import { initialBookings } from './index';
+import ExportReportModal from '../../components/common/ExportReportModal';
 
 /* ─────────────────────────── DATA ─────────────────────────── */
 const kpiCards = [
@@ -434,6 +435,7 @@ export default function BookingsDashboard({ bookings, handlers = {}, navigate: p
   
   const [viewAllModal, setViewAllModal] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   
   const [filters, setFilters] = useState({
     State: 'All States',
@@ -579,7 +581,7 @@ export default function BookingsDashboard({ bookings, handlers = {}, navigate: p
               setFilterTrigger(0);
               toast.success('Filters reset!'); 
             }}>Reset</button>
-            <button className="bkd-apply-btn" style={{ background: '#0f172a', display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px' }} onClick={() => toast.success('Generating report... Download will start shortly.')}>
+            <button className="bkd-apply-btn" style={{ background: '#2563eb', display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px', cursor: 'pointer' }} onClick={() => setIsExportOpen(true)}>
               <Download size={14} /> Export Report
             </button>
           </div>
@@ -1031,6 +1033,8 @@ export default function BookingsDashboard({ bookings, handlers = {}, navigate: p
           </div>
         </div>
       )}
+      {/* Export Report Modal */}
+      <ExportReportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} entityName="Bookings Dashboard Report" data={filteredBookings} />
     </div>
   );
 }

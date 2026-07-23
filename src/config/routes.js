@@ -83,6 +83,7 @@ export const ROUTES = {
   dashboardGST: '/dashboard/gst',
 
   // User Management sub-routes
+  customerDirectory: '/users/customer-directory',
   userApprovals: '/users/approvals',
   blockedUsers: '/users/blocked',
   userWallets: '/users/wallets',

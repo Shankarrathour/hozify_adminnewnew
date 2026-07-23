@@ -11252,8 +11252,8 @@ table th {
 
 
 table th {
-    background: linear-gradient(90deg, #1B0B90 0%, #2F1DB8 100%) !important;
-    color: #ffffff !important;
+    background: #f8fafc !important;
+    color: #475569 !important;
     border-left: none !important;
     border-right: none !important;
     border-radius: 0 !important;
@@ -11275,12 +11275,12 @@ table {
 }
 
 table thead tr {
-    background: linear-gradient(90deg, #1B0B90 0%, #2F1DB8 100%) !important;
+    background: #f8fafc !important;
 }
 
 table thead th {
-    background: transparent !important; /* Forces row background to show through, eliminating gaps */
-    color: #ffffff !important;
+    background: #f8fafc !important;
+    color: #475569 !important;
     border: none !important;
     border-radius: 0 !important;
     margin: 0 !important;
@@ -14211,8 +14211,8 @@ table thead th {
   letter-spacing: 0.2px;
 }
 
-.ref-sub-kpi-unused-val {
-  font-size: 16px;
+.ref-sub-kpi-unused-value {
+  font-size: 18px;
   font-weight: 800;
   color: #0f172a;
   line-height: 1.1;

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
 import StatusBadge from '../../components/common/StatusBadge';
+import ExportReportModal from '../../components/common/ExportReportModal';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer
 } from 'recharts';
@@ -328,6 +329,7 @@ export default function PaymentDashboard() {
   const [period, setPeriod] = useState('Monthly');
   const [activeModal, setActiveModal] = useState(null); // 'sp' | 'seller' | 'delivery' | 'recent'
   const [modalSearch, setModalSearch] = useState('');
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   return (
     <AdminShell
@@ -973,6 +975,7 @@ export default function PaymentDashboard() {
         )}
 
       </div>
+      <ExportReportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} entityName="Payment Dashboard Report" data={kpiData} />
     </AdminShell>
   );
 }

@@ -90,6 +90,7 @@ export const sidebarNavigation = [
         label: 'Users',
         children: [
           { label: 'All Users', route: ROUTES.users },
+          { label: 'Customer Directory', route: ROUTES.customerDirectory },
           // { label: 'Add User', route: ROUTES.addUser },
           { label: 'User Approvals', route: ROUTES.userApprovals }
         ]

@@ -216,6 +216,7 @@ import UserAuditLog from '../../pages/Users/UserAuditLog';
 import UserWalletsPage from '../../pages/Users/UserWalletsPage';
 import UserDocumentsPage from '../../pages/Users/UserDocumentsPage';
 import UserApprovalPage from '../../pages/Users/UserApprovalPage';
+import CustomerDirectory from '../../pages/Users/CustomerDirectory';
 import UserActivityLogs from '../../pages/Users/UserActivityLogs';
 import UserFraudMonitoringPage from '../../pages/Users/UserFraudMonitoring';
 import UserFraudMonitoring from '../../pages/Users/UserFraudMonitoring';
@@ -599,6 +600,8 @@ export function Router() {
     case ROUTES.userTimeline:
       // return <Placeholder title="User Timeline" activeTab="User Management" />;
       return <UserTimelineTab/>
+    case ROUTES.customerDirectory:
+      return <CustomerDirectory />;
     case ROUTES.userActivityLogs:
      return <UserActivityLogs/>
     case ROUTES.userFraudMonitoring:

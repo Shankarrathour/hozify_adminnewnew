@@ -29,7 +29,9 @@ import ExportReportModal from '../../components/common/ExportReportModal';
 import UserDirectoryViewModal from './UserDirectoryViewModal';
 import UserEditModal from './UserEditModal';
 import LoginAttemptViewModal from './LoginAttemptViewModal';
+import LoginAttemptEditModal from './LoginAttemptEditModal';
 import ActivityLogViewModal from './ActivityLogViewModal';
+import ActivityLogEditModal from './ActivityLogEditModal';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
@@ -142,13 +144,17 @@ function TH({ col, label, sortConfig, onSort, style = {} }) {
 export default function UserDirectory() {
   const { addToast } = useToast();
 
-  const [users, setUsers] = useState(usersMockData);
+  const [users, setUsers]       = useState(usersMockData);
+  const [attempts, setAttempts] = useState(loginAttemptsMockData);
+  const [logs, setLogs]         = useState(activityLogsMockData);
 
   // Modals
-  const [viewUser, setViewUser]     = useState(null);
-  const [editUser, setEditUser]     = useState(null);
-  const [viewAttempt, setViewAttempt] = useState(null);
-  const [viewLog, setViewLog]       = useState(null);
+  const [viewUser, setViewUser]         = useState(null);
+  const [editUser, setEditUser]         = useState(null);
+  const [viewAttempt, setViewAttempt]   = useState(null);
+  const [editAttempt, setEditAttempt]   = useState(null);
+  const [viewLog, setViewLog]           = useState(null);
+  const [editLog, setEditLog]           = useState(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
 
   // Filters State (Original Design matching Screenshot 1)
@@ -162,6 +168,7 @@ export default function UserDirectory() {
   const [mobileFilter, setMobileFilter]     = useState('');
   const [emailFilter, setEmailFilter]       = useState('');
   const [appliedTrigger, setAppliedTrigger] = useState(0);
+  const [showFilters, setShowFilters]       = useState(true);
 
   // Table Search & Sort
   const [userSearch, setUserSearch] = useState('');
@@ -250,7 +257,7 @@ export default function UserDirectory() {
   // ── Filtered + sorted attempts ─────────────────────────────────────────────
   const filteredAttempts = useMemo(() => {
     const q = normalize(attemptSearch);
-    let list = loginAttemptsMockData.filter(a =>
+    let list = attempts.filter(a =>
       !q || normalize(a.userName).includes(q) || normalize(a.mobileNumber).includes(q) || normalize(a.ipAddress).includes(q) || normalize(a.attemptStatus).includes(q)
     );
     list = [...list].sort((a, b) => {
@@ -259,7 +266,7 @@ export default function UserDirectory() {
       return attemptSort.dir === 'asc' ? cmp : -cmp;
     });
     return list;
-  }, [attemptSearch, attemptSort]);
+  }, [attempts, attemptSearch, attemptSort]);
 
   const attemptPag = usePagination(filteredAttempts, ATTEMPT_ROWS_PER_PAGE);
   const onAttemptSort = (key) => { setAttemptSort(s => ({ key, dir: s.key === key && s.dir === 'asc' ? 'desc' : 'asc' })); attemptPag.setPage(1); };
@@ -267,7 +274,7 @@ export default function UserDirectory() {
   // ── Filtered + sorted logs ─────────────────────────────────────────────────
   const filteredLogs = useMemo(() => {
     const q = normalize(logSearch);
-    let list = activityLogsMockData.filter(l => {
+    let list = logs.filter(l => {
       const matchQ  = !q || normalize(l.userName).includes(q) || normalize(l.mobileNumber).includes(q) || normalize(l.activityType).includes(q);
       const matchUN = !logFilters.userName || normalize(l.userName).includes(normalize(logFilters.userName));
       const matchM  = !logFilters.mobile   || normalize(l.mobileNumber).includes(normalize(logFilters.mobile));
@@ -283,7 +290,7 @@ export default function UserDirectory() {
       return logSort.dir === 'asc' ? cmp : -cmp;
     });
     return list;
-  }, [logSearch, logFilters, logSort]);
+  }, [logs, logSearch, logFilters, logSort]);
 
   const logPag = usePagination(filteredLogs, LOG_ROWS_PER_PAGE);
   const onLogSort = (key) => { setLogSort(s => ({ key, dir: s.key === key && s.dir === 'asc' ? 'desc' : 'asc' })); logPag.setPage(1); };
@@ -295,170 +302,24 @@ export default function UserDirectory() {
     addToast(`${updated.name} updated successfully.`, 'success');
   };
 
+  const saveAttempt = (updated) => {
+    setAttempts(cur => cur.map(a => a.id === updated.id ? updated : a));
+    setEditAttempt(null);
+    addToast(`Login attempt ${updated.id} updated successfully.`, 'success');
+  };
+
+  const saveLog = (updated) => {
+    setLogs(cur => cur.map(l => l.id === updated.id ? updated : l));
+    setEditLog(null);
+    addToast(`Activity log ${updated.id} updated successfully.`, 'success');
+  };
+
   // ─── RENDER ─────────────────────────────────────────────────────────────────
   return (
     <AdminShell activeTab="User Management" searchPlaceholder="Search user directory...">
       <div style={{ paddingBottom: '48px' }}>
 
-        {/* ── FILTER BAR (Matching Screenshot 1) ── */}
-        <div style={{
-          background: '#fff', borderRadius: 10, padding: '14px 16px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginBottom: 16,
-          display: 'flex', alignItems: 'flex-end', flexWrap: 'wrap', gap: 12,
-          border: '1px solid #e8edf2',
-        }}>
-          {/* State */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', letterSpacing: 0.3 }}>State</label>
-            <div style={{ position: 'relative' }}>
-              <select value={stateFilter} onChange={e => setStateFilter(e.target.value)} style={{
-                appearance: 'none', background: '#fff', border: '1px solid #dde3ea',
-                borderRadius: 6, padding: '6px 28px 6px 10px', fontSize: 12,
-                fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', minWidth: 120,
-              }}>
-                {['All States','Maharashtra','Telangana','Haryana','Tamil Nadu','Kerala','Gujarat','Karnataka','Delhi','Rajasthan'].map(o => <option key={o}>{o}</option>)}
-              </select>
-              <ChevronDown size={11} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
-            </div>
-          </div>
-
-          {/* City */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', letterSpacing: 0.3 }}>City</label>
-            <div style={{ position: 'relative' }}>
-              <select value={cityFilter} onChange={e => setCityFilter(e.target.value)} style={{
-                appearance: 'none', background: '#fff', border: '1px solid #dde3ea',
-                borderRadius: 6, padding: '6px 28px 6px 10px', fontSize: 12,
-                fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', minWidth: 120,
-              }}>
-                {['All Cities','Mumbai','Delhi','Bangalore','Hyderabad','Pune','Chennai','Kochi','Jaipur','Ahmedabad','Gurugram','Bengaluru'].map(o => <option key={o}>{o}</option>)}
-              </select>
-              <ChevronDown size={11} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
-            </div>
-          </div>
-
-          {/* District */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', letterSpacing: 0.3 }}>District</label>
-            <div style={{ position: 'relative' }}>
-              <select value={districtFilter} onChange={e => setDistrictFilter(e.target.value)} style={{
-                appearance: 'none', background: '#fff', border: '1px solid #dde3ea',
-                borderRadius: 6, padding: '6px 28px 6px 10px', fontSize: 12,
-                fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', minWidth: 120,
-              }}>
-                {['All Districts','North','South','East','West','Andheri','Koramangala','Jubilee Hills','Sector 57','Besant Nagar','Baner','Ernakulam','Prahlad Nagar','Indiranagar'].map(o => <option key={o}>{o}</option>)}
-              </select>
-              <ChevronDown size={11} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
-            </div>
-          </div>
-
-          {/* Location Type */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', letterSpacing: 0.3 }}>Location Type</label>
-            <div style={{ position: 'relative' }}>
-              <select value={locationType} onChange={e => setLocationType(e.target.value)} style={{
-                appearance: 'none', background: '#fff', border: '1px solid #dde3ea',
-                borderRadius: 6, padding: '6px 28px 6px 10px', fontSize: 12,
-                fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', minWidth: 100,
-              }}>
-                {['All', 'Urban', 'Semi-Urban', 'Rural'].map(o => <option key={o}>{o}</option>)}
-              </select>
-              <ChevronDown size={11} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
-            </div>
-          </div>
-
-          {/* Mobile Filter */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', letterSpacing: 0.3 }}>Mobile Number</label>
-            <input type="text" placeholder="Mobile Number" value={mobileFilter} onChange={e => setMobileFilter(e.target.value)} style={{
-              background: '#fff', border: '1px solid #dde3ea', borderRadius: 6,
-              padding: '6px 10px', fontSize: 12, fontWeight: 500, color: '#334155', outline: 'none', minWidth: 130
-            }} />
-          </div>
-
-          {/* Email Filter */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', letterSpacing: 0.3 }}>Email ID</label>
-            <input type="text" placeholder="Email ID" value={emailFilter} onChange={e => setEmailFilter(e.target.value)} style={{
-              background: '#fff', border: '1px solid #dde3ea', borderRadius: 6,
-              padding: '6px 10px', fontSize: 12, fontWeight: 500, color: '#334155', outline: 'none', minWidth: 140
-            }} />
-          </div>
-
-          {/* Divider */}
-          <div style={{ width: 1, height: 34, background: '#e8edf2', alignSelf: 'flex-end', margin: '0 4px' }} />
-
-          {/* Timeframe Pills */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={{ fontSize: 10, fontWeight: 600, color: 'transparent', letterSpacing: 0.3 }}>_</label>
-            <div style={{ display: 'flex', border: '1px solid #dde3ea', borderRadius: 6, overflow: 'hidden' }}>
-              {['Daily','Weekly','Monthly','Yearly'].map((p, i) => (
-                <button key={p} onClick={() => setPeriod(p)} style={{
-                  padding: '6px 14px', border: 'none',
-                  borderLeft: i > 0 ? '1px solid #dde3ea' : 'none',
-                  fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
-                  background: period === p ? '#0f172a' : '#fff',
-                  color: period === p ? '#fff' : '#64748b',
-                }}>{p}</button>
-              ))}
-            </div>
-          </div>
-
-          {/* Month + Year selectors */}
-          {period === 'Monthly' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <label style={{ fontSize: 10, fontWeight: 600, color: 'transparent', letterSpacing: 0.3 }}>_</label>
-              <div style={{ position: 'relative' }}>
-                <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} style={{
-                  appearance: 'none', background: '#fff', border: '1px solid #dde3ea',
-                  borderRadius: 6, padding: '6px 28px 6px 10px', fontSize: 12,
-                  fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', minWidth: 72,
-                }}>
-                  {monthsList.map(o => <option key={o}>{o}</option>)}
-                </select>
-                <ChevronDown size={11} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
-              </div>
-            </div>
-          )}
-
-          {period === 'Yearly' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <label style={{ fontSize: 10, fontWeight: 600, color: 'transparent', letterSpacing: 0.3 }}>_</label>
-              <div style={{ position: 'relative' }}>
-                <select value={selectedYear} onChange={e => setSelectedYear(e.target.value)} style={{
-                  appearance: 'none', background: '#fff', border: '1px solid #dde3ea',
-                  borderRadius: 6, padding: '6px 28px 6px 10px', fontSize: 12,
-                  fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', minWidth: 72,
-                }}>
-                  {yearsList.map(o => <option key={o}>{o}</option>)}
-                </select>
-                <ChevronDown size={11} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
-              </div>
-            </div>
-          )}
-
-          {/* Apply / Reset Buttons */}
-          <div style={{ display: 'flex', gap: 8, alignSelf: 'flex-end', marginLeft: 'auto' }}>
-            <button onClick={handleApplyFilters} style={{
-              padding: '7px 20px', borderRadius: 6, border: 'none',
-              background: '#0f172a', color: '#fff', fontSize: 12, fontWeight: 600,
-              cursor: 'pointer', transition: 'opacity 0.15s',
-            }}
-              onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
-              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-            >Apply</button>
-            <button onClick={handleResetFilters} style={{
-              padding: '7px 16px', borderRadius: 6, border: '1px solid #dde3ea',
-              background: '#fff', color: '#334155', fontSize: 12, fontWeight: 600,
-              cursor: 'pointer', transition: 'background 0.15s',
-            }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
-              onMouseLeave={e => e.currentTarget.style.background = '#fff'}
-            >Reset</button>
-          </div>
-        </div>
-
-        {/* ── 7 KPI CARDS (Matching Screenshot 1) ── */}
+        {/* ── 7 KPI CARDS ── */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
@@ -500,12 +361,24 @@ export default function UserDirectory() {
           ))}
         </div>
 
-        {/* ── USER DIRECTORY TABLE ──────────────────────────────────────────────── */}
+        {/* ── USER DIRECTORY TABLE SECTION ── */}
         <div className="materio-table-wrapper" style={{ marginBottom: '28px' }}>
-          {/* Table Header */}
+
+          {/* Table Header with Filter, Search & Export */}
           <div className="materio-table-header">
             <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>User Directory</h2>
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  padding: '7px 14px', border: '1px solid #dde3ea', borderRadius: '6px',
+                  background: showFilters ? '#0f172a' : '#fff', color: showFilters ? '#fff' : '#334155',
+                  fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s'
+                }}
+              >
+                <Filter size={14} /> Filter
+              </button>
               <div style={{ position: 'relative' }}>
                 <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--materio-text-muted)', pointerEvents: 'none' }} />
                 <input type="text" placeholder="Search users…" value={userSearch} onChange={e => { setUserSearch(e.target.value); userPag.setPage(1); }}
@@ -517,10 +390,169 @@ export default function UserDirectory() {
             </div>
           </div>
 
+          {/* ── FILTER BAR (Directly inside User Directory Table Header Area) ── */}
+          {showFilters && (
+            <div style={{
+              background: '#f8fafc', padding: '14px 16px',
+              borderBottom: '1px solid #e8edf2',
+              display: 'flex', alignItems: 'flex-end', flexWrap: 'wrap', gap: 12,
+            }}>
+              {/* State */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', letterSpacing: 0.3 }}>State</label>
+                <div style={{ position: 'relative' }}>
+                  <select value={stateFilter} onChange={e => setStateFilter(e.target.value)} style={{
+                    appearance: 'none', background: '#fff', border: '1px solid #dde3ea',
+                    borderRadius: 6, padding: '6px 28px 6px 10px', fontSize: 12,
+                    fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', minWidth: 120,
+                  }}>
+                    {['All States','Maharashtra','Telangana','Haryana','Tamil Nadu','Kerala','Gujarat','Karnataka','Delhi','Rajasthan'].map(o => <option key={o}>{o}</option>)}
+                  </select>
+                  <ChevronDown size={11} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+                </div>
+              </div>
+
+              {/* City */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', letterSpacing: 0.3 }}>City</label>
+                <div style={{ position: 'relative' }}>
+                  <select value={cityFilter} onChange={e => setCityFilter(e.target.value)} style={{
+                    appearance: 'none', background: '#fff', border: '1px solid #dde3ea',
+                    borderRadius: 6, padding: '6px 28px 6px 10px', fontSize: 12,
+                    fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', minWidth: 120,
+                  }}>
+                    {['All Cities','Mumbai','Delhi','Bangalore','Hyderabad','Pune','Chennai','Kochi','Jaipur','Ahmedabad','Gurugram','Bengaluru'].map(o => <option key={o}>{o}</option>)}
+                  </select>
+                  <ChevronDown size={11} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+                </div>
+              </div>
+
+              {/* District */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', letterSpacing: 0.3 }}>District</label>
+                <div style={{ position: 'relative' }}>
+                  <select value={districtFilter} onChange={e => setDistrictFilter(e.target.value)} style={{
+                    appearance: 'none', background: '#fff', border: '1px solid #dde3ea',
+                    borderRadius: 6, padding: '6px 28px 6px 10px', fontSize: 12,
+                    fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', minWidth: 120,
+                  }}>
+                    {['All Districts','North','South','East','West','Andheri','Koramangala','Jubilee Hills','Sector 57','Besant Nagar','Baner','Ernakulam','Prahlad Nagar','Indiranagar'].map(o => <option key={o}>{o}</option>)}
+                  </select>
+                  <ChevronDown size={11} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+                </div>
+              </div>
+
+              {/* Location Type */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', letterSpacing: 0.3 }}>Location Type</label>
+                <div style={{ position: 'relative' }}>
+                  <select value={locationType} onChange={e => setLocationType(e.target.value)} style={{
+                    appearance: 'none', background: '#fff', border: '1px solid #dde3ea',
+                    borderRadius: 6, padding: '6px 28px 6px 10px', fontSize: 12,
+                    fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', minWidth: 100,
+                  }}>
+                    {['All', 'Urban', 'Semi-Urban', 'Rural'].map(o => <option key={o}>{o}</option>)}
+                  </select>
+                  <ChevronDown size={11} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+                </div>
+              </div>
+
+              {/* Mobile Filter */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', letterSpacing: 0.3 }}>Mobile Number</label>
+                <input type="text" placeholder="Mobile Number" value={mobileFilter} onChange={e => setMobileFilter(e.target.value)} style={{
+                  background: '#fff', border: '1px solid #dde3ea', borderRadius: 6,
+                  padding: '6px 10px', fontSize: 12, fontWeight: 500, color: '#334155', outline: 'none', minWidth: 130
+                }} />
+              </div>
+
+              {/* Email Filter */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', letterSpacing: 0.3 }}>Email ID</label>
+                <input type="text" placeholder="Email ID" value={emailFilter} onChange={e => setEmailFilter(e.target.value)} style={{
+                  background: '#fff', border: '1px solid #dde3ea', borderRadius: 6,
+                  padding: '6px 10px', fontSize: 12, fontWeight: 500, color: '#334155', outline: 'none', minWidth: 140
+                }} />
+              </div>
+
+              {/* Divider */}
+              <div style={{ width: 1, height: 34, background: '#e8edf2', alignSelf: 'flex-end', margin: '0 4px' }} />
+
+              {/* Timeframe Pills */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontSize: 10, fontWeight: 600, color: 'transparent', letterSpacing: 0.3 }}>_</label>
+                <div style={{ display: 'flex', border: '1px solid #dde3ea', borderRadius: 6, overflow: 'hidden' }}>
+                  {['Daily','Weekly','Monthly','Yearly'].map((p, i) => (
+                    <button key={p} onClick={() => setPeriod(p)} style={{
+                      padding: '6px 14px', border: 'none',
+                      borderLeft: i > 0 ? '1px solid #dde3ea' : 'none',
+                      fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
+                      background: period === p ? '#0f172a' : '#fff',
+                      color: period === p ? '#fff' : '#64748b',
+                    }}>{p}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Month + Year selectors */}
+              {period === 'Monthly' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: 'transparent', letterSpacing: 0.3 }}>_</label>
+                  <div style={{ position: 'relative' }}>
+                    <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} style={{
+                      appearance: 'none', background: '#fff', border: '1px solid #dde3ea',
+                      borderRadius: 6, padding: '6px 28px 6px 10px', fontSize: 12,
+                      fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', minWidth: 72,
+                    }}>
+                      {monthsList.map(o => <option key={o}>{o}</option>)}
+                    </select>
+                    <ChevronDown size={11} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+                  </div>
+                </div>
+              )}
+
+              {period === 'Yearly' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: 'transparent', letterSpacing: 0.3 }}>_</label>
+                  <div style={{ position: 'relative' }}>
+                    <select value={selectedYear} onChange={e => setSelectedYear(e.target.value)} style={{
+                      appearance: 'none', background: '#fff', border: '1px solid #dde3ea',
+                      borderRadius: 6, padding: '6px 28px 6px 10px', fontSize: 12,
+                      fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', minWidth: 72,
+                    }}>
+                      {yearsList.map(o => <option key={o}>{o}</option>)}
+                    </select>
+                    <ChevronDown size={11} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Apply / Reset Buttons */}
+              <div style={{ display: 'flex', gap: 8, alignSelf: 'flex-end', marginLeft: 'auto' }}>
+                <button onClick={handleApplyFilters} style={{
+                  padding: '7px 20px', borderRadius: 6, border: 'none',
+                  background: '#0f172a', color: '#fff', fontSize: 12, fontWeight: 600,
+                  cursor: 'pointer', transition: 'opacity 0.15s',
+                }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                >Apply</button>
+                <button onClick={handleResetFilters} style={{
+                  padding: '7px 16px', borderRadius: 6, border: '1px solid #dde3ea',
+                  background: '#fff', color: '#334155', fontSize: 12, fontWeight: 600,
+                  cursor: 'pointer', transition: 'background 0.15s',
+                }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+                >Reset</button>
+              </div>
+            </div>
+          )}
+
           {/* Scrollable Table */}
-          <div style={{ overflowX: 'auto', maxHeight: '520px', overflowY: 'auto' }}>
-            <table className="materio-table" style={{ minWidth: '1400px' }}>
-              <thead>
+          <div style={{ overflowX: 'auto', maxHeight: '520px', overflowY: 'auto', position: 'relative' }}>
+            <table className="materio-table" style={{ minWidth: '1600px' }}>
+              <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#f8fafc' }}>
                 <tr>
                   <TH col="id" label="ID" sortConfig={userSort} onSort={onUserSort} style={{ minWidth: '90px' }} />
                   <TH col="name" label="User Name" sortConfig={userSort} onSort={onUserSort} style={{ minWidth: '160px' }} />
@@ -609,9 +641,9 @@ export default function UserDirectory() {
             </div>
           </div>
 
-          <div style={{ overflowX: 'auto', maxHeight: '420px', overflowY: 'auto' }}>
-            <table className="materio-table" style={{ minWidth: '1100px' }}>
-              <thead>
+          <div style={{ overflowX: 'auto', maxHeight: '420px', overflowY: 'auto', position: 'relative' }}>
+            <table className="materio-table" style={{ minWidth: '1200px' }}>
+              <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#f8fafc' }}>
                 <tr>
                   <TH col="id" label="ID" sortConfig={attemptSort} onSort={onAttemptSort} style={{ minWidth: '90px' }} />
                   <TH col="mobileNumber" label="Mobile Number" sortConfig={attemptSort} onSort={onAttemptSort} style={{ minWidth: '140px' }} />
@@ -652,9 +684,14 @@ export default function UserDirectory() {
                       </span>
                     </td>
                     <td>
-                      <button title="View" onClick={() => setViewAttempt(a)} style={{ background: 'rgba(3,195,236,0.1)', border: 'none', color: '#03C3EC', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(3,195,236,0.2)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(3,195,236,0.1)'}>
-                        <Eye size={13} /> View
-                      </button>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                        <button title="View" onClick={() => setViewAttempt(a)} style={{ background: 'rgba(3,195,236,0.1)', border: 'none', color: '#03C3EC', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(3,195,236,0.2)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(3,195,236,0.1)'}>
+                          <Eye size={13} /> View
+                        </button>
+                        <button title="Edit" onClick={() => setEditAttempt(a)} style={{ background: 'rgba(105,108,255,0.1)', border: 'none', color: 'var(--materio-primary)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(105,108,255,0.2)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(105,108,255,0.1)'}>
+                          <Edit3 size={13} /> Edit
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -678,9 +715,9 @@ export default function UserDirectory() {
             </div>
           </div>
 
-          <div style={{ overflowX: 'auto', maxHeight: '520px', overflowY: 'auto' }}>
-            <table className="materio-table" style={{ minWidth: '1600px' }}>
-              <thead>
+          <div style={{ overflowX: 'auto', maxHeight: '520px', overflowY: 'auto', position: 'relative' }}>
+            <table className="materio-table" style={{ minWidth: '1800px' }}>
+              <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#f8fafc' }}>
                 <tr>
                   <TH col="id" label="ID" sortConfig={logSort} onSort={onLogSort} style={{ minWidth: '90px' }} />
                   <TH col="userName" label="User Name" sortConfig={logSort} onSort={onLogSort} style={{ minWidth: '140px' }} />
@@ -736,9 +773,14 @@ export default function UserDirectory() {
                     <td style={{ fontSize: '12px' }}>{log.createdBy}</td>
                     <td style={{ fontSize: '12px', whiteSpace: 'nowrap', color: 'var(--materio-text-muted)' }}>{log.activityDateTime}</td>
                     <td>
-                      <button title="View" onClick={() => setViewLog(log)} style={{ background: 'rgba(3,195,236,0.1)', border: 'none', color: '#03C3EC', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(3,195,236,0.2)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(3,195,236,0.1)'}>
-                        <Eye size={13} /> View
-                      </button>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                        <button title="View" onClick={() => setViewLog(log)} style={{ background: 'rgba(3,195,236,0.1)', border: 'none', color: '#03C3EC', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(3,195,236,0.2)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(3,195,236,0.1)'}>
+                          <Eye size={13} /> View
+                        </button>
+                        <button title="Edit" onClick={() => setEditLog(log)} style={{ background: 'rgba(105,108,255,0.1)', border: 'none', color: 'var(--materio-primary)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(105,108,255,0.2)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(105,108,255,0.1)'}>
+                          <Edit3 size={13} /> Edit
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -753,7 +795,9 @@ export default function UserDirectory() {
       <UserDirectoryViewModal user={viewUser} onClose={() => setViewUser(null)} onEdit={(u) => { setViewUser(null); setEditUser(u); }} />
       <UserEditModal user={editUser} onClose={() => setEditUser(null)} onSave={saveUser} />
       <LoginAttemptViewModal attempt={viewAttempt} onClose={() => setViewAttempt(null)} />
+      <LoginAttemptEditModal attempt={editAttempt} isOpen={!!editAttempt} onClose={() => setEditAttempt(null)} onSave={saveAttempt} />
       <ActivityLogViewModal log={viewLog} onClose={() => setViewLog(null)} />
+      <ActivityLogEditModal log={editLog} isOpen={!!editLog} onClose={() => setEditLog(null)} onSave={saveLog} />
       <ExportReportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} entityName="User Directory" data={filteredUsers} />
     </AdminShell>
   );

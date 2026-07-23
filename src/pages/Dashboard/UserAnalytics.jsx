@@ -5,6 +5,7 @@ import {
   ChevronDown, RotateCcw
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
+import ExportReportModal from '../../components/common/ExportReportModal';
 import { useToast } from '../../components/common/ToastNotification';
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
@@ -134,9 +135,10 @@ const DonutCenter = ({ viewBox, value, label }) => {
 export default function UserAnalytics({ activeTab = 'Dashboard' }) {
   const { addToast } = useToast();
   const [period, setPeriod] = useState('Monthly');
-  const [locationType, setLocationType] = useState('All');
-
+  const [modalType, setModalType]   = useState(null); // 'users' | 'activity' | 'heatmap' | 'cities'
   const [filterTrigger, setFilterTrigger] = useState(0);
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  const [locationType, setLocationType] = useState('All');
 
   const handleApply = () => {
     setFilterTrigger(prev => prev + 1);
@@ -148,7 +150,7 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
     setFilterTrigger(0);
     addToast('Filters reset', 'info'); 
   };
-  const handleExport = () => addToast('Generating report... Download will start shortly.', 'success');
+  const handleExport = () => setIsExportOpen(true);
 
   const periodMultiplier = period === 'Daily' ? 0.03 : period === 'Weekly' ? 0.25 : period === 'Yearly' ? 12 : 1;
   const filterMultiplier = filterTrigger === 0 ? 1 : 1 + ((filterTrigger % 5) * 0.15);
@@ -595,6 +597,7 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
         </div>
 
       </div>
+      <ExportReportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} entityName="User Analytics Report" data={dynCitiesData} />
     </AdminShell>
   );
 }

@@ -15,6 +15,7 @@ import {
   BarChart2
 } from 'lucide-react';
 import AdminShell from '../../components/layouts/AdminShell';
+import ExportReportModal from '../../components/common/ExportReportModal';
 import StatusBadge from '../../components/common/StatusBadge';
 import Avatar from '../../components/common/Avatar';
 import {
@@ -165,6 +166,7 @@ export default function RevenueDashboard({ activeTab = 'Revenue Management' }) {
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [chartFreq, setChartFreq] = useState('Daily');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   const totalSellers = sellerTypeData.reduce((s, d) => s + d.value, 0);
 
@@ -251,7 +253,7 @@ export default function RevenueDashboard({ activeTab = 'Revenue Management' }) {
   };
 
   const handleExport = () => {
-    toast.success('Revenue report exported successfully!');
+    setIsExportOpen(true);
   };
 
   return (
@@ -736,6 +738,7 @@ export default function RevenueDashboard({ activeTab = 'Revenue Management' }) {
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
       `}</style>
 
+      <ExportReportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} entityName="Revenue Dashboard Report" data={dynFilteredTransactions} />
     </AdminShell>
   );
 }
