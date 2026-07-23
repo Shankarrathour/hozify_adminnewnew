@@ -91,14 +91,12 @@ export const sidebarNavigation = [
         children: [
           { label: 'All Users', route: ROUTES.users },
           // { label: 'Add User', route: ROUTES.addUser },
-          { label: 'User Approvals', route: ROUTES.userApprovals },
-          { label: 'Blocked Users', route: ROUTES.blockedUsers }
+          { label: 'User Approvals', route: ROUTES.userApprovals }
         ]
       },
       {
         label: 'Operations',
         children: [
-          { label: 'User Wallets', route: ROUTES.userWallets },
           { label: 'User Referrals', route: ROUTES.userReferrals },
           { label: 'User Documents', route: ROUTES.userDocuments },
           { label: 'User Complaints', route: ROUTES.userComplaints },
