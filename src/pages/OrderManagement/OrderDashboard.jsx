@@ -358,7 +358,11 @@ export default function OrderDashboard({ activeTab = 'Order Dashboard' }) {
         {/* FILTER SECTION */}
         <div className="od-filter-card">
           <div className="od-filter-row">
-            {[['State', ['All States','Maharashtra','Delhi']], ['City', ['All Cities','Mumbai','Delhi']], ['District', ['All Districts','Andheri']]].map(([lbl, opts]) => (
+            {[
+              ['State', ['All States','Maharashtra','Karnataka','Tamil Nadu','Delhi','Gujarat']],
+              ['City', ['All Cities','Mumbai','Bengaluru','Chennai','New Delhi','Pune']],
+              ['District', ['All Districts','Andheri','Koramangala','T. Nagar','Connaught Place']]
+            ].map(([lbl, opts]) => (
               <div key={lbl} style={{ flex: 1, minWidth: 140 }}>
                 <span className="od-filter-label">{lbl}</span>
                 <div className="od-select-wrap">
@@ -374,11 +378,15 @@ export default function OrderDashboard({ activeTab = 'Order Dashboard' }) {
                 ))}
               </div>
               <div className="od-select-wrap" style={{ width: 100 }}>
-                <select className="od-select"><option>May</option></select>
+                <select className="od-select">
+                  {['Jan','Feb','March','April','May','June','July','August','September','October','November','December'].map(m => <option key={m}>{m}</option>)}
+                </select>
                 <ChevronDown size={14} className="od-select-arrow" />
               </div>
               <div className="od-select-wrap" style={{ width: 90 }}>
-                <select className="od-select"><option>2026</option></select>
+                <select className="od-select">
+                  {['2026','2027','2028','2029','2030','2031','2032','2033','2034','2035'].map(y => <option key={y}>{y}</option>)}
+                </select>
                 <ChevronDown size={14} className="od-select-arrow" />
               </div>
               <button className="od-apply-btn">Apply</button>
@@ -389,7 +397,12 @@ export default function OrderDashboard({ activeTab = 'Order Dashboard' }) {
             </div>
           </div>
           <div className="od-filter-row">
-            {[['Service Category', ['All Service Categories']], ['Sub Category', ['All Sub Categories']], ['Location Type', ['All']], ['Seller', ['All Sellers']]].map(([lbl, opts]) => (
+            {[
+              ['Service Category', ['All Service Categories','AC Repair & Service','Home Cleaning','Plumbing','Electrical','Appliance Repair']],
+              ['Sub Category', ['All Sub Categories','AC Installation','Deep Cleaning','Bathroom Plumbing','Switchboard Repair']],
+              ['Location Type', ['All','Urban','Rural']],
+              ['Seller', ['All Sellers','Tech Electronics','Home Essentials','CleanPro Supplies','FixIt Hardware']]
+            ].map(([lbl, opts]) => (
               <div key={lbl} style={{ flex: 1, minWidth: 180 }}>
                 <span className="od-filter-label">{lbl}</span>
                 <div className="od-select-wrap">

@@ -276,8 +276,8 @@ export default function PartnerAnalytics({ activeTab = 'Dashboard' }) {
               ))}
             </div>
           </div>
-          <FilterSelect label="" options={['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']} />
-          <FilterSelect label="" options={['2026','2025','2024','2023']} />
+          <FilterSelect label="" options={['Jan','Feb','March','April','May','June','July','August','September','October','November','December']} />
+          <FilterSelect label="" options={['2026','2027','2028','2029','2030','2031','2032','2033','2034','2035']} />
           <div style={{ display:'flex', gap:8, alignSelf:'flex-end' }}>
             <button onClick={() => addToast('Filters applied','success')} style={{ padding:'7px 20px', borderRadius:6, border:'none', background:'#0f172a', color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer' }}>Apply</button>
             <button onClick={() => { setPeriod('Monthly'); setLocationType('All'); addToast('Filters reset','info'); }} style={{ padding:'7px 14px', borderRadius:6, border:'1px solid #dde3ea', background:'#fff', color:'#334155', fontSize:12, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>

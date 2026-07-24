@@ -326,10 +326,41 @@ function KPI({ data }) {
 }
 
 export default function PaymentDashboard() {
+  const [selectedState, setSelectedState] = useState('All States');
+  const [selectedCity, setSelectedCity] = useState('All Cities');
+  const [selectedDistrict, setSelectedDistrict] = useState('All Districts');
   const [period, setPeriod] = useState('Monthly');
+  const [selectedMonth, setSelectedMonth] = useState('May');
+  const [selectedYear, setSelectedYear] = useState('2026');
+  const [selectedCategory, setSelectedCategory] = useState('All Service Categories');
+  const [selectedSubCategory, setSelectedSubCategory] = useState('All Sub Categories');
+  const [selectedLocationType, setSelectedLocationType] = useState('All');
+
   const [activeModal, setActiveModal] = useState(null); // 'sp' | 'seller' | 'delivery' | 'recent'
   const [modalSearch, setModalSearch] = useState('');
   const [isExportOpen, setIsExportOpen] = useState(false);
+
+  const statesList = ['All States', 'Maharashtra', 'Karnataka', 'Tamil Nadu', 'Delhi', 'Gujarat', 'Uttar Pradesh', 'West Bengal', 'Telangana', 'Rajasthan', 'Kerala'];
+  const citiesList = ['All Cities', 'Mumbai', 'Pune', 'Nagpur', 'Bengaluru', 'Mysore', 'Chennai', 'Coimbatore', 'New Delhi', 'Ahmedabad', 'Surat', 'Kolkata', 'Hyderabad', 'Jaipur', 'Kochi'];
+  const districtsList = ['All Districts', 'Andheri', 'Bandra', 'Koramangala', 'Indiranagar', 'T. Nagar', 'Connaught Place', 'Banjara Hills', 'Vimannagar', 'Salt Lake', 'SG Highway'];
+  const monthsList = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const yearsList = ['2026', '2027', '2028', '2029', '2030', '2031', '2032', '2033', '2034', '2035'];
+  const categoriesList = ['All Service Categories', 'AC Repair & Service', 'Home Cleaning', 'Plumbing', 'Electrical', 'Appliance Repair', 'Pest Control', 'Painting', 'Beauty & Spa', 'Carpentry'];
+  const subCategoriesList = ['All Sub Categories', 'AC Installation', 'Split AC Service', 'Deep Cleaning', 'Bathroom Plumbing', 'Pipe Repair', 'Switchboard Repair', 'Washing Machine Repair', 'Cockroach Control', 'Interior Painting', 'Furniture Repair'];
+  const locationTypesList = ['All', 'Urban', 'Rural'];
+
+  const handleReset = () => {
+    setSelectedState('All States');
+    setSelectedCity('All Cities');
+    setSelectedDistrict('All Districts');
+    setPeriod('Monthly');
+    setSelectedMonth('May');
+    setSelectedYear('2026');
+    setSelectedCategory('All Service Categories');
+    setSelectedSubCategory('All Sub Categories');
+    setSelectedLocationType('All');
+    toast.success('Filters Reset');
+  };
 
   return (
     <AdminShell
@@ -347,21 +378,27 @@ export default function PaymentDashboard() {
             <div style={{ flex: 1, minWidth: 150 }}>
               <span className="pd-filter-label">State</span>
               <div className="pd-select-wrap">
-                <select className="pd-select" style={{ width: '100%' }}><option>All States</option></select>
+                <select className="pd-select" style={{ width: '100%' }} value={selectedState} onChange={e => setSelectedState(e.target.value)}>
+                  {statesList.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
                 <ChevronDown size={14} className="pd-arr" />
               </div>
             </div>
             <div style={{ flex: 1, minWidth: 150 }}>
               <span className="pd-filter-label">City</span>
               <div className="pd-select-wrap">
-                <select className="pd-select" style={{ width: '100%' }}><option>All Cities</option></select>
+                <select className="pd-select" style={{ width: '100%' }} value={selectedCity} onChange={e => setSelectedCity(e.target.value)}>
+                  {citiesList.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
                 <ChevronDown size={14} className="pd-arr" />
               </div>
             </div>
             <div style={{ flex: 1, minWidth: 150 }}>
               <span className="pd-filter-label">District</span>
               <div className="pd-select-wrap">
-                <select className="pd-select" style={{ width: '100%' }}><option>All Districts</option></select>
+                <select className="pd-select" style={{ width: '100%' }} value={selectedDistrict} onChange={e => setSelectedDistrict(e.target.value)}>
+                  {districtsList.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
                 <ChevronDown size={14} className="pd-arr" />
               </div>
             </div>
@@ -374,40 +411,50 @@ export default function PaymentDashboard() {
             
             {period === 'Monthly' && (
               <div className="pd-select-wrap" style={{ width: 100 }}>
-                <select className="pd-select" style={{ width: '100%' }}><option>May</option></select>
+                <select className="pd-select" style={{ width: '100%' }} value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)}>
+                  {monthsList.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
                 <ChevronDown size={14} className="pd-arr" />
               </div>
             )}
             {(period === 'Monthly' || period === 'Yearly') && (
               <div className="pd-select-wrap" style={{ width: 100 }}>
-                <select className="pd-select" style={{ width: '100%' }}><option>2026</option></select>
+                <select className="pd-select" style={{ width: '100%' }} value={selectedYear} onChange={e => setSelectedYear(e.target.value)}>
+                  {yearsList.map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
                 <ChevronDown size={14} className="pd-arr" />
               </div>
             )}
 
             <button className="pd-btn-apply" onClick={() => toast.success('Filters Applied')}>Apply</button>
-            <button className="pd-btn-reset">Reset</button>
+            <button className="pd-btn-reset" onClick={handleReset}>Reset</button>
           </div>
 
           <div className="pd-filter-row">
             <div style={{ flex: 1, minWidth: 180, maxWidth: 250 }}>
               <span className="pd-filter-label">Service Category</span>
               <div className="pd-select-wrap">
-                <select className="pd-select" style={{ width: '100%' }}><option>All Service Categories</option></select>
+                <select className="pd-select" style={{ width: '100%' }} value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+                  {categoriesList.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
                 <ChevronDown size={14} className="pd-arr" />
               </div>
             </div>
             <div style={{ flex: 1, minWidth: 180, maxWidth: 250 }}>
               <span className="pd-filter-label">Sub Category</span>
               <div className="pd-select-wrap">
-                <select className="pd-select" style={{ width: '100%' }}><option>All Sub Categories</option></select>
+                <select className="pd-select" style={{ width: '100%' }} value={selectedSubCategory} onChange={e => setSelectedSubCategory(e.target.value)}>
+                  {subCategoriesList.map(sc => <option key={sc} value={sc}>{sc}</option>)}
+                </select>
                 <ChevronDown size={14} className="pd-arr" />
               </div>
             </div>
             <div style={{ flex: 1, minWidth: 150, maxWidth: 200 }}>
               <span className="pd-filter-label">Location Type</span>
               <div className="pd-select-wrap">
-                <select className="pd-select" style={{ width: '100%' }}><option>All</option></select>
+                <select className="pd-select" style={{ width: '100%' }} value={selectedLocationType} onChange={e => setSelectedLocationType(e.target.value)}>
+                  {locationTypesList.map(lt => <option key={lt} value={lt}>{lt}</option>)}
+                </select>
                 <ChevronDown size={14} className="pd-arr" />
               </div>
             </div>

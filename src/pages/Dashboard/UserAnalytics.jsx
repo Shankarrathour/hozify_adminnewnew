@@ -276,8 +276,8 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
 
           {/* Month + Year dropdowns */}
           {[
-            { label:'Month', opts:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], def:'May' },
-            { label:'Year',  opts:['2026','2025','2024','2023'], def:'2026' },
+            { label:'Month', opts:['Jan','Feb','March','April','May','June','July','August','September','October','November','December'], def:'May' },
+            { label:'Year',  opts:['2026','2027','2028','2029','2030','2031','2032','2033','2034','2035'], def:'2026' },
           ].map(f => (
             <div key={f.label} style={{ display:'flex', flexDirection:'column', gap:4 }}>
               <label style={{ fontSize:10, fontWeight:600, color:'transparent', letterSpacing:0.3 }}>_</label>

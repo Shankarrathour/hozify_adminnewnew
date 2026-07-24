@@ -451,8 +451,8 @@ export default function BookingsDashboard({ bookings, handlers = {}, navigate: p
   const [searchQuery, setSearchQuery] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
 
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const years  = ['2024','2025','2026','2027','2028'];
+  const months = ['Jan','Feb','March','April','May','June','July','August','September','October','November','December'];
+  const years  = ['2026','2027','2028','2029','2030','2031','2032','2033','2034','2035'];
 
   const periodMultiplier = period === 'Daily' ? 0.03 : period === 'Weekly' ? 0.25 : period === 'Yearly' ? 12 : 1;
   const filterMultiplier = filterTrigger === 0 ? 1 : 1 + ((filterTrigger % 5) * 0.15);
@@ -592,7 +592,7 @@ export default function BookingsDashboard({ bookings, handlers = {}, navigate: p
           {[
             ['Service Category', ['All Service Categories','AC Repair','Plumbing','Electrical','Cleaning'], 190],
             ['Sub Category',     ['All Sub Categories','AC Installation','Pipe Repair','Deep Cleaning'],    185],
-            ['Location Type',    ['All','Residential','Commercial','Industrial'],                           135],
+            ['Location Type',    ['All','Urban','Rural'],                                                   135],
           ].map(([lbl, opts, w]) => (
             <div key={lbl}>
               <span className="bkd-filter-label">{lbl}</span>
