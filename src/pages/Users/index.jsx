@@ -648,7 +648,6 @@ export default function UserDirectory() {
                   <TH col="id" label="ID" sortConfig={attemptSort} onSort={onAttemptSort} style={{ minWidth: '90px' }} />
                   <TH col="mobileNumber" label="Mobile Number" sortConfig={attemptSort} onSort={onAttemptSort} style={{ minWidth: '140px' }} />
                   <TH col="ipAddress" label="IP Address" sortConfig={attemptSort} onSort={onAttemptSort} style={{ minWidth: '130px' }} />
-                  <TH col="deviceType" label="Device Type" sortConfig={attemptSort} onSort={onAttemptSort} style={{ minWidth: '110px' }} />
                   <TH col="deviceLocation" label="Device Location" sortConfig={attemptSort} onSort={onAttemptSort} style={{ minWidth: '160px' }} />
                   <TH col="attemptStatus" label="Attempt Status" sortConfig={attemptSort} onSort={onAttemptSort} style={{ minWidth: '130px' }} />
                   <TH col="attemptDateTime" label="Attempt Date & Time" sortConfig={attemptSort} onSort={onAttemptSort} style={{ minWidth: '160px' }} />
@@ -659,17 +658,12 @@ export default function UserDirectory() {
               </thead>
               <tbody>
                 {attemptPag.slice.length === 0 ? (
-                  <tr><td colSpan={10} style={{ textAlign: 'center', padding: '40px', color: 'var(--materio-text-muted)' }}>No login attempts found.</td></tr>
+                  <tr><td colSpan={9} style={{ textAlign: 'center', padding: '40px', color: 'var(--materio-text-muted)' }}>No login attempts found.</td></tr>
                 ) : attemptPag.slice.map(a => (
                   <tr key={a.id}>
                     <td><span style={{ fontWeight: 700, color: 'var(--materio-primary)', fontSize: '12px' }}>{a.id}</span></td>
                     <td style={{ fontSize: '13px', whiteSpace: 'nowrap' }}>{a.mobileNumber}</td>
                     <td style={{ fontSize: '12px', fontFamily: 'monospace', color: '#475569' }}>{a.ipAddress}</td>
-                    <td>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px' }}>
-                        <Monitor size={12} color="#696CFF" />{a.deviceType}
-                      </span>
-                    </td>
                     <td style={{ fontSize: '13px' }}>{a.deviceLocation}</td>
                     <td><Badge value={a.attemptStatus} variant={getStatusVariant(a.attemptStatus)} /></td>
                     <td style={{ fontSize: '12px', whiteSpace: 'nowrap', color: 'var(--materio-text-muted)' }}>{a.attemptDateTime}</td>

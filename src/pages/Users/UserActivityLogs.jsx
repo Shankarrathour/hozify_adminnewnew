@@ -550,9 +550,7 @@ export default function UserActivityLogs() {
                       Date & Time <ChevronsUpDown size={12} color="#94a3b8" />
                     </span>
                   </th>
-                  <th style={{ padding: '12px 16px', fontWeight: 600, color: '#475569', fontSize: 12 }}>
-                    User Name<br /><span style={{ fontSize: 10, fontWeight: 500, color: '#94a3b8' }}>User Type</span>
-                  </th>
+                  <th style={{ padding: '12px 16px', fontWeight: 600, color: '#475569', fontSize: 12 }}>User Name</th>
                   <th style={{ padding: '12px 16px', fontWeight: 600, color: '#475569', fontSize: 12 }}>Mobile Number</th>
                   <th style={{ padding: '12px 16px', fontWeight: 600, color: '#475569', fontSize: 12 }}>Activity Module</th>
                   <th style={{ padding: '12px 16px', fontWeight: 600, color: '#475569', fontSize: 12 }}>Activity Type</th>
@@ -575,7 +573,6 @@ export default function UserActivityLogs() {
                       <td style={{ padding: '14px 16px', color: '#334155', whiteSpace: 'nowrap' }}>{log.dateTime}</td>
                       <td style={{ padding: '14px 16px' }}>
                         <div style={{ fontWeight: 600, color: '#0f172a' }}>{log.userName}</div>
-                        <div style={{ fontSize: 11, color: '#64748b' }}>{log.userType}</div>
                       </td>
                       <td style={{ padding: '14px 16px', color: '#334155', whiteSpace: 'nowrap' }}>{log.mobileNumber}</td>
                       <td style={{ padding: '14px 16px', color: '#334155' }}>{log.moduleName}</td>

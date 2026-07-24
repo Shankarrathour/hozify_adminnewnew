@@ -308,6 +308,8 @@ import FaqPage from '../../modules/cms/faq/pages/FaqPage';
 import HelpCenterPage from '../../modules/cms/helpCenter/pages/HelpCenterPage';
 import DocCenterPage from '../../modules/cms/documentationCenter/pages/DocCenterPage';
 import AppDashboardPage from '../../modules/cms/appManagement/dashboard/pages/AppDashboardPage';
+import AppAccessManagementPage from '../../modules/cms/appManagement/accessControl/pages/AppAccessManagementPage';
+import AppDataManagementPage from '../../modules/cms/appManagement/dataManagement/pages/AppDataManagementPage';
 import BannerMgmtPage from '../../modules/cms/appManagement/bannerManagement/pages/BannerMgmtPage';
 import UserAppPage from '../../modules/cms/appManagement/userApp/pages/UserAppPage';
 import PartnerAppPage from '../../modules/cms/appManagement/partnerApp/pages/PartnerAppPage';
@@ -1104,6 +1106,10 @@ export function Router() {
     // App Management Module Routes
     case ROUTES.appManagementDashboard:
       return <AppDashboardPage />;
+    case ROUTES.appAccessManagement:
+      return <AppAccessManagementPage />;
+    case ROUTES.appDataManagement:
+      return <AppDataManagementPage />;
     // Banner Management Consolidated
     case ROUTES.bannersHome:
       return <BannerMgmtPage defaultTab="home" />;

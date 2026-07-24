@@ -562,6 +562,8 @@ export const ROUTES = {
   cmsHelpCenter: '/cms/help-center',
   cmsDocumentationCenter: '/cms/documentation-center',
   appManagementDashboard: '/cms/app-management/dashboard',
+  appAccessManagement: '/cms/app-management/access-control',
+  appDataManagement: '/cms/app-management/data-management',
   
   // Banner Management Consolidated
   bannersHome: '/cms/app-management/banners/home',

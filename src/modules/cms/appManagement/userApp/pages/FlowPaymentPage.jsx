@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
 import AdminShell from '../../../../../components/layouts/AdminShell';
 import { useApp } from '../../../../../hooks/useApp';
-import { ChevronLeft, CreditCard, Smartphone, Building, Wallet, Banknote, ShieldCheck, ChevronRight, Clock } from 'lucide-react';
+import { useVisibilityEngine } from '../../../../../hooks/useVisibilityEngine';
+import { useAppText } from '../../../../../hooks/useAppText';
+import { ChevronLeft, CreditCard, Smartphone, Building, Wallet, Banknote, ShieldCheck, ChevronRight, Clock, ShieldAlert } from 'lucide-react';
 import { mockPackages } from '../data/mockData';
 
 export default function FlowPaymentPage() {
   const { navigate } = useApp();
+  const { isEnabled } = useVisibilityEngine('user');
+  const { getText } = useAppText();
   const [method, setMethod] = useState('');
   const cartItem = mockPackages['s1'][0];
+
+  const isPaymentsEnabled = isEnabled('payments');
+  const isWalletEnabled = isEnabled('wallet');
 
   const paymentSections = [
     {

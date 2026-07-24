@@ -507,6 +507,8 @@ export const sidebarNavigation = [
       {
         label: 'App Management',
         children: [
+          { label: 'App Access Management', route: ROUTES.appAccessManagement },
+          { label: 'App Data Management', route: ROUTES.appDataManagement },
           {
             label: 'User App Management',
             children: [
