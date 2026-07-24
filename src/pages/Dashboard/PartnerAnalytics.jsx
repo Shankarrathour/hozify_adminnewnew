@@ -287,12 +287,12 @@ export default function PartnerAnalytics({ activeTab = 'Dashboard' }) {
         </div>
 
         {/* ── 9 KPI CARDS ── */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(9,1fr)', gap:10, marginBottom:14 }}>
+        <div className="partner-kpi-grid" style={{ display:'grid', gridTemplateColumns:'repeat(9,1fr)', gap:10, marginBottom:14 }}>
           {kpis.map((k,i) => <KPICard key={i} {...k} />)}
         </div>
 
         {/* ── PARTNERS BY ROLE + STATUS DONUT + ONLINE/OFFLINE DONUT ── */}
-        <div style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 0.9fr', gap:12, marginBottom:12 }}>
+        <div className="partner-charts-row" style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 0.9fr', gap:12, marginBottom:12 }}>
 
           {/* Partners by Role */}
           <div style={{ background:'#fff', borderRadius:10, padding:'18px', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', border:'1px solid #e8edf2' }}>

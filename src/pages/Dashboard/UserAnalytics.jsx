@@ -316,7 +316,7 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
         </div>
 
         {/* ── KPI CARDS – single row 7 cards ── */}
-        <div style={{
+        <div className="user-kpi-grid" style={{
           display:'grid',
           gridTemplateColumns:'repeat(7, 1fr)',
           gap:12, marginBottom:16,
@@ -358,7 +358,7 @@ export default function UserAnalytics({ activeTab = 'Dashboard' }) {
         </div>
 
         {/* ── ROW 2: Line Chart + Status Donut + Gender Donut ── */}
-        <div style={{ display:'grid', gridTemplateColumns:'1.85fr 1fr 1fr', gap:12, marginBottom:12 }}>
+        <div className="user-charts-row" style={{ display:'grid', gridTemplateColumns:'1.85fr 1fr 1fr', gap:12, marginBottom:12 }}>
 
           {/* User Overview Trend - Line Chart */}
           <div style={{ background:'#fff', borderRadius:10, padding:'18px 18px 10px', boxShadow:'0 1px 3px rgba(0,0,0,0.06)', border:'1px solid #e8edf2' }}>

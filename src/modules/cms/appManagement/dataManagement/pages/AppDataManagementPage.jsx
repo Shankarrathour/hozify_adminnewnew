@@ -447,14 +447,15 @@ export default function AppDataManagementPage() {
         </div>
 
         {/* Master Data Table */}
-        <div style={{
+        <div className="custom-table-container" style={{
           background: '#ffffff',
           borderRadius: '12px',
           border: '1px solid #e2e8f0',
-          overflow: 'hidden',
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
           boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
         }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
+          <table style={{ width: '100%', minWidth: '850px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 <th style={{ padding: '14px 16px', width: '40px' }}>
@@ -465,11 +466,11 @@ export default function AppDataManagementPage() {
                     style={{ cursor: 'pointer' }}
                   />
                 </th>
-                <th style={{ padding: '14px 16px', fontWeight: 700 }}>Key & Label</th>
-                <th style={{ padding: '14px 16px', fontWeight: 700 }}>Category</th>
-                <th style={{ padding: '14px 16px', fontWeight: 700 }}>Scope</th>
-                <th style={{ padding: '14px 16px', fontWeight: 700 }}>Live Text Value</th>
-                <th style={{ padding: '14px 16px', fontWeight: 700, textAlign: 'right' }}>Actions</th>
+                <th style={{ padding: '14px 16px', fontWeight: 700, minWidth: '180px' }}>Key & Label</th>
+                <th style={{ padding: '14px 16px', fontWeight: 700, minWidth: '120px' }}>Category</th>
+                <th style={{ padding: '14px 16px', fontWeight: 700, minWidth: '110px' }}>Scope</th>
+                <th style={{ padding: '14px 16px', fontWeight: 700, minWidth: '240px' }}>Live Text Value</th>
+                <th style={{ padding: '14px 16px', fontWeight: 700, textAlign: 'right', minWidth: '120px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -492,13 +493,13 @@ export default function AppDataManagementPage() {
                         style={{ cursor: 'pointer' }}
                       />
                     </td>
-                    <td style={{ padding: '14px 16px' }}>
+                    <td style={{ padding: '14px 16px', minWidth: '180px' }}>
                       <div style={{ fontWeight: 700, color: '#1e293b' }}>{item.label}</div>
                       <code style={{ fontSize: '12px', background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px', color: '#4f46e5' }}>
                         {item.key}
                       </code>
                     </td>
-                    <td style={{ padding: '14px 16px' }}>
+                    <td style={{ padding: '14px 16px', minWidth: '120px' }}>
                       <span style={{
                         fontSize: '12px',
                         padding: '4px 10px',
@@ -510,7 +511,7 @@ export default function AppDataManagementPage() {
                         {item.category}
                       </span>
                     </td>
-                    <td style={{ padding: '14px 16px' }}>
+                    <td style={{ padding: '14px 16px', minWidth: '110px' }}>
                       <span style={{
                         fontSize: '12px',
                         padding: '4px 10px',
@@ -522,7 +523,7 @@ export default function AppDataManagementPage() {
                         {item.scope}
                       </span>
                     </td>
-                    <td style={{ padding: '14px 16px', maxWidth: '300px' }}>
+                    <td style={{ padding: '14px 16px', minWidth: '240px', maxWidth: '380px' }}>
                       <div style={{
                         background: '#fafafa',
                         border: '1px solid #e2e8f0',
@@ -530,7 +531,8 @@ export default function AppDataManagementPage() {
                         borderRadius: '6px',
                         color: '#0f172a',
                         fontWeight: 600,
-                        wordBreak: 'break-word'
+                        wordBreak: 'break-word',
+                        whiteSpace: 'pre-wrap'
                       }}>
                         {item.value}
                       </div>

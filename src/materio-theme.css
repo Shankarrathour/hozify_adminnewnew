@@ -1065,3 +1065,434 @@ table thead th {
     border: none !important;
 }
 
+/* ==========================================================================
+   HOZIFY ADMIN PANEL - COMPREHENSIVE RESPONSIVE DESIGN SYSTEM
+   Supports Desktop (1920px+), Laptop (1366px-1919px), Tablet Landscape (1024px-1365px),
+   Tablet Portrait (768px-1023px), and Mobile (< 768px).
+   ========================================================================== */
+
+/* --- 1. GLOBAL LAYOUT & VIEWPORT PRESERVATION --- */
+html, body {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+}
+
+#root, .dashboard.global-dashboard {
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+}
+
+/* Ensure no child container causes horizontal viewport scroll */
+main, .admin-shell-content, [class*="-root"] {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* --- 2. RESPONSIVE KPI CARD GRIDS --- */
+
+[class*="-kpi-grid"],
+.kpi-grid-container,
+.admin-kpi-grid,
+.pd-kpi-grid,
+.bkd-kpi-grid,
+.od-kpi-grid,
+.sd-kpi-grid,
+.rev-kpi-grid,
+.gst-kpi-grid,
+.user-kpi-grid,
+.partner-kpi-grid {
+  display: grid !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+
+/* Desktop (1920px+) */
+@media (min-width: 1920px) {
+  .pd-kpi-grid, .admin-kpi-grid { grid-template-columns: repeat(5, 1fr) !important; }
+  .bkd-kpi-grid, .od-kpi-grid, .sd-kpi-grid, .rev-kpi-grid, .gst-kpi-grid { grid-template-columns: repeat(6, 1fr) !important; }
+  .user-kpi-grid { grid-template-columns: repeat(7, 1fr) !important; }
+  .partner-kpi-grid { grid-template-columns: repeat(9, 1fr) !important; }
+}
+
+/* Laptop (1366px – 1919px) */
+@media (min-width: 1366px) and (max-width: 1919px) {
+  .pd-kpi-grid, .admin-kpi-grid { grid-template-columns: repeat(5, 1fr) !important; }
+  .bkd-kpi-grid, .od-kpi-grid, .sd-kpi-grid, .rev-kpi-grid, .gst-kpi-grid { grid-template-columns: repeat(6, 1fr) !important; }
+  .user-kpi-grid { grid-template-columns: repeat(7, 1fr) !important; }
+  .partner-kpi-grid { grid-template-columns: repeat(5, 1fr) !important; }
+}
+
+/* Tablet Landscape (1024px – 1365px) */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  [class*="-kpi-grid"],
+  .kpi-grid-container,
+  .admin-kpi-grid,
+  .pd-kpi-grid,
+  .bkd-kpi-grid,
+  .od-kpi-grid,
+  .sd-kpi-grid,
+  .rev-kpi-grid,
+  .gst-kpi-grid,
+  .user-kpi-grid,
+  .partner-kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+  }
+}
+
+/* Tablet Portrait (768px – 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  [class*="-kpi-grid"],
+  .kpi-grid-container,
+  .admin-kpi-grid,
+  .pd-kpi-grid,
+  .bkd-kpi-grid,
+  .od-kpi-grid,
+  .sd-kpi-grid,
+  .rev-kpi-grid,
+  .gst-kpi-grid,
+  .user-kpi-grid,
+  .partner-kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+  }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 767px) {
+  [class*="-kpi-grid"],
+  .kpi-grid-container,
+  .admin-kpi-grid,
+  .pd-kpi-grid,
+  .bkd-kpi-grid,
+  .od-kpi-grid,
+  .sd-kpi-grid,
+  .rev-kpi-grid,
+  .gst-kpi-grid,
+  .user-kpi-grid,
+  .partner-kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+    gap: 10px !important;
+  }
+}
+
+/* --- 3. RESPONSIVE FILTER SECTION & BARS --- */
+[class*="-filter-row"],
+[class*="-filter-bar"],
+[class*="-filters"],
+.pd-filter-row,
+.bkd-filter-row,
+.od-filter-row,
+.ref-filter-row,
+.admin-dash-filters,
+.rev-dash-filters,
+.sd-filter-row,
+.user-filter-bar {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: flex-end !important;
+  gap: 12px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+[class*="-filter-row"] select,
+[class*="-filter-row"] input,
+[class*="-filter-bar"] select,
+[class*="-filter-bar"] input,
+.pd-select, .bkd-select, .od-select, .ref-select, .admin-filter-select, .rev-filter-select {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 1024px) {
+  [class*="-filter-row"] > div,
+  [class*="-filter-bar"] > div {
+    flex: 1 1 160px !important;
+    min-width: 130px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  [class*="-filter-row"] > div,
+  [class*="-filter-bar"] > div {
+    flex: 1 1 100% !important;
+    min-width: 100% !important;
+  }
+  
+  .pd-pbtn, .bkd-period-btn, .od-period-btn, .ref-period-btn {
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* --- 4. RESPONSIVE CHARTS & MULTI-COLUMN ROWS --- */
+[class*="-4col-row"],
+[class*="-charts-row"],
+[class*="-charts-grid"],
+.pd-4col-row,
+.bkd-charts-row,
+.admin-charts-grid,
+.sd-row2,
+.sd-row3,
+.rev-charts-grid,
+.user-charts-row,
+.partner-charts-row {
+  display: grid !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  gap: 14px !important;
+}
+
+@media (min-width: 1366px) {
+  .pd-4col-row { grid-template-columns: repeat(4, 1fr) !important; }
+  .user-charts-row { grid-template-columns: 1.85fr 1fr 1fr !important; }
+  .partner-charts-row { grid-template-columns: 1.5fr 1fr 0.9fr !important; }
+  .admin-charts-grid { grid-template-columns: 2fr 1fr !important; }
+  .sd-row2 { grid-template-columns: 1.5fr 1fr !important; }
+}
+
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .pd-4col-row { grid-template-columns: repeat(2, 1fr) !important; }
+  .user-charts-row, .partner-charts-row { grid-template-columns: 1.5fr 1fr !important; }
+  .admin-charts-grid { grid-template-columns: 1fr 1fr !important; }
+  .sd-row2 { grid-template-columns: 1fr 1fr !important; }
+}
+
+@media (max-width: 1023px) {
+  [class*="-4col-row"],
+  [class*="-charts-row"],
+  [class*="-charts-grid"],
+  .pd-4col-row,
+  .bkd-charts-row,
+  .admin-charts-grid,
+  .sd-row2,
+  .sd-row3,
+  .rev-charts-grid,
+  .user-charts-row,
+  .partner-charts-row {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.recharts-responsive-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* --- 5. RESPONSIVE TABLES & CONTAINERS --- */
+.table-responsive,
+[class*="table-wrap"],
+[class*="table-container"],
+[class*="matrix-wrap"],
+[class*="-table-cont"],
+.pd-table-cont,
+.sd-btable-cont,
+.bkd-table-wrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  box-sizing: border-box !important;
+}
+
+.table-responsive table,
+[class*="table-wrap"] table,
+[class*="table-container"] table,
+[class*="matrix-wrap"] table,
+.pd-table-cont table,
+.sd-btable-cont table {
+  min-width: 600px !important;
+  width: 100% !important;
+}
+
+/* --- 6. RESPONSIVE CARDS & MODALS --- */
+[class*="-card"],
+[class*="-card-body"],
+.pd-card,
+.bkd-card,
+.od-card,
+.sd-card {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+[class*="-modal-content"],
+.sd-modal-content,
+.pd-modal-content {
+  max-width: 92vw !important;
+  max-height: 90vh !important;
+  box-sizing: border-box !important;
+}
+
+/* ==========================================================================
+   CMS → APP MANAGEMENT RESPONSIVE DESIGN SYSTEM
+   Supports App Dashboard, App Access Management, App Data Management,
+   User App Management, Partner App Management, User Menu Management,
+   Partner Menu Management, Banner Management, Feature Management,
+   Remote Config, App Config, Maintenance Mode & Future Pages.
+   ========================================================================== */
+
+/* --- 1. CMS PAGE CONTAINER & HEADERS --- */
+.custom-page-heading {
+  word-break: break-word !important;
+}
+
+[class*="app-management"],
+[class*="cms-"],
+.app-dash-root,
+.access-control-root,
+.data-mgmt-root,
+.feature-mgmt-root,
+.banner-mgmt-root,
+.menu-mgmt-root,
+.remote-config-root,
+.app-config-root,
+.maintenance-root,
+.user-app-root,
+.partner-app-root {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+/* Page headers flex wrapping */
+.custom-page-header,
+[class*="-header"],
+div[style*="justifyContent: 'space-between'"],
+div[style*="justify-content: space-between"] {
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 1024px) {
+  /* Wrap top headers and action buttons */
+  div[style*="justifyContent: 'space-between'"],
+  div[style*="justify-content: space-between"] {
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+}
+
+/* --- 2. CMS KPI CARDS & STATISTICAL STRIPS --- */
+.custom-kpi-card-container,
+[class*="-kpi-container"] {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+  gap: 14px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+@media (min-width: 1920px) {
+  .custom-kpi-card-container {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+@media (min-width: 1366px) and (max-width: 1919px) {
+  .custom-kpi-card-container {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .custom-kpi-card-container {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .custom-kpi-card-container {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+    gap: 10px !important;
+  }
+}
+
+/* --- 3. APP ACCESS MANAGEMENT & FEATURE MODULE GRIDS --- */
+.candidate-search-grid,
+div[style*="minmax(260px, 1fr)"],
+div[style*="minmax(280px, 1fr)"] {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+  div[style*="minmax(260px, 1fr)"],
+  div[style*="minmax(280px, 1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  div[style*="minWidth: '300px'"],
+  div[style*="min-width: 300px"] {
+    flex: 1 1 100% !important;
+    min-width: 100% !important;
+  }
+
+  div[style*="linear-gradient(135deg, #1e293b"] {
+    padding: 16px !important;
+  }
+
+  div[style*="linear-gradient(135deg, #1e293b"] button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
+/* --- 4. CMS TABLES & CRUD CONTAINERS --- */
+.custom-table-container,
+.data-mgmt-table-wrap,
+.feature-table-wrap,
+.banner-table-wrap,
+.menu-table-wrap,
+.remote-config-table-wrap {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  box-sizing: border-box !important;
+  border-radius: 12px !important;
+}
+
+.custom-table-container table,
+.data-mgmt-table-wrap table,
+.feature-table-wrap table,
+.banner-table-wrap table {
+  min-width: 650px !important;
+  width: 100% !important;
+}
+
+/* --- 5. MOBILE APP DEVICE PREVIEWS & MOCKUPS --- */
+.mobile-device-container,
+div[style*="border: '12px solid #1e293b'"],
+div[style*="border: 12px solid #1e293b"] {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 480px) {
+  .mobile-device-container,
+  div[style*="border: '12px solid #1e293b'"],
+  div[style*="border: 12px solid #1e293b"] {
+    border-width: 6px !important;
+    border-radius: 20px !important;
+  }
+}
+
+/* --- 6. FORMS, MODALS & DIALOGS --- */
+@media (max-width: 768px) {
+  form,
+  .custom-form-grid,
+  div[style*="display: 'grid'"][style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .custom-btn-primary,
+  .custom-btn-secondary {
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+  }
+}
+
+
+
