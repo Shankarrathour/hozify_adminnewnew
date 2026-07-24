@@ -4,7 +4,19 @@ import { AppManagementContext } from '../contexts/AppManagementContext';
 export function useAppManagement() {
   const context = useContext(AppManagementContext);
   if (!context) {
-    throw new Error('useAppManagement must be used within an AppManagementProvider');
+    return {
+      userAppConfig: {},
+      partnerAppConfig: {},
+      centralData: [],
+      isLoading: false,
+      toggleModule: () => {},
+      selectAllModules: () => {},
+      deselectAllModules: () => {},
+      resetModuleConfig: () => {},
+      saveModuleConfig: () => {},
+      isModuleEnabled: () => true,
+      getText: (key, fallback = '') => fallback
+    };
   }
   return context;
 }

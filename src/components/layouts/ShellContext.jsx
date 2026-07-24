@@ -35,7 +35,7 @@ export function ShellProvider({ children }) {
 export function useShell() {
   const context = useContext(ShellContext);
   if (!context) {
-    throw new Error('useShell must be used within a ShellProvider');
+    return { shellProps: {}, setShellProps: () => {} };
   }
   return context;
 }
