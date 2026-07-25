@@ -251,120 +251,108 @@ export default function AppAccessManagementPage() {
     <AdminShell headerTitle="App Access Management" activeTab="CMS">
       <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
         
-        {/* Breadcrumb Header */}
-        <div style={{ marginBottom: '20px' }}>
-          <p style={{ fontSize: '13px', color: '#64748b', margin: 0 }}>
-            CMS &gt; App Management &gt; <span style={{ color: '#4f46e5', fontWeight: 600 }}>Per-User / Partner Access Control</span>
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', flexWrap: 'wrap', gap: '12px' }}>
-            <div>
-              <h1 className="custom-page-heading" style={{ margin: 0, fontSize: '26px', fontWeight: 700, color: '#1e293b' }}>
-                App Access Management
-              </h1>
-              <p style={{ color: '#64748b', fontSize: '14px', marginTop: '4px', margin: 0 }}>
-                Configure feature module visibility for individual users and partners. Settings save per-user or per-partner without affecting global defaults.
-              </p>
-            </div>
-
-            <button
-              onClick={() => setIsPreviewOpen(true)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 18px',
-                background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(79, 70, 229, 0.25)',
-                transition: 'all 0.2s'
-              }}
-            >
-              <Eye size={18} />
-              Preview Visible Modules
-            </button>
-          </div>
-        </div>
-
-        {/* ── STEP 1: Target App Selection (User App vs Partner App) ── */}
+        {/* ── STEP 1: Target App Selection (User App vs Partner App) & Preview ── */}
         <div style={{ 
           display: 'flex', 
+          justifyContent: 'space-between',
+          alignItems: 'center',
           gap: '12px', 
           marginBottom: '20px',
           borderBottom: '1px solid #e2e8f0',
-          paddingBottom: '14px'
+          paddingBottom: '14px',
+          flexWrap: 'wrap'
         }}>
-          <button
-            onClick={() => {
-              setActiveApp('user');
-              setCategoryFilter('ALL');
-              setModuleSearch('');
-            }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              padding: '12px 24px',
-              borderRadius: '10px',
-              fontWeight: 600,
-              fontSize: '15px',
-              border: activeApp === 'user' ? '2px solid #4f46e5' : '1px solid #cbd5e1',
-              background: activeApp === 'user' ? '#eef2ff' : '#ffffff',
-              color: activeApp === 'user' ? '#4f46e5' : '#64748b',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-          >
-            <Smartphone size={20} color={activeApp === 'user' ? '#4f46e5' : '#64748b'} />
-            User App Access
-            <span style={{
-              background: activeApp === 'user' ? '#4f46e5' : '#94a3b8',
-              color: '#fff',
-              fontSize: '12px',
-              padding: '2px 8px',
-              borderRadius: '12px',
-              fontWeight: 700
-            }}>
-              Per-User Access
-            </span>
-          </button>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => {
+                setActiveApp('user');
+                setCategoryFilter('ALL');
+                setModuleSearch('');
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '12px 24px',
+                borderRadius: '10px',
+                fontWeight: 600,
+                fontSize: '15px',
+                border: activeApp === 'user' ? '2px solid #4f46e5' : '1px solid #cbd5e1',
+                background: activeApp === 'user' ? '#eef2ff' : '#ffffff',
+                color: activeApp === 'user' ? '#4f46e5' : '#64748b',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Smartphone size={20} color={activeApp === 'user' ? '#4f46e5' : '#64748b'} />
+              User App Access
+              <span style={{
+                background: activeApp === 'user' ? '#4f46e5' : '#94a3b8',
+                color: '#fff',
+                fontSize: '11px',
+                padding: '2px 8px',
+                borderRadius: '12px',
+                fontWeight: 700
+              }}>
+                23 Modules
+              </span>
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveApp('partner');
+                setCategoryFilter('ALL');
+                setModuleSearch('');
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '12px 24px',
+                borderRadius: '10px',
+                fontWeight: 600,
+                fontSize: '15px',
+                border: activeApp === 'partner' ? '2px solid #059669' : '1px solid #cbd5e1',
+                background: activeApp === 'partner' ? '#ecfdf5' : '#ffffff',
+                color: activeApp === 'partner' ? '#059669' : '#64748b',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Users size={20} color={activeApp === 'partner' ? '#059669' : '#64748b'} />
+              Partner App Access
+              <span style={{
+                background: activeApp === 'partner' ? '#059669' : '#94a3b8',
+                color: '#fff',
+                fontSize: '11px',
+                padding: '2px 8px',
+                borderRadius: '12px',
+                fontWeight: 700
+              }}>
+                19 Modules
+              </span>
+            </button>
+          </div>
 
           <button
-            onClick={() => {
-              setActiveApp('partner');
-              setCategoryFilter('ALL');
-              setModuleSearch('');
-            }}
+            onClick={() => setIsPreviewOpen(true)}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '10px',
-              padding: '12px 24px',
-              borderRadius: '10px',
+              gap: '8px',
+              padding: '10px 18px',
+              background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '8px',
               fontWeight: 600,
-              fontSize: '15px',
-              border: activeApp === 'partner' ? '2px solid #059669' : '1px solid #cbd5e1',
-              background: activeApp === 'partner' ? '#ecfdf5' : '#ffffff',
-              color: activeApp === 'partner' ? '#059669' : '#64748b',
               cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(79, 70, 229, 0.25)',
               transition: 'all 0.2s'
             }}
           >
-            <Handshake size={20} color={activeApp === 'partner' ? '#059669' : '#64748b'} />
-            Partner App Access
-            <span style={{
-              background: activeApp === 'partner' ? '#059669' : '#94a3b8',
-              color: '#fff',
-              fontSize: '12px',
-              padding: '2px 8px',
-              borderRadius: '12px',
-              fontWeight: 700
-            }}>
-              Per-Partner Access
-            </span>
+            <Eye size={18} />
+            Preview Visible Modules
           </button>
         </div>
 

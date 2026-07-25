@@ -197,83 +197,69 @@ export default function AppDataManagementPage() {
     <AdminShell headerTitle="App Data Management" activeTab="CMS">
       <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
         
-        {/* Breadcrumb Header */}
-        <div style={{ marginBottom: '20px' }}>
-          <p style={{ fontSize: '13px', color: '#64748b', margin: 0 }}>
-            CMS &gt; App Management &gt; <span style={{ color: '#4f46e5', fontWeight: 600 }}>App Data Management</span>
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
-            <div>
-              <h1 className="custom-page-heading" style={{ margin: 0, fontSize: '26px', fontWeight: 700, color: '#1e293b' }}>
-                App Data Management
-              </h1>
-              <p style={{ color: '#64748b', fontSize: '14px', marginTop: '4px', margin: 0 }}>
-                Master source for every editable text string, banner copy, price label, and status message across User & Partner Apps.
-              </p>
-            </div>
-            
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button
-                onClick={() => setIsImportModalOpen(true)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '9px 16px',
-                  background: '#ffffff',
-                  color: '#334155',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  fontSize: '13px',
-                  cursor: 'pointer'
-                }}
-              >
-                <Upload size={16} color="#4f46e5" />
-                Import JSON
-              </button>
+        {/* Top Action Bar */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setIsImportModalOpen(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '9px 16px',
+                background: '#ffffff',
+                color: '#334155',
+                border: '1px solid #cbd5e1',
+                borderRadius: '8px',
+                fontWeight: 600,
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              <Upload size={16} color="#4f46e5" />
+              Import JSON
+            </button>
 
-              <button
-                onClick={handleExportJSON}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '9px 16px',
-                  background: '#ffffff',
-                  color: '#334155',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  fontSize: '13px',
-                  cursor: 'pointer'
-                }}
-              >
-                <Download size={16} color="#059669" />
-                Export JSON
-              </button>
+            <button
+              onClick={handleExportJSON}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '9px 16px',
+                background: '#ffffff',
+                color: '#334155',
+                border: '1px solid #cbd5e1',
+                borderRadius: '8px',
+                fontWeight: 600,
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              <Download size={16} color="#059669" />
+              Export JSON
+            </button>
 
-              <button
-                onClick={() => setIsAddOpen(true)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '9px 18px',
-                  background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(79, 70, 229, 0.25)'
-                }}
-              >
-                <Plus size={18} />
-                Create New Data Key
-              </button>
-            </div>
+            <button
+              onClick={() => setIsAddOpen(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '9px 18px',
+                background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: 600,
+                fontSize: '13px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(79, 70, 229, 0.25)'
+              }}
+            >
+              <Plus size={18} />
+              Create New Data Key
+            </button>
           </div>
         </div>
 
